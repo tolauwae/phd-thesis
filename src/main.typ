@@ -3,6 +3,7 @@
 // typst: v0.12.0
 
 #import "../lib/book.typ": book, quote, is-page-empty, toc
+#import "../lib/comment.typ": comment
 
 #import "@preview/curryst:0.3.0"
 
@@ -18,14 +19,6 @@
 
 #set page(width: 170mm, height: 240mm)
 
-// Own comment system
-
-#let comment(name, body) = {
-    box(fill: rgb("#1E64C8"), baseline: 0.2em)[#pad(x: 0.3em, y: 0.2em)[#text(white)[#name]]]
-    h(0.4em)
-    text(rgb("#1E64C8"))[#body]
-}
-
 // General styling rules
 
 // Cover
@@ -39,36 +32,7 @@
 
 //// conform to golden ratio (just like penguin classics covers)
 
-// Inside cover
-
-#set page(
-  margin: (
-    right: 40%
-  )
-)
-
-#pagebreak()
-
-#text(font: serif, ligatures: true, discretionary-ligatures: false, size: 8pt, weight: "regular")[
-
-#v(1fr)
-
-Dissertation submitted in partial fulfillment of the requirements for the degree of Doctor of Computer Science at Ghent University \
-May, 2025
-#v(.4em)
-Advisor: Prof Dr. Christophe Scholliers \
-Second advisor: Prof Dr. Peter Dawyndt
-
-#v(.4em)
-Ghent University \
-Faculty of Sciences \
-Department of Applied Mathematics, Computer Science and Statistics \
-Theory and Operations of Programming Languages Lab
-
-#v(.4em)
-Cover art #sym.copyright Tom Lauwaerts
-
-]
+#pagebreak(to: "odd")
 
 ]
 
@@ -127,6 +91,38 @@ Cover art #sym.copyright Tom Lauwaerts
     )
 ]
 
+// Inside cover
+
+#[
+    #set page(
+      margin: (
+        right: 40%
+      )
+    )
+
+    #pagebreak()
+
+    #text(font: serif, ligatures: true, discretionary-ligatures: false, size: 8pt, weight: "regular")[
+
+    #v(1fr)
+
+    Dissertation submitted in partial fulfillment of the requirements for the degree of Doctor of Computer Science at Ghent University \
+    May, 2025
+    #v(.4em)
+    Advisor: Prof Dr. Christophe Scholliers \
+    Second advisor: Prof Dr. Peter Dawyndt
+
+    #v(.4em)
+    Ghent University \
+    Faculty of Sciences \
+    Department of Mathematics, Computer Science and Statistics \
+    Theory and Operations of Programming Languages Lab
+
+    #v(.4em)
+    Cover art #sym.copyright Tom Lauwaerts
+
+    ]
+]
 // Preamble
 #[
 
@@ -433,20 +429,7 @@ With the fast rise of artificial intelligence solutions in industry and daily li
 
 = Out-of-place debugging
 
-#quote("Tony Hoare")[Some problems are better evaded than solved.]
-
-#comment("Note")[ECOOP paper chapter]
-
-This chapter concerns the formalisation of out-of-place debugging.
-We introduce the concept of stateful out-of-place debugging, which is a generalisation of the out-of-place debugging technique.
-This generalisation allows for stateful code to be move between supervisor and proxy, contrary to only access to resource; getting files, sensor values, ...
-
-#comment("Note")[MPLR paper chapter]
-
-Perhaps with only minimal changes, we can present the work from the MPLR paper as an extension on the stateful out-of-place debugging technique.
-Adding events to the formalisation, and keeping the existing test as implementation and evaluation.
-
-This way the whole out-of-place story in the dissertation is a formal-first story.
+#include "oop/oop.typ"
 
 = Multiverse debugging on microcontrollers
 
