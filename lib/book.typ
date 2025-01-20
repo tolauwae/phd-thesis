@@ -27,6 +27,12 @@
 
     // general styling
 
+    //// Code snippets
+    show raw: set text(size: 0.8em)
+
+    set raw(tab-size: 2)
+    set raw(theme: "printable.thTheme") if print
+
     //// style figures
     // TODO
 
