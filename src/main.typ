@@ -5,7 +5,13 @@
 #import "../lib/book.typ": book, quote, is-page-empty, toc
 #import "../lib/comment.typ": comment
 
-#import "@preview/curryst:0.3.0"
+// pseudocode
+#import "@preview/lovelace:0.3.0": pseudocode-list
+
+// code snippets
+#import "@preview/codly:1.2.0": *
+#show: codly-init.with()
+#set raw(syntaxes: "../lib/wast.sublime-syntax")
 
 #let maintitle = [Foundations for Constrained Debugging Techniques]
 #let subtitle = [Finding software faults in constrained environments with out-of-place and multiverse debugging techniques]
@@ -15,11 +21,27 @@
 
 #show: book.with(
     title: title,
+    print: true,
 )
 
 #set page(width: 170mm, height: 240mm)
 
 // General styling rules
+
+// Code snippets
+
+// hack line references with codly
+#show ref: it => {
+  let el = it.element
+  if el != none and el.has("kind") and el.kind == "codly-line" {
+    link(el.location(),numbering(
+      el.numbering,
+      ..counter(figure).at(el.location())
+    ))
+  } else if el != none and el.has("kind") and el.kind != raw {
+    it
+  }
+}
 
 // Cover
 
@@ -398,34 +420,34 @@ With the fast rise of artificial intelligence solutions in industry and daily li
 
 #comment("Note")[WARDuino paper chapter]
 
-== Developing embedded programs with WARDuino
+#include "remote/remote.typ"
 
-== Virtual machine architecture
-
-== Support for high-level languages
-
-== Extending the virtual machine
-
-#comment("Note")[Replace paper section with the small language developed for primitives]
-
-== Formal specification
-
-#figure([
-    #let r = curryst.rule(
-  name: "callback", 
-  $s;v^*;e^* arrow.r.hook_i s';v^*; bold("callback") {e^*} (s_("evt")(0)_("payload")) (s_("cbs")(s_("evt")(0)_("topic"))) (bold("call_indirect") italic("tf")) bold("end")$
-  )
-#curryst.proof-tree(r)],
-  caption: [Selected rules.],
-    // todo more space between figure and caption. captions number bold
-) <rules>
-
-== Tool support for WARDuino
-
-== Evaluation
-
-#lorem(500)
-
+//== Developing embedded programs with WARDuino
+//
+//== Virtual machine architecture
+//
+//== Support for high-level languages
+//
+//== Extending the virtual machine
+//
+//#comment("Note")[Replace paper section with the small language developed for primitives]
+//
+//== Formal specification
+//
+//#figure([
+//    #let r = curryst.rule(
+//  name: "callback", 
+//  $s;v^*;e^* arrow.r.hook_i s';v^*; bold("callback") {e^*} (s_("evt")(0)_("payload")) (s_("cbs")(s_("evt")(0)_("topic"))) (bold("call_indirect") italic("tf")) bold("end")$
+//  )
+//#curryst.proof-tree(r)],
+//  caption: [Selected rules.],
+//    // todo more space between figure and caption. captions number bold
+//) <rules>
+//
+//== Tool support for WARDuino
+//
+//== Evaluation
+//
 
 = Out-of-place debugging
 
@@ -513,4 +535,8 @@ When a program's execution path is determined by the input from the external env
 #metadata(none) <appendix>
 
 #bibliography("references.bib")<bibliography>
+
+#include "appendices/webassembly.typ"
+
+#include "appendices/primitives.typ"
 
