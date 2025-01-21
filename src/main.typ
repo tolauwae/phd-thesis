@@ -485,40 +485,6 @@ When a program's execution path is determined by the input from the external env
 
 #comment("Note")[Latch paper]
 
-#lorem(120)
-
-== Introduction
-
-#lorem(256)
-
-== Challenges of testing on constrained devices
-
-#lorem(256)
-
-== Managed testing with Latch by example
-
-#lorem(256)
-
-== The Latch test specification languages
-
-#lorem(256)
-
-== Testing with Latch
-
-#lorem(256)
-
-== Performance evaluation
-
-#lorem(256)
-
-== Related work
-
-#lorem(256)
-
-== Conclusion
-
-#lorem(128)
-
 = Validation
 
 #quote([Attributed to Rutherford B. Hayes#footnote[It is often reported that the 19#super[th] president of the United states Rutherford B. Hayes spoke these words upon seeing a telephone for the first time, however, this is almost definitely not true. In fact, Hayes was a technology buff who had the first telephone installed in the White House @kessler12.]])[An amazing invention#box(sym.dash.em)but who would ever want to use one?] // TODO add a reference to the footnote
@@ -535,7 +501,6 @@ When a program's execution path is determined by the input from the external env
 #metadata(none) <appendix>
 
 #bibliography("references.bib")<bibliography>
-
 #include "appendices/webassembly.typ"
 
 #include "appendices/primitives.typ"

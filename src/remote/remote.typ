@@ -2,12 +2,12 @@
 #import "@preview/lovelace:0.3.0": pseudocode-list, line-label
 
 // code snippets
-#import "../../lib/util.typ": code
+#import "../../lib/util.typ": code, snippet
 
 // reduction rules
 #import "@preview/curryst:0.3.0"
 
-=== Introduction <remote:introduction>
+== Introduction <remote:introduction>
 Recent advances in microcontroller technology have enabled everyday objects (things) to be connected through the internet. Smart lamps, smart scales, smart ovens and refrigerators have all become commodity devices which are connected through the internet, making up the Internet of Things (IoT). This is largely thanks to microcontrollers—small and energy efficient computers—becoming very cheap. However, the drawbacks of microcontrollers are their limited processing power and memory size. Furthermore, microcontrollers typically do not run a full-fledged operating system @vansickle01, but instead run statically compiled firmware, or a tiny real-time operating system (RTOS) @tan09@hambarde14@de23 specialized for microcontrollers. Due to these differences and the resource constraints of the underlying hardware, developing software for microcontrollers differs significantly from conventional computer programming, where these severe constraints do not exist to the same degree. In this paper we seek to close this gap, and focus on the following six major challenges unique to IoT development.
 
 / Low-level Coding.: #block[
@@ -74,12 +74,12 @@ In summary, our novel contributions compared to the initial paper~@gurdeep19 are
 
 The rest of the paper is organized as follows. First, we show an example program and illustrate how WebAssembly code can access hardware peripherals in #link(<remote:modules>)[\[remote:modules\]];. In #link(<remote:architecture>)[\[remote:architecture\]];, we discuss the overall design of WARDuino. The section goes into further detail on the execution of WebAssembly programs, and the handling of interrupts within the virtual machine. Then we show how we bridge the language barrier with WebAssembly in #link(<remote:interoperability>)[\[remote:interoperability\]];. #link(<remote:extending>)[\[remote:extending\]] briefly discusses how developers can extend the WARDuino machine themselves to support new or custom hardware peripherals. A formal description of our extensions is given in #link(<remote:formal>)[\[remote:formal\]];. In #link(<remote:tools>)[\[remote:tools\]] we give a detailed overview of the available tools for debugging WARDuino applications. We follow this discussion with the evaluation of our implementation in #link(<remote:evaluation>)[\[remote:evaluation\]];. Finally, we present related works in #link(<remote:related-work>)[\[remote:related-work\]] and conclude in #link(<remote:conclusion>)[\[remote:conclusion\]];.
 
-=== WARDuino: WebAssembly for Microcontrollers<remote:modules>
+== WARDuino: WebAssembly for Microcontrollers<remote:modules>
 WARDuino is a virtual machine for the 2019 core WebAssembly standard @rossberg19. The standard does not provide instructions to interact with the environment, for example controlling the pins of a microcontroller. Neither does the #emph[bare-metal execution environment] of embedded devices provide useful abstractions and interfaces to interact with the hardware, in the way a full-fledged operating system might. To address this shortcoming, WARDuino provides a set of primitives to interact with the environment as importable WebAssembly functions.
 
 However, the end goal of WARDuino is not to develop IoT applications in WebAssembly, instead it is meant to enable IoT developers to use high-level programming languages. Many high-level languages can already be compiled to WebAssembly, and we can lift the WARDuino primitives to those programming languages. This means that developers can use the WARDuino primitives as normal functions in their high-level language of choice. We start with a small example to make this general idea more concrete.
 
-==== Developing IoT programs <remote:developing>
+=== Developing IoT programs <remote:developing>
 Programs in over 40 languages can be compiled to WebAssembly bytecode#footnote[There is no official list of languages that offer compilation to WebAssembly, but the community maintains #link(
     "https://github.com/appcypher/awesome-wasm-langs",
   )[a nearly complete list];.];, and many popular languages provide additional support such as interacting with WebAssembly directly. Developers can use these languages to write programs for WARDuino. We will use the AssemblyScript @the-assemblyscript-project23 programming language as an example in this section. AssemblyScript is a language specifically designed for WebAssembly. The main purpose of AssemblyScript is to allow web developers to use WebAssembly without needing to learn a new language. This is why the language is based#footnote[AssemblyScript is not TypeScript but a variant of it.] on TypeScript, and many TypeScript programs are indeed valid AssemblyScript programs. AssemblyScript’s main purpose strongly aligns with our goal of letting developers program embedded systems in the languages they already know and prefer. Furthermore, by being a standalone language AssemblyScript can better prioritize small code size and fast code execution, which are both very important for embedded software.
@@ -145,13 +145,13 @@ The implementation of the primitives is backed by Arduino libraries. Arduino @ba
 Our "built-in" modules provide the most important Arduino features for controlling peripheral devices. These include `GPIO`, `SPI`, `USART` and `PWM` as well as more advanced networking modules. Specifically, we have modules with primitives to connect to Wi-Fi networks and to use the HTTP and MQTT protocols. Currently, all our modules are exposed in one single custom WebAssembly module named "`env`". This is in line with the WebAssembly System Interface (WASI) specification @hickey20. An overview of these primitives and their WebAssembly interface can be found in @primitives.
 ]
 
-==== Conclusion <conclusion>
+=== Conclusion <conclusion>
 In this section we have shown a basic IoT program written in AssemblyScript running on top of our WARDuino VM. Our goal is to enable IoT developers to program microcontrollers in high-level languages. To facilitate this WARDuino allows developers to run WebAssembly on microcontrollers. The idea is that programs in high-level languages are compiled to WebAssembly, and executed by WARDuino. Unfortunately WebAssembly did not yet support interacting with the hardware of the microcontroller. To resolve this we provide `GPIO`, `SPI`, `USART` and `PWM` modules. Network related features are another lacuna of WebAssembly we filled with the `WiFi`, `HTTP`, and `MQTT` modules. Thanks to our modules, WebAssembly becomes a viable platform to program microcontrollers with WARDuino. In the next section we will take a closer look at the architecture of WARDuino.
 
-=== WARDuino: Virtual Machine Architecture <remote:architecture>
+== WARDuino: Virtual Machine Architecture <remote:architecture>
 The WARDuino virtual machine is at heart a byte-code interpreter for WebAssembly, around which several components have been built to improve the development cycle of IoT software. WebAssembly is the compile target because it tackles both the challenges of #emph[portability] and #emph[low-level coding];. However, for WebAssembly to be a viable platform, we need a way to interact with the environment, i.e. control hardware peripherals, communicate over the internet, and so on. To address this WARDuino includes a set of primitives. Responsive IoT applications require these primitives to handle asynchronous events, standard WebAssembly does not support this. WARDuino is therefore extended with a callback handler to process asynchronous events, and pass them to user-defined callback functions. To tackle the challenge of #emph[debuggability];, WARDuino includes a remote debugger with support for over-the-air updates. Combined with standard debugging operations, the over-the-air updates allow developers to iterate quickly and test fixes while debugging. This way, WARDuino aims to significantly improve on the #emph[slow development cycle] of embedded software. In this section, we give an overview of the virtual machine architecture, and show how the components interact with the interpretation of the loaded program, as well as each other.
 
-==== WARDuino Components <warduino-components>
+=== WARDuino Components <warduino-components>
 #link(<fig:overview>)[\[fig:overview\]] gives a high-level overview of the virtual machine’s architecture, highlighting how the novel components (shown in red) relate to each other and interact with the running program (shown in blue). This program is a WebAssembly module, which will usually be compiled from a high-level language.
 
 #block[
@@ -164,7 +164,7 @@ Importantly, WARDuino contains a number of WebAssembly modules, implementing com
 
 Microcontrollers often receive signals from peripherals through hardware interrupts. These are then typically processed by asynchronous interrupt handlers. This way, the embedded device does not have to block execution by actively waiting for input. Unfortunately, calling a function asynchronously is not supported by standard WebAssembly. In other words, a standard WebAssembly virtual machine cannot call a function to handle asynchronous events such as MQTT messages, hardware interrupts, and so on. To address this shortcoming, we have implemented a novel callback handling system for executing WebAssembly functions when certain events happen. WARDuino programs can use this callback handling system to handle asynchronous events. The MQTT module, for instance, can be used to register a WebAssembly function from the loaded program#footnote[This is reflected in the interface of the MQTT primitives listed in figure~@fig:mqtt of @remote:mqtt, where the #emph[subscribe] primitive expects the table index of a WebAssembly function as an argument.] as a callback for specific events . Whenever these events occur, our callback handler will invoke the registered function and pass all relevant information to it . In the rest of our paper, we will refer to these functions as callback functions or simply callbacks.
 
-==== WARDuino Interpretation <remote:executing>
+=== WARDuino Interpretation <remote:executing>
 WebAssembly is a stack based language, defined over an implicit operand stack. This means WebAssembly runtimes do not have to explicitly use this stack. In WARDuino, however, we implement the VM as a stack based virtual machine based on the open source `wac` C-project by Joel Martin#footnote[#link("https://github.com/kanaka/wac");];. Our WebAssembly operand stack is implemented as two separate stacks: the main operand stack, and a call stack. The call stack keeps track of the active functions and blocks#footnote[In WebAssembly `loop` and `if` instructions are also placed on the call stack as so-called "blocks". These blocks are needed to ensure that branch (`br`) instructions can only jump to safe locations.] of the program and where the execution should continue once they complete. When initializing the module, we seed the call stack with a call to the main entry point of the program. The main operand stack holds a list of numeric values from which WebAssembly operations pop their arguments, and to which they push their results. This stack starts out empty.
 
 #figure(
@@ -202,7 +202,7 @@ When the interpretation loop stops due to a failure, the virtual machine will th
 
 In #link(<alg.binary>)[\[alg.binary\]] we show the most relevant parts of #emph[interpretBinaryi64];. The function is used to interpret all binary operators defined by WebAssembly on 64-bit integers. First, it gets the two arguments for the binary operation from the operand stack (#link(<alg.binary:pop>)[\[alg.binary:pop\]];). Next, the function matches the opcode with a specific operation, in our case the `i64.div_s` operation. If the arguments are valid for the operation, the division is executed (#link(<alg.binary:calculate>)[\[alg.binary:calculate\]];), the result is placed on the top of the stack (#link(<alg.binary:result>)[\[alg.binary:result\]];), and the function returns `true` indicating success (#link(<alg.binary:success>)[\[alg.binary:success\]];). When the function encounters an illegal operation such as a division by zero, it returns `false` instead (#link(<alg.binary:trap>)[\[alg.binary:trap\]];). In that case, the main loop of the virtual machine will stop interpretation of the program and throw an exception, as shown on #link(<alg.interpretation:trap>)[\[alg.interpretation:trap\]] in #link(<alg.interpretation>)[\[alg.interpretation\]];. Most of the code for interpreting the WebAssembly operations is structured analogously to the function highlighted in #link(<alg.binary>)[\[alg.binary\]];.
 
-==== Resolving Debug Messages <remote:debug>
+=== Resolving Debug Messages <remote:debug>
 Debug messages for WARDuino are received and parsed concurrently from the main interpretation loop, by device and communication channel specific code. Messages are placed on a FIFO queue. The interpretation loop will check this queue at the start of each iteration (#link(<alg.interpretation>)[\[alg.interpretation\]] #link(<alg.interpretation:debug>)[\[alg.interpretation:debug\]];). When the queue is not empty, exactly one message is processed. This means the running state of the virtual machine can change, for instance from running to paused. If the program should be paused, the virtual machine will wait until the debug messages queue is not empty (#link(<alg.interpretation>)[\[alg.interpretation\]] #link(<alg.interpretation:wait>)[\[alg.interpretation:wait\]];), before continuing at the start of the interpretation loop.
 
 #figure(
@@ -227,7 +227,7 @@ Debug messages for WARDuino are received and parsed concurrently from the main i
 ]
 )<alg.binary>
 
-==== Calling primitives <calling-primitives>
+=== Calling primitives <calling-primitives>
 WARDuino primitives are exposed to the running program as imported WebAssembly functions. In fact, all imported functions must be primitives defined in the virtual machine, since the current version allows only one user-defined WebAssembly module to be loaded at a time. The WARDuino primitives are exposed through one single "`env`" module. This is in line with the WebAssembly System Interface (WASI) specification @hickey20. As stated before, the `env` module is implemented in the VM.
 
 When an opcode specifies that a WebAssembly function must be called, some extra work is needed. First, the current instruction and stack pointers are stored in a frame and pushed to the call stack. The program pointer $m . p c$ is replaced by the first instruction of the function to be called. In the next interation of the while loop (#link(<alg.interpretation>)[\[alg.interpretation\]] #link(<alg.interpretation:while>)[\[alg.interpretation:while\]];), the virtual machine will execute the function’s instructions. When the end instruction (`0x0b`) is encountered, the function has finished. The execution must now continue from the point where the call was originally made. To jump back to this place we pop the last frame from the call stack. This frame contains the program counter where we ought to continue execution. We reset our program and stack pointer to the appropriate values and continue executing. If the function returned a value, it will reside on the top of the main operand stack.
@@ -238,7 +238,7 @@ The primitive operations (i.e. `digital_write`) are implemented in the WARDuino 
     "https://topllab.github.io/WARDuino/reference/primitives.html",
   )[documentation website];];. The WebAssembly interface of the primitives is the same for both implementations, to provide the best portability for WARDuino programs. To make these interfaces compatible with the VM the primitives conform to the standard WebAssembly calling conventions, i.e. they read their arguments from the stack and place their return value on the stack.
 
-==== Callback Handling <remote:interrupts>
+=== Callback Handling <remote:interrupts>
 The WARDuino callback handling system is used to call WebAssembly functions when specific real-world events occur. These events can range from interrupts caused by a local button press to MQTT messages arriving over Wi-Fi. Similar to debug messages, asynchronous events are received and placed into a queue concurrently to the main interpretation loop. As shown in #link(<alg.interpretation>)[\[alg.interpretation\]];, the main interpretation loop will resolve a single event—if any is present—immediately after checking for incoming debug messages.
 
 #figure(caption: [This diagram shows how callbacks are resolved in the virtual machine.
@@ -261,7 +261,7 @@ Whenever the virtual machine wants to resolve an event (#link(<alg.interpretatio
 
 There is a possible pitfall with adding callbacks to the call stack at any point during execution. In light of the microcontroller’s limited memory, it is easy for the call stack to grow too rapidly. Therefore, we prohibit that callbacks interrupt other callbacks#footnote[Note that the blocked callbacks do not get lost, they are processed after the current callback completes.];. In practice, the virtual machine keeps track of whether a callback is being executed by adding a marker on the call stack just before the callback. When the virtual machine encounters this marker again, it knows that the callback completed. So when #emph[resolveEvent] is called in #link(<alg.interpretation>)[\[alg.interpretation\]];, and the last callback has not yet completed, the callback handler will never resolve an event.
 
-==== Summary <summary>
+=== Summary <summary>
 The WARDuino virtual machine has all the ingredients to develop IoT applications for microcontrollers in high-level languages. We discuss the practicalities of using high-level languages in #link(<remote:interoperability>)[\[remote:interoperability\]];, The virtual machine includes primitives that give the WebAssembly programs access to the hardware peripherals and other IoT capabilities of the microcontrollers. The architecture of our virtual machine is extensible in many ways, as we discuss in #link(<remote:extending>)[\[remote:extending\]];. Through the framework discussed in #link(<remote:extending>)[\[remote:extending\]] many Arduino libraries can be implemented in WARDuino#footnote[A current list of already implemented libraries can be found in the #link(
     "https://topllab.github.io/WARDuino/reference/primitives.html",
   )[official documentation] of WARDuino.];.
@@ -746,17 +746,17 @@ The callback handling system is a key aspect of the virtual machine that extends
 Another such aspect is the remote debugger.
 We discuss both components as formal extension to the WebAssembly specification in the next section.
 
-=== Formal Specification of WARDuino <remote:formal>
+== Formal Specification of WARDuino <remote:formal>
 WebAssembly is strongly typed, and both its type system and execution are precisely defined by a small step semantic. Such a precise definition gives the WebAssembly community a universal way to propose changes and extensions to the standard.
 
 In this section we formalize WARDuino’s architecture, by presenting it as three extensions to the WebAssembly specification. We start with a very brief summary of WebAssembly’s formal description in section~@remote:wa. This overview is followed by the small step semantics for our remote debugging (section @remote:debugging), over-the-air updates (section~@remote:safe-dynamic-code-updates), and callback handling features (section~@remote:callback-handling). Each of these extensions can be defined entirely independently of the others, but here we present the over-the-air updates as an extension of the debugger semantics to highlight their compatibility. Primitives are part of the custom modules, and are therefore out of scope for the specification and will not be formalized here.
 
-==== WebAssembly <remote:wa>
+=== WebAssembly <remote:wa>
 WebAssembly is a memory-safe, compact and fast bytecode format designed to serve as a universal compilation target. The bytecode is defined as a stack-based virtual instruction set architecture, which is strictly typed to allow for fast static validation. However, its design features some major departures from other instruction sets, and resembles much more the structure of programming languages than other bytecode formats. Importantly, it features memory sandboxing and well-defined interfacing through modules, as well as structured control flow to prevent control flow hijacking. The original use-case of WebAssembly was to bring the high-performance of low-level languages such as C and Rust to the web.
 
 The execution of a WebAssembly program is described by the small step reduction relation $arrow.r.hook_i$ over a configuration triple representing the state of the VM, where $i$ indicates the index of the current executing module. The index $i$ is necessary since WebAssembly can load multiple modules at a time. A configuration contains one global store $s$, the local values $v^(\*)$ and the active instruction sequence $e^(\*)$ being executed. The rules are of the form $s ; v^(\*) ; e^(\*) arrow.r.hook_i s' ; v'^(\*) ; e'^(\*)$. A more detailed overview of the WebAssembly specification can be found in @webassembly.
 
-==== Remote Debugging Extensions <remote:debugging>
+=== Remote Debugging Extensions <remote:debugging>
 To formalize our debugging system, we extend the operational semantics of WebAssembly with the necessary remote debugging constructs. The goal of these extensions, is to provide constructs that are as lightweight as possible while still being powerful enough to provide the most common remote debugging facilities. We follow the recipe for defining a debugger semantics as outlined by #cite(<torres19>, form: "prose");, where the semantics of the debugger are defined in terms of the underlying language’s semantics: in this case the WebAssembly specifications. One advantage of this approach, is that it leads to a very concise description of the debugger semantics. More importantly, with this recipe you get a debugger whose semantics are observationally equivalent to those of the underlying language’s semantics. This means that the debugger does not interfere with the underlying semantics, and therefore, only observes real executions. Or more precisely, any execution in the WARDuino debugger corresponds to an execution of a WebAssembly program, and conversely that any execution of a program is observed by the debugger. The recipe also makes it straightforward to proof this non-interference of the debugger, as we will show in #link(<remote:proofsketch>)[1.3];.
 
 #figure(
@@ -856,7 +856,7 @@ Below, we show three derived commands for stepping through the WebAssembly code 
 
 The semantics allow for more elaborate debugging operations to be build on top of those presented here. However, the previous three operations represent the most widely used debug operations, and should therefore accommodate most developers debugging needs.
 
-==== Proof of Observational Equivalence <remote:proofsketch>
+=== Proof of Observational Equivalence <remote:proofsketch>
 In order to proof the observational equivalence between the debugger semantics and the base language semantics, we use the same proof method as #cite(<torres19>, form: "prose");, which proves observational equivalence by a weak bisimulation argument. With this proof, we show that if an arbitrary WebAssembly program $P$ can take a step to a program $P'$, the debugging semantics allows the debugger to reach the program $P'$ from the program $P$ by one or more debugging steps. The other way around, if the debugger allows a program $P$ to transition to a program $P'$, the normal WebAssembly evaluation will also allow the program $P$ transition to the program $P'$.
 
 In the semantics we leave out the specifics of the communication, and assume the incoming messages are added to the debugging state in the correct order. For the proof, we will reason over a stream of messages instead of a single one. Thanks to the recipe we follow for the debugger semantics, the proof follows almost directly by construction.
@@ -877,7 +877,7 @@ Now we will provide the proof sketch for the second implication, that is a serie
   Only the #smallcaps[vm-run] and the #smallcaps[db-step] rules change the WebAssembly configuration $S$ in the debugging configuration $D$. By construction, both rules rely directly on the underlying WebAssembly semantics for transitioning $S$ to $S'$.
 
 ]
-==== Safe Over-the-air Code Updates <remote:safe-dynamic-code-updates>
+=== Safe Over-the-air Code Updates <remote:safe-dynamic-code-updates>
 Our over-the-air update system allows programmers to upload new programs and to update functions and local variables. Here, we present the system as an extension of the debugger semantics, but the over-the-air updates can also be defined on their own without the debugger as we show in @remote:live-code-updates-integrated-with-debugging. Note that the observational equivalence of the debugger semantics will no longer hold with the addition of over-the-air updates, since they allow for arbitrary code changes.
 
 #link(<fig:red_update>)[\[fig:red\_update\]] gives an overview of the additional reduction rules to dynamically update a WebAssembly program. In these rules the debug messages are extended with three update messages.#footnote[As with the debug semantics, rules for setting $m s g_i$ are omitted.] In order to improve the usability of the semantics, the over-the-air updates can only be executed in the paused state. Additionally, the program will remain in the paused state to allow setting new breakpoints.
@@ -935,7 +935,7 @@ grid(
 
 Note that we only allow updates if the underlying types remain the same. While this provides safety, it can still have undesirable effects. For example when updating, in the middle of a recursive function the new base conditions might have already been exceeded. The WARDuino VM does not tackle these kinds of problems. In future work we hope to improve on this by incorporating techniques from work on dynamic software updates~@tesone18.
 
-==== Callback Handling <remote:callback-handling>
+=== Callback Handling <remote:callback-handling>
 In section~@remote:interrupts we discussed the architecture of our callback handling system. The system follows an event-driven approach, where ordinary WebAssembly functions are registered as callbacks for a specific event. Before we can formalize how callbacks are executed by the WebAssembly runtime, we must extend the abstract syntax with the necessary concepts: events, callbacks, memory slices, and callback mappings. The top part of #link(<fig:callback-typing>)[\[fig:callback-typing\]] shows how we extend the syntax, starting from the WebAssembly abstract syntax with the additional syntax for remote debugging.
 
 #figure(
@@ -1061,7 +1061,7 @@ Our formalization closely describes the callback handling system as introduced i
 
 So far we have not directly mentioned the interaction between the debugger and callback handling system. The operational semantics as presented here, allow for callback instructions to be introduced at any step. This also holds for the debugging steps. During debugging, WARDuino can jump to a callback function whenever it steps to the next instruction. This can lead to confusing behavior, and is the main reason why debugging concurrent programs is so complicated @torres19. The implementation of WARDuino features debug instructions to make debugging concurrent programs easier, as described by #cite(<lauwaerts22>, form: "prose");. These debug instructions control the callback handling system by choosing when callback functions are executed. This is a powerful tool for debugging concurrent programs, which by design allows developers to explore interleavings of callbacks that are not possible outside the debugger semantics. This means that the observational equivalence no longer holds for the debugger.
 
-==== Discussion <discussion>
+=== Discussion <discussion>
 The small step semantics of WebAssembly precisely defines how a program executes, allowing embedders, such as web browsers or WARDuino, to create different compatible implementations of the same specification. Additionally, the formalization provides a uniform way to propose extensions to the WebAssembly standard. In this section we formalized three extensions to WebAssembly: remote debugging, over-the-air updates and an asynchronous callback handling system. Other runtimes can use our formalizations to implement (some of) these extensions for their embedding of WebAssembly.
 
 Our first extension, remote debugging allows developers to remotely control a WebAssembly runtime. By sending it messages, they can set breakpoints, pause the execution, inspect values and so on. Our formalization is based on a debugging recipe @torres19 that transforms a language semantics into an observationally equivalent debugger semantics. This means that no execution path observed by the debugger semantics is not observed by the underlying language semantics, and that no execution path observed by the language semantics cannot be observed by the debugger semantics as well. Thanks to the recipe used to construct the debugger semantics, the proof for observational equivalence follows almost directly by construction as shown in our proof sketch.
@@ -1070,13 +1070,13 @@ With our over-the-air update system programmers can safely replace a running Web
 
 Our last extension shows how WARDuino can handle asynchronous events in WebAssembly. Hardware interrupts or asynchronous network communication is facilitated by our novel callback handling system. This system allows developers to transparently interrupt an executing WebAssembly program to execute a callback that deals with an incoming event. While the semantics presented here are certainly novel, there are several other proposals for supporting asynchronous code in WebAssembly. We discuss these works in #link(<remote:async-related>)[\[remote:async-related\]];.
 
-=== Tool Support for WARDuino <remote:tools>
+== Tool Support for WARDuino <remote:tools>
 WARDuino aims to make it easier for programmers to debug applications running on embedded devices. There are several approaches and tools that WARDuino offers in this regard. The virtual machine includes its own remote debugger, while the use of WebAssembly makes it much easier to build emulators. In this section we give a detailed overview of the different tools available for debugging WARDuino applications.
 
-==== Debugging WARDuino Programs Remotely <remote:dbqQ>
+=== Debugging WARDuino Programs Remotely <remote:dbqQ>
 Microcontrollers are often not equipped with a screen and keyboard, therefore, we allow programmers to debug their programs remotely. We offer a command line tool and a Visual Studio Code plugin. First, we give an overview of our debugging protocol and the debugger architecture, before we show the VS Code plugin build on top of this debugger.
 
-===== Debugging Protocol <debugging-protocol>
+==== Debugging Protocol <debugging-protocol>
 The WARDuino VM facilitates remote debugging by allowing debug messages to be sent over a variety of carriers. We have experimented both with wired (USB) and wireless (Wi-Fi) communication means. In theory any communication channel can be used.
 
 Our protocol consists of a set of instructions sent as messages to the virtual machine. The first byte of each message indicates its type. Depending on the type, the first byte is followed by a byte sequence consisting of the arguments of the messages. When a debug message is received by the microcontroller, it is caught by an interrupt handler. This handler reads the available data and passes it on to the virtual machine. The VM in turn waits for a full debugging package to arrive. Once a package is complete, it is placed in the debugging queue for final processing. The debugging queue is polled before each executed instruction. If a message is present in the queue, the appropriate action is taken.
@@ -1099,7 +1099,7 @@ There are four broad categories of debug messages supported by WARDuino.
     The remote debug messages for over-the-air updates, $u p d a t e_f$ and $u p d a t e_l$, both contain the ID of the function or local to update, and its new value. The virtual machine should be in the #smallcaps[pause] state to process such as change. Updating a local simply updates the appropriate value on the stack. Updating a function on the other hand is slightly more elaborate. First, the bytecode of the function is parsed and the appropriate structures are built. If the new function has an identical type, the pointer in WARDuino’s function table is replaced with a reference to the new code. Any running call of the existing function will continue to work with the old code. New calls will use the updated code.
   ]
 
-===== Visual Studio Code Debugger <visual-studio-code-debugger>
+==== Visual Studio Code Debugger <visual-studio-code-debugger>
 The remote debugging system we presented so far, allows developers to debug WebAssembly code on microcontrollers remotely via a terminal. Debugging via a terminal with memorized commands is something few developers are used to. Instead, most developers use debuggers with a user-friendly interface such as the GUI debugger in an IDE. We created a plugin for the widely used IDE Visual Studio Code (VSCode) that allows developers to remotely debug WARDuino instances.
 
 #figure(caption: [Screenshot of the VS Code debugger extension for WARDuino with a WebAssembly program (blinking LED).],
@@ -1108,7 +1108,7 @@ The remote debugging system we presented so far, allows developers to debug WebA
 ]
 At its core, a debugging plugin for an IDE sends the debug messages described above on behalf of the developer. This removes the need for them to know our specific debugging API. Having a plugin send the same messages as a developer would in the terminal, is enough to support WebAssembly level debugging in an IDE. Figure~@fig:screenshot shows a screenshot of the VS Code plugin debugging a remotely running WebAssembly blink program that is currently paused on the highlighted line (line 28). The plugin also support provisional source mapping for AssemblyScript, which means most features of the plugin can be used to debug AssemblyScript code directly. The buttons at the top of the screen allow the execution to be resumed and steps to be taken. In the sidebar on the left we can inspect local variables and edit them. These edits are then immediately propagated to the device with a $u p d a t e_l$ message. At the bottom of the sidebar, we can inspect the call stack.
 
-==== Building Emulators <remote:emulators>
+=== Building Emulators <remote:emulators>
 A common practice in IoT development is to use emulators to verify, as well as possible, the correctness of the code before running it on the custom hardware @makhshari21. Emulation is designed to minimize the need for debugging on microcontrollers. Unfortunately, this approach is far from ideal as non-trivial differences between the emulator and the real device will exist. Emulated sensors may for example not produce real-world values. Instead, they might report a fixed value that does not change over time. Furthermore, real changes in sensor values may appear differently to real devices due to physical effects such as contact bounce (chatter). These differences can cause an application that works in an emulator not to work on a real device. That is why the WARDuino project focuses on delivering an alternative approach, where testing can be performed on the custom hardware itself. We argue, that this approach can catch more errors than emulation, and leads to a shorter development cycle.
 
 However, emulated verification can still be useful. This is certainly the case when developers work with highly specific hardware, which may not always be at hand. WARDuino also helps when using the emulation approach, providing an easy workflow for implementing emulators for custom hardware.
@@ -1121,12 +1121,12 @@ Developers using WARDuino compile their programs to WebAssembly, which means the
 
 We implemented a snake game for a custom game controller#footnote[Our ESP32-powered game controller is based on Johan Von Konow’s SokoDay design: #link("https://vonkonow.com/wordpress/sokoday/");] that uses an 8x8 LED matrix. To support this LED matrix peripheral, we extended the WARDuino virtual machine with the Arduino Adafruit NeoPixel library#footnote[#link("https://www.arduino.cc/reference/en/libraries/adafruit-neopixel/");] using the process described in section~@remote:sub:extending. We wrote a snake game in AssemblyScript. To implement the emulator we write small JavaScript functions for each primitive we use in the code. The entire JavaScript code for the emulator consists of only 150 lines. It allows us to run the snake game in the browser. Additionally, we can use the browser’s debugger to step through the AssemblyScript code, as shown in figure~@fig:screenshot-browser.
 
-==== Debugging High-Level Languages <debugging-high-level-languages>
+=== Debugging High-Level Languages <debugging-high-level-languages>
 Debugging at the low level of WebAssembly is not workable for any real-world application. Our goal is to debug the high-level source code. So-called "source maps" make this possible. Source maps align the line numbers of the original code to the WebAssembly instructions they compile to. They typically come as a separate file containing only the mapping. By cross-referencing WARDuino’s instruction pointer with the source maps, we can derive the line we are executing in our program written in a high-level language.
 
 #link(<fig:screenshot-browser>)[\[fig:screenshot-browser\]] shows source mapping in action, the emulator is executing WebAssembly, but the code view on the right shows AssemblyScript code. The WebAssembly instruction pointer is translated into a line number in the AssemblyScript code by using source maps. AssemblyScript is not the only language with source mapping. Most high-level languages with good support for WebAssembly, can generate a source map during compilation. In fact, any language using the LLVM compiler infrastructure, can generate all the necessary information in DWARF format from which a source map can be derived.
 
-=== Evaluation<remote:evaluation>
+== Evaluation<remote:evaluation>
 
 In this section we evaluate the WARDuino VM in terms of its runtime performance, and conformance to the WebAssembly standard.
 @remote:stability illustrates the usability of WARDuino in the real world, by presenting a qualitative evaluation of a smart light application written in AssemblyScript (section~@remote:stability).
@@ -1138,13 +1138,9 @@ We end the section by looking at WARDuino's conformity to the WebAssembly standa
 
 === Practical Application<remote:stability>
 
-#figure(caption: [A smart light AssemblyScript program for WARDuino.], supplement: [Listing], kind: "code")[
-#grid(
+#snippet("lst.smartlamp", [A smart light AssemblyScript program for WARDuino.],
     columns: (2fr, 2fr),
-    gutter: 1mm,
-// Left side
-    [#figure[
-#code[
+(
 ```ts
 import * from "as-warduino";
 
@@ -1155,22 +1151,20 @@ const CLIENT_ID = "random-mqtt-client-id";
 
 function until(attempt: () => void,
                done: () => boolean): void {
-    while (!done()) {
-        delay(1000);
-        attempt();
-    }
-}
+  while (!done()) {
+    delay(1000); attempt();
+}}
 
 function callback(topic: string,
                   payload: string): void {
-    print("Message [" + topic + "] " + payload);
+  print("Message [" + topic + "] " + payload);
 
-    // Inspect the payload of the MQTT message
-    if (payload.includes("on")) {
-        digitalWrite(LED, PinVoltage.HIGH);  // On
-    } else {
-        digitalWrite(LED, PinVoltage.LOW);   // Off
-    }
+  // Inspect the payload of the MQTT message
+  if (payload.includes("on")) {
+    digitalWrite(LED, PinVoltage.HIGH);  // On
+  } else {
+    digitalWrite(LED, PinVoltage.LOW);   // Off
+  }
 }
 
 function toggleLED(_t: string, _p: string): void {
@@ -1178,52 +1172,52 @@ function toggleLED(_t: string, _p: string): void {
     // Toggle LED via MQTT
     MQTT.publish("LED", status ? "off" : "on");
 }
-```]]<lst.smartlamp.l>],
+```,
 
-// Right side
-    [#figure(supplement: none)[
-#code(offset: 32)[
 ```ts
 export function main(): void {
-    pinMode(LED, PinMode.OUTPUT);
-    pinMode(BUTTON, PinMode.INPUT);
+  pinMode(LED, PinMode.OUTPUT);
+  pinMode(BUTTON, PinMode.INPUT);
 
-    // Connect to Wi-Fi
-    until(() => { WiFi.connect(SSID, PASSWORD); }, WiFi.connected);
-    let message = "Connected to wifi with ip: ";
-    print(message.concat(WiFi.localip()));
+  // Connect to Wi-Fi
+  until(() => { WiFi.connect(SSID, PASSWORD); },
+    WiFi.connected);
+  let message = "Connected to wifi with ip: ";
+  print(message.concat(WiFi.localip()));
 
-    // Connect to MQTT broker
-    MQTT.init("192.168.0.42", 1883);
-    until(() => { MQTT.connect(CLIENT_ID); }, MQTT.connected);
+  // Connect to MQTT broker
+  MQTT.init("192.168.0.42", 1883);
+  until(() => { MQTT.connect(CLIENT_ID); },
+    MQTT.connected);
 
-    // Subscribe to MQTT topic and turn on LED
-    MQTT.subscribe("LED", callback);
-    MQTT.publish("LED", "on");
+  // Subscribe to MQTT topic and turn on LED
+  MQTT.subscribe("LED", callback);
+  MQTT.publish("LED", "on");
 
-    // Subscribe to button interrupt
-    interruptOn(BUTTON, InterruptMode.RISING, toggleLED);
+  // Subscribe to button interrupt
+  interruptOn(BUTTON, InterruptMode.RISING,
+    toggleLED);
 
-    while (true) {
-        until(() => { MQTT.connect(CLIENT_ID); }, MQTT.connected);
-        MQTT.poll();
-        delay(500); // Sleep for 0.5 seconds
-    }
+  while (true) {
+    until(() => { MQTT.connect(CLIENT_ID); },
+      MQTT.connected);
+    MQTT.poll();
+    delay(500); // Sleep for 0.5 seconds
+  }
 }
-```]]<lst.smartlamp.r>]
-)
-]<lst.smartlamp>
+```
+))
 
 // Describe the use-case used to evaluate/showcase warduino
 #[
-#let main = [@lst.smartlamp.l:1]
-#let callback = [@lst.smartlamp.r:18]
-#let callbackEnd = [@lst.smartlamp.r:23]
-#let toggle = [@lst.smartlamp.r:28]
-#let toggleEnd = [@lst.smartlamp.r:32]
-#let wifiStart = [@lst.smartlamp.r:37]
-#let wifiEnd = [@lst.smartlamp.r:40]
-#let mqtt = [@lst.smartlamp.r:48]
+#let main = [@lst.smartlamp.1:31]
+#let callback = [@lst.smartlamp.0:14]
+#let callbackEnd = [@lst.smartlamp.0:24]
+#let toggle = [@lst.smartlamp.0:26]
+#let toggleEnd = [@lst.smartlamp.0:30]
+#let wifiStart = [@lst.smartlamp.1:36]
+#let wifiEnd = [@lst.smartlamp.1:39]
+#let subscribe = [@lst.smartlamp.1:47]
 
 Smart light applications are one of the most widely known and practically applied IoT applications.
 We investigate how well WARDuino performs for programming microcontrollers in practice by implementing a simple smart light application in AssemblyScript.
@@ -1237,20 +1231,20 @@ On the left side, we import the WARDuino primitives, and we define some constant
 On the right side, we have the main entry point of the program, starting at line #main.
 The main function first sets the correct modes of the $mono("LED")$ and $mono("BUTTON")$ pins.
 Next, it connects to the Wi-Fi network and prints the local IP address of the device on success (lines #{wifiStart}-#wifiEnd).
-When the microcontroller is connected to the network, it connects to the MQTT broker (lines #{wifiEnd}-#mqtt).
+When the microcontroller is connected to the network, it connects to the MQTT broker (lines #{wifiEnd}-#subscribe).
 In section @remote:developing, we already discussed the code required to set up these connections.
 
 
-With an established connection, the microcontroller subscribes to the "LED" MQTT topic on line #mqtt.
+With an established connection, the microcontroller subscribes to the "LED" MQTT topic on line #subscribe.
 The supplied callback is defined on lines #callback to #callbackEnd.
 It takes two arguments, the topic and the payload of the incoming message.
 First, it prints the message to the serial port using $mono("print")$.
-Then, we inspect the payload, if it is the string ``on'', we turn the LED on by using $mono("digitalWrite")$, otherwise we turn the LED off.
+Then, we inspect the payload, if it is the string "on", we turn the LED on by using $mono("digitalWrite")$, otherwise we turn the LED off.
 
-After subscribing, the $mono("main")$ function sends an ``on'' message to the ``LED'' topic using the $mono("MQTT.publish")$ primitive.
+After subscribing, the $mono("main")$ function sends an "on" message to the "LED" topic using the $mono("MQTT.publish")$ primitive.
 When the device receives its own message, the $mono("callback")$ function will make the LED shine.
 
-On @lst.smartlamp.r:44 we attach a callback to rising voltage changes of the button pin.
+On line #subscribe we attach a callback to rising voltage changes of the button pin.
 We use the $mono("interruptOn")$ primitive to do this.
 It takes three arguments: the pin to monitor, the kind of change to trigger for, and a callback to invoke when a change occurs.
 Here we monitor the pin of the button for a rising edge ($mono("InterruptMode.RISING")$).
@@ -1268,13 +1262,12 @@ Note that the two callbacks used in this example, $mono("callback")$ and $mono("
 However, in @remote:callback-handling we saw that our callback system requires that all stored callbacks have the type $sans("i32" "i32" "i32" "i32")arrow.r epsilon$.
 This is indeed the case at the WebAssembly level.
 The primitive behind $mono("interruptOn")$ requires a callback of that type.
-Our language interoperability layer abstracts this away and exposes an  $mono("interruptOn")$ that expects a $mono("void->void")$ AssemblyScript callback.
+Our language interoperability layer abstracts this away and exposes an  $mono("interruptOn")$ that expects a $mono("void") arrow.r mono("void")$ AssemblyScript callback.
 
 To test the stability of WARDuino, we run the code in figure~@fig:smartlamp on an ESP32-DevKitC V4 board with WARDuino.
 We also create a small web application to control the LED from our phone via MQTT.
 When testing our setup, we encountered no noticeable delay between pressing the physical button, and the LED changing status.
 Furthermore, the delay between pressing the button on the web page, and the LED updating was reasonable and mostly influenced by the Wi-Fi connection.
-]
 
 === Performance on Microcontrollers<remote:performance-on-microcontrollers>
 
@@ -1283,7 +1276,7 @@ Furthermore, the delay between pressing the button on the web page, and the LED 
 There are three ways in which developers can run programs on microcontrollers. Dynamically typed languages such as JavaScript are run in dynamic runtimes, while statically typed languages can be executed with a byte-code interpreter, as is the case for WebAssembly, or can be compiled to executable byte-code, typically done with C or C++.
 In this section we compare the general computational performance of the WARDuino virtual machine with each approach.
 For the dynamic language we used the popular Espruino \cite{williams14} runtime for JavaScript.
-For the static runtime we compared WARDuino with another WebAssembly byte-code interpreter that is small enough to run on microcontrollers, namely WASM3 \cite{massey21}.
+For the static runtime we compared WARDuino with another WebAssembly byte-code interpreter that is small enough to run on microcontrollers, namely WASM3 @massey21.
 Since it is still the most widely used language for microcontrollers, we used C as the compiled language.
 We use each approach to run the same microbenchmarks on a microcontroller.
 Since we are interested in comparing the general computational performance and memory occupancy of our approach, our benchmarks consist of standard computational tasks; such as calculating the greatest common divider, factorial, binomials, Fibonacci sequence, or verifying if a number is prime.
@@ -1317,10 +1310,10 @@ For example, as a Raspberry Pi has a full-fledged operating system, it is trivia
 
 
 
-=== Related Work <remote:related-work>
+== Related Work <remote:related-work>
 WARDuino presents a WebAssembly virtual machine for microcontrollers and a collection of extensions to the WebAssembly standard. In this section we discuss the related work for each aspect in turn. We focus first on programming microcontrollers with non-WebAssembly solutions. Then we discuss other WebAssembly embeddings for microcontrollers. After this, we finish our related work by summarizing the alternative methods for handling interrupts in WebAssembly.
 
-==== Programming Embedded Devices <programming-embedded-devices>
+=== Programming Embedded Devices <programming-embedded-devices>
 The world of programming languages for microcontrollers is heavily dominated by the C language @kernighan89, but an increasing range of programming languages have been ported to various hardware platforms, such as: Forth @rather76, BASIC @kemeny68, Java @gosling96, Python @rossum95, Lua @ierusalimschy96 and Scheme @yvon21. Here we restrict ourselves to compare popular implementation approaches for IoT functionality on ESP-based microcontrollers, the platform on which WARDuino was primarily tested.
 
 The predominant programming language for programming the ESP processor is C @kernighan89@espressif-systems23. The advantage of using C is that the programs execute fast. The downside is that it places the burden of managing memory onto the developer. Another downside of the C language is that once a bug is potentially solved, the programmer needs to re-compile, flash the hardware and restart the device completely. Flashing the chip can take a long time, making the development of microcontroller software a rather slow process.
@@ -1335,21 +1328,21 @@ MicroPython @george21 is a highly optimized subset of the Python programming lan
 
 There are multiple projects for using Ruby on embedded devices, the most widely used and actively maintained is mruby @yukihiro23. The mruby project partially implements the ISO standard for the Ruby language. Unfortunately, mruby does not support a remote debugger for embedded devices and developers are forced to rely on print-statement debugging. The project does include its own package manager, which gives developers access to a variety of libraries for accessing hardware and using IoT protocols @yukihiro23@mcdonald23@koji23. However, most libraries are open-source projects, and given the small community, many libraries are no longer being actively maintained.
 
-==== Over-the-air Programming <remote:over-the-air-related>
+=== Over-the-air Programming <remote:over-the-air-related>
 The high-level languages described so far have varying support for over-the-air updates, mostly in the form of remote REPLs. However, the idea of updating low-end embedded devices over-the-air is not new, and the idea has received considerable attention in the context of sensor networks. For instance, already in 2002 #cite(<levis02>, form: "prose") created a byte-code interpreter for tiny microcontrollers called Maté. Maté was designed to reprogram sensor networks through self-replicating packages of just 24 instructions. More recently, #cite(<baccelli18>, form: "prose") looked at reprogramming low-end devices with a low-code approach, where Business Process Modelling Notation (BPMN) @rospocher14 is translated into JavaScript code by a central server and sent to the devices of the sensor network over the air. Similar to a lot of systems for over-the-air updates, in this work the software running on the low-end device is updated in its entirety. The functional approach was also explored by #cite(<lubbers21>, form: "prose") in the Clean language @brus87, specifically, task oriented programming was adopted for tiny low-end microcontrollers. Task oriented programming is a programming paradigm for distributed systems, where tasks represent units of computations, which—like monads—can be constructed with combinators, and which share data via their observable values @plasmeijer12. Individual tasks can be compiled to bytecode and sent to devices to be executed, enabling partial updates of the code. While these three approaches are very different, each focuses on low-end microcontrollers similar to WARDuino. By contrast #cite(<de-troyer18>, form: "prose");, developed a reactive programming approach for the more powerful Raspberry Pi computers. Raspberry Pi’s are far bigger than the low-end devices targeted by WARDuino, and have subsequently much more resources, but they are still used considerably for the Internet of Things @maksimovic14. The reactive language allows the entire life-cycle of a device to be programmed, including the deployment of software and over-the-air updates. Again, the over-the-air updates are limited to the entire program.
 
 In contrast to these works, the main motivation behind WARDuino is to simplify development of IoT applications in a way that is widely applicable. In this spirit, the idea of over-the-air updates is adopted by WARDuino as an extension to the classic debugging operations. This provides developers with powerful operations during debugging; partial code updates, and changing variable values. Additionally, we believe the small-step semantics of the over-the-air updates present a novel contribution, which in future work can form the basis for proving the correctness of updates by showing that programs remain well-typed.
 
 While we are not aware of any other attempts to describe over-the-air updates of binary code through a small-step semantic, there is some theoretical work on live updates. For instance, in 1996, #cite(<gupta96>, form: "prose") showed that the validity of live updates is generally undecidable. However, most work has been focused on distributed systems specifically, and the issues that arise due to the distribution of nodes. identified the important problem of; when is a system in the appropriate state for a live update? The proposed solution was later improved by #cite(<vandewoude07>, form: "prose");. In WARDuino this problem is largely circumvented because the updates are integrated in the debugger.
 
-==== WebAssembly on Embedded Devices <webassembly-on-embedded-devices>
+=== WebAssembly on Embedded Devices <webassembly-on-embedded-devices>
 Since the start of the WARDuino project, many others have started looking into running WebAssembly on embedded devices. These projects range widely in scope and focus. Here, we give an overview of some projects bringing WebAssembly to IoT and Edge Computing.
 
 The WebAssembly Micro Runtime @huang21 and WASM3 @massey21 are WebAssembly runtimes with a small memory footprint like WARDuino. The WebAssembly Micro Runtime specifically aims to have a tiny memory footprint such that it can be used in constraint environments, such as small embedded devices. The runtime largely supports the WASI standard @hickey20, including the `pthreads` API that allows developers to use multithreading. However, it does not support the WASI `sockets` API providing internet connection. WASM3 can run on microcontroller platforms, such as the ESP32. In the first place, the microcontroller support is a research project to test and showcase their novel interpreter that uses heavy tail-call optimizations rather than JIT compilation to improve performance @massey22. Not using JIT compilation is the main reason the WASM3 interpreter has such a small footprint and can run on microcontrollers. WASM3 supports most of the new WebAssembly proposals and can run many WASI apps, but it does not fully support the `pthreads` or `sockets` API. WARDuino brings a more general mechanism to WebAssembly that allows both synchronous and asynchronous network communication without the need for a full-fledged operating system. Unlike the WebAssembly Micro Runtime, WASM3 has explored remote debugging. Specifically, the project examined the remote debugging protocol of GDB to try and debug source-level WebAssembly @shymanskyy23. This effort was not targeted at microcontrollers, but could work on embedded devices with a JTAG hardware debugger. By contrast, WARDuino can remotely debug microcontrollers without the need for a dedicated hardware debugger. Additionally, WARDuino supports over-the-air updates, something neither the WebAssembly Micro Runtime nor WASM3 allow.
 
 Wasmer @wasmer--inc-22 is another WebAssembly runtime that reports to be fast and small enough to run on Cloud, Edge and IoT devices. The runtime supports WASI programs, but it does not support threading and is waiting for the official Threads Proposal for WebAssembly to reach the implementation phase, which it has not at the time of writing. However, it does support Emscripten’s pthread API. Unfortunately, the project does not provide a list of supported microcontroller platforms and does not seem to target devices with limited memory. Neither does the project provide clear instructions on how to execute the Wasmer runtime on embedded devices. While the project developed their own WebAssembly package manager (wapm), there are currently no packages for IoT protocols such as MQTT, or for interacting with hardware peripherals. Wasmer is currently working on its debugging support, which is limited at the time of writing. Moreover, the project does not seem to target remote debugging of embedded devices at this stage.
 
-==== Interrupt Handling in WebAssembly <remote:async-related>
+=== Interrupt Handling in WebAssembly <remote:async-related>
 There are different efforts in the WebAssembly community to add support for handling asynchronous to the standard. As WebAssembly is still primarily used on the web, most of the new proposals to the standard are made because of certain needs arising from the web. The WASI `pthreads` API, The threads and stack switching proposals @webassembly-community-group22a are no exception.
 
 The threads and stack switching proposals allow WebAssembly to run asynchronous code, this could then be used to add interrupts to WebAssembly. These proposals themselves do not provide a dedicated system for interrupts. Developers would have to implement a complete callback handling system in WebAssembly themselves. Without a dedicated system for interrupts, everything would have to be implemented directly into WebAssembly, which is not a trivial task. Additionally, both proposals allow the space taken by the stack(s) to grow fast, an unwanted side effect on memory constrained devices. WARDuino only executes one callback at a time keeping the stack size as low as possible.
@@ -1364,7 +1357,7 @@ The WebAssembly System Interface (WASI) @hickey20 is a collection of standardize
     "https://github.com/WebAssembly/WASI/issues/283",
   )["Poll + Callbacks" (Issue 283)];. These discussions can be found on #link("https://github.com/WebAssembly/WASI/issues");.];. However, not much work has been done around these discussions, and it seems WASI is waiting on the official proposals before they create their own API.
 
-=== Conclusion <remote:conclusion>
+== Conclusion <remote:conclusion>
 This paper presents the design and implementation of WARDuino that addresses key challenges associated with developing IoT applications: #emph[low-level coding];, #emph[portability];, #emph[slow development cycle];, #emph[debuggability];, #emph[hardware limitations];, and #emph[bare-metal execution environment];. The WARDuino virtual machine enables programmers to develop IoT applications for microcontrollers in high-level languages—compiled to WebAssembly—rather than low-level languages such as C. Higher-level languages can help developers by providing automatic memory management and by giving extra guarantees via type systems. Additionally, using a universal compile-target such as WebAssembly, WARDuino can greatly improve the #emph[portability] of microcontroller programs. The virtual machine supports the WebAssembly core specification and several important extensions to support common aspects of IoT applications.
 
 Access to device peripherals and common M2M protocols is provided by WebAssembly primitives embedded in the virtual machine. These primitives include functions for synchronous (HTTP) and asynchronous (MQTT) communication protocols. To support asynchronous code, WARDuino allows developers to assign callback functions as handlers for asynchronous events, such as incoming MQTT messages or button presses. Whenever a subscribed event occurs, WARDuino will transparently execute the callbacks in isolation of the running program as shown by the small step reduction rules for the callback handling system.
