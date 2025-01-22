@@ -38,7 +38,9 @@
       el.numbering,
       ..counter(figure).at(el.location())
     ))
-  } else if el != none and el.has("kind") and el.kind != raw {
+  } else if el != none and el.has("kind") and el.kind == raw {
+    none
+  } else {
     it
   }
 }
@@ -415,7 +417,7 @@ With the fast rise of artificial intelligence solutions in industry and daily li
 
 = A remote debugger for WebAssembly  // An embedded WebAssembly virtual machine
 
-#quote("Ben Horowitz")[There is no silver bullet that’s going to fix that. No, we are going to have to use a lot of lead bullets.]
+#quote("after, George Orwell")[Those who abjure debugging can only do so by others debugging on their behalf.]
 // no single language is perfect, we want to enable any language on microcontrollers
 
 #comment("Note")[WARDuino paper chapter]
@@ -500,8 +502,16 @@ When a program's execution path is determined by the input from the external env
 #pagebreak()
 #metadata(none) <appendix>
 
-#bibliography("references.bib")<bibliography>
+#bibliography("references.bib", style: "springer-basic")<bibliography>
+
+#counter(heading).update(0)
+#set heading(numbering: "A.1")
+
 #include "appendices/webassembly.typ"
 
 #include "appendices/primitives.typ"
+
+#include "appendices/updates.typ"
+
+#include "appendices/benchmarks.typ"
 

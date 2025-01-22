@@ -1,5 +1,15 @@
 #import "@preview/codly:1.2.0": codly
 
+//#let circled(body) = {
+//circle(radius: 0.5em, stroke: 0.2mm)[
+//        #set align(center + horizon)
+//        #set text(size: 8pt)
+//        #body]
+//}
+#let circled(body) = {
+    strong(body)
+}
+
 #let code(offset: 0, body) = {
     set text(size: 8pt)
     codly(zebra-fill: none, offset: offset, display-name: false, radius: 0pt, fill: none, stroke: none, number-align: right + top, reference-sep: "", breakable: true)
@@ -30,6 +40,17 @@
                 inset: (x: 0pt, y: 2mm),
                 grid.hline(stroke: 0.5pt),
                 ..snippets,
-                grid.hline(stroke: 0.5pt))]#label(tag)
+                grid.hline(stroke: 0.5pt))
+        ]#label(tag)
+    ]
+}
+
+#let algorithm(caption) = {
+    [
+        #figure(
+            kind: "algorithm",
+            supplement: [Algorithm],
+            pseudocode-list(numbered-title: [Main loop for interpretation in the WARDuino virtual machine.])[#body])
+        
     ]
 }

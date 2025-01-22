@@ -1,9 +1,9 @@
-== Built-in Modules<primitives>
+= Built-in Modules<primitives>
 
 This appendix gives an overview of the WARDuino VM's built-in modules, which provide primitives for controlling peripheral hardware and other essential aspects of IoT applications.
 The examples are written in WebAssembly's textual format.
 
-=== Input-Output Pins
+== Input-Output Pins
 
 A first module exposes the hardware pins of the microcontroller.
 In a microcontroller each pin is connected through a so-called port.
@@ -114,7 +114,7 @@ For brevity, we will leave out the type declarations in future examples and indi
 Additionally, we will also omit the export of the main function, instead we assign the entry point the identifier $mono("$main")$.
 ]
 
-=== Pulse Width Modulation and Analog Reads
+== Pulse Width Modulation and Analog Reads
 
 A pulse width modulator (PWM) allows programmers to send out a square wave to one of the output pins without having to write a busy loop.
 Example waves are shown in figure @fig.pwm with duty cycles of 90\%, 50\% and 20\%.
@@ -212,7 +212,7 @@ After the first loop when $mono("\$i")$ equals 255, a second inner loop decremen
 Once $mono("\$i")$ hits zero, we have reached the end of the cycle and the unconditional branch instruction $mono("(br \$infinite)")$, at #end, jumps back to the start of the main loop.
 ]
 
-=== Serial Peripheral Interface<sec:serial-peripheral-interface>
+== Serial Peripheral Interface<sec:serial-peripheral-interface>
 
 The serial peripheral interface (SPI) is a bus protocol commonly used to communicate between a microcontroller and peripheral devices such as sensors, SD-cards, displays, and shift registers.
 The SPI communication protocol can be implemented in hardware or in software.
@@ -246,7 +246,7 @@ We have used the SPI module to implement a display driver in WARDuino.
 We leave out the specifics of that implementation here, not only for brevity, but because the code is originally written in C, rather than directly in WebAssembly like our other examples.
 We refer any interested reader to the first paper on WARDuino \cite{gurdeep-singh19}.
 
-=== Serial Port Communication<sec:serial-port-communication>
+== Serial Port Communication<sec:serial-port-communication>
 
 #figure(
   caption: [API and example code of the Serial module in WARDuino.],
@@ -291,7 +291,7 @@ This section is similar to the data sections found in native executable files.
 The string is written at offset 0 in linear memory at initialization time.
 Not much more is needed to print the text in memory to the serial port, the main function simply places the indices and length of the string on the stack and calls the print primitive.
 
-=== Wireless Networks<sec:wireless-networks>
+== Wireless Networks<sec:wireless-networks>
 
 Applications for embedded devices often communicate with other devices.
 To accommodate this, many microcontrollers come with a Wi-Fi chip to connect to a wireless network.
@@ -379,7 +379,7 @@ Now, the stack holds the right arguments for the $mono("print")$ primitive once 
 If the print primitive gets a zero length argument it will simply not print anything, so we do not need to check in WebAssembly whether an IP address was actually retrieved.
 ]
 
-=== Hypertext Transfer Protocol<subsec:http>
+== Hypertext Transfer Protocol<subsec:http>
 
 The Hypertext Transfer Protocol (HTTP) \cite{fielding14} drives the modern web.
 Developers can use HTTP to access the entire web from a WebAssembly program running on a microcontroller with WARDuino.
@@ -436,7 +436,7 @@ This is the same trick we used in the previous example using the $mono("print")$
 By pushing this value now, and the $mono("get")$ primitive pushing the length of the result, we can call the $mono("print")$ primitive immediately without having to reorder the stack first.
 After the ASCII text has been printed to the serial port, the microcontroller waits for 1 second before starting the entire procedure again.
 
-=== MQTT Protocol<subsec:mqtt>
+== MQTT Protocol<app:mqtt>
 
 HTTP was designed for the web and is not optimized for an embedded context \cite{naik17}.
 More suitable protocols have been developed for IoT applications, such as the widely used MQTT \cite{banks14} protocol.

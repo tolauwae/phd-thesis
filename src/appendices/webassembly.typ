@@ -1,7 +1,7 @@
 = WebAssembly Specification Summary <webassembly>
 In this appendix, we will discuss the elements of WebAssembly needed to understand the formalization of our extensions. A full and detailed account of all WebAssembly’s formal semantics can be found in the excellent paper of #cite(<haas17>, form: "prose");.
 
-#block[
+#figure[
   \$\$\\begin{array}{rrcl}
   \\emph{(value types)} & t & \\Coloneqq & \\textsf{i32} \\; | \\; \\textsf{i64} \\; | \\; \\textsf{f32} \\; | \\; \\textsf{f64} \\\\
   \\emph{(packed types)} & tp & \\Coloneqq & \\textsf{i8} \\; | \\; \\textsf{i16} \\; | \\; \\textsf{i32} \\\\
@@ -24,7 +24,8 @@ In this appendix, we will discuss the elements of WebAssembly needed to understa
   \\emph{(modules)} & m & \\Coloneqq & \\key{module} \\; \\textit{tf}^\* \\; f^\* \\; glob^\* \\; tab^? \\; mem^?
   \\end{array}\$\$
 
-]
+]<fig:syntax>
+
 == Modules and Imports <modules-and-imports>
 A WebAssembly binary is organized as a #emph[module];, which can only interact with its environment through typed imports and exports. WebAssembly embraces this strict encapsulation to better protect against possible security vulnerabilities associated with running WebAssembly bytecode in the browser. To further strengthen the security of WebAssembly, the language is defined with a strict type system that allows for fast static validation. As the last line of figure~@fig:syntax shows, a WebAssembly module contains #emph[function types];, #emph[functions];, #emph[globals];, #emph[tables] and at most one #emph[memory];. All of these definitions, except #emph[function types];, can be imported from other modules as well as exported under one or more names.
 
@@ -43,38 +44,17 @@ Modules contain a list of functions (\$\\key{func} \\; \\textit{tf} \\; \\key{lo
 == Function Calls and Tables <function-calls-and-tables>
 Aside from arbitrary control flow, WebAssembly also lacks function pointers. It does provide an alternative with the instruction. This instruction can use a table to call functions based on an index operand calculated at runtime, similar to the instruction. Figure~@fig:indirect illustrates how this works. The instruction takes the value at the top of the stack and uses that to index a table of function references. Each table index corresponds to a function index, which in its turn points to a function. Tables can hold functions of different types, so the instruction takes a statically encoded argument specifying the type of the function it calls. At runtime, this encoded type is checked against the type of the function the index points to. If these do not correspond, the call is aborted, and a trap is thrown.
 
-#block[
-]
+#figure[
+]<fig:indirect>
+
 == WebAssembly Linear Memory <webassembly-linear-memory>
 The memory in WebAssembly is referred to as linear memory because it is a large array of bytes. Conceptually, the memory is divided into pages of 64 KiB. The size of memory is specified in terms of these pages, and linear memory can grow any number of pages at a time as long as the runtime can allocate the required space. Allocating additional pages can be done with the instruction. While the specification leaves the possibility of multiple memories open, WebAssembly still explicitly supports only one memory. However, a proposal for multiple memories is already in the implementation phase and so can be expected to be added to the standard in due course.
 
 == Execution <execution>
 The execution of a WebAssembly program is described by a small-step reduction relation $arrow.r.hook_i$ over a configuration triple representing the state of the VM. A configuration contains one global store $s$, the local values $v^(\*)$ and the active instruction sequence $e^(\*)$ being executed. The rules are of the form $s ; v^(\*) ; e^(\*) arrow.r.hook_i s' ; v'^(\*) ; e'^(\*)$. In figure~@fig:WebAssemblyMR, we present the most relevant small-step reduction rules for WARDuino.
 
-#block[
-  \$\$\\begin{array}{llcl}
-  (store) & s & \\Coloneqq & \\{\\textsf{inst}\\ inst^\*,\\,\\textsf{tab}\\,tabinst^\*,\\,\\textsf{mem}\\,meminst^\*\\} \\\\
-  (instances) & inst & \\Coloneqq & \\{\\textsf{func}\\ cl^\*,\\ \\textsf{glob}\\ v^\*,\\ \\textsf{tab}\\ i^?,\\ mem\\ i^?\\} \\\\
-  & tabinst & \\Coloneqq & cl^\* \\\\
-  & meminst & \\Coloneqq & b^\* \\\\
-  (closures) & cl & \\Coloneqq & \\{\\textsf{inst}\\ i,\\ \\textsf{code}\\ f\\} \\\\
-  (values) & v & \\Coloneqq & t.\\key{const}\\,c \\\\
-  (admin.\~oper.) & e & \\Coloneqq & \\dots \\; |\\; \\key{call}\~cl \\; | \\; \\key{label}\_n \\{ e^\* \\}\~e^\* \\; \\key{end} \\; | \\; \\key{local}\_n \\{ i;v^\* \\}\~e^\* \\; \\key{end} \\\\
-  (local\~contexts) & L^0 & \\Coloneqq & v^\* \\, \[\\\_\] \\, e^\* \\\\
-  & L^{k+1} & \\Coloneqq & \\key{label}\_n \\{ e^\* \\}\~L^k \\; \\key{end} \\; e^\* \\\\
-  \\end{array}\$\$ \
+#figure[]<fig:WebAssemblyMR>
 
-  #block[
-    s;v^\*;L^k\[ e^\* \] \_i s’;v’^\*;L^k\[ e’^\* \]
-
-    s;v\_0^\*;#strong[local];\_n ~{i;v^\*}~e^\*~#strong[end] \_d,i s’;v\_0^\*;#strong[local];\_ni;v’^\*e’^\*~#strong[end]
-
-    s;v\_0^\*; ( j)~~#emph[tf] \_i s’;v\_0^\*;~s\_tab(i, j)
-
-    s;v\_0^\*; ( j)~~#emph[tf] \_i s’;v\_0^\*; \
-
-  ]
-]
 At the top of the figure, we list all the relevant syntax for the rules. The store $s$ consists of a set of module instances, table instances and memory instances. Tables and memories are only referenced by their index, since they can be shared between modules. A module instance consists of closures, global variables, tables and memories. A closure is the instantiated version of a function, and is represented by a tuple of the module instance and a code block. Values consist of constants. To elegantly represent the semantics a number of administrative operators are added to the list of instructions. The most important ones are #strong[local] and #strong[label];. The #strong[local] operator indicates a call frame for function invocation (possibly over module boundaries), while the #strong[label] operator marks the extent of a control construct.
 
 In the lower part of figure~@fig:WebAssemblyMR, we show some important small-step reduction rules for WebAssembly execution in WARDuino. Aside from the configuration ${ s , v^(\*) , e^(\*) }$, the small step reduction rules operate on the currently executing instance. That is why the small-step reduction is indexed by the address $i$ of that instance. The first two reduction rules govern the order of evaluation. The #smallcaps[step-i] rule splits a configuration into its context $L^k$ and its focus and takes one step of the $arrow.r.hook_i$ relation. The second rule~#smallcaps[step-local] explains how to evaluate a function that might reside in a different module. Note that this step changes the currently executing module, indicated by the two indices of the small-step relation $arrow.r.hook_(d , i)$. The last two rules are included because they are particularly relevant to our callback handling extension. The first rule, #smallcaps[step-indirect];, transforms a instruction into a standard instruction. The #smallcaps[step-indirect] rule takes a runtime index $j$, and an immediate function type #emph[tf];. The index $j$ must correspond to a function of the given type in the table of the current module $s_(t a b) (i , j)$. If this is the case, the indirect call is replaced with a call to the function. On the other hand, when no correct function is found, the indirect call is replaced by a as shown by #smallcaps[step-indirect-trap];. This means the program will stop executing. When all goes well, the resulting call can be reduced further. We omit any further reduction rules from the WebAssembly standard, because they are not changed or not relevant to the further discussion in this section. The interested reader can find all WebAssembly reduction rules in the original WebAssembly article@haas17.

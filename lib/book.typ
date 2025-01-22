@@ -34,6 +34,13 @@
     //// style figures
     set figure(placement: top)
 
+    show figure.caption: set text(8pt)
+    show figure.caption: it => {
+        align(left)[#it]
+    }
+
+    show figure.where(kind: "algorithm"): set figure.caption(position: bottom)
+
     //// style links
 
     let bold(it) = {
@@ -56,8 +63,6 @@
     )
 
     [
-
-
         //#add-headers()[#body]
         #body
     ]
@@ -121,6 +126,7 @@
 
             #outline(title: none,
                 fill: none,
+                depth: 1,
                 target: selector(heading).after(selector(label("appendix")), inclusive: true),
             )
         ]
