@@ -1,4 +1,5 @@
 #import "@preview/codly:1.2.0": codly
+#import "@preview/lovelace:0.3.0": pseudocode
 
 //#let circled(body) = {
 //circle(radius: 0.5em, stroke: 0.2mm)[
@@ -7,7 +8,7 @@
 //        #body]
 //}
 #let circled(body) = {
-    strong(body)
+    strong([(#body)])
 }
 
 #let code(offset: 0, body) = {
@@ -45,12 +46,23 @@
     ]
 }
 
-#let algorithm(caption) = {
+#let algorithm(caption, core, tag) = {
     [
+        #set text(8pt)
+        #align(left)[
         #figure(
             kind: "algorithm",
-            supplement: [Algorithm],
-            pseudocode-list(numbered-title: [Main loop for interpretation in the WARDuino virtual machine.])[#body])
+            caption: caption,
+            supplement: [Algorithm])[
+                #grid(
+                columns: 1,
+                column-gutter: 1mm,
+                inset: (x: 0pt, y: 2mm),
+                grid.hline(stroke: 0.5pt),
+                block(width: 100%, align(left, core)),
+                grid.hline(stroke: 0.5pt))
+            ]#label(tag)
+        ]
         
     ]
 }

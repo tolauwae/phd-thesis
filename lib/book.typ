@@ -33,13 +33,14 @@
 
     //// style figures
     set figure(placement: top)
+    show figure.where(kind: "algorithm"): set figure(placement: none)
 
     show figure.caption: set text(8pt)
     show figure.caption: it => {
         align(left)[#it]
     }
 
-    show figure.where(kind: "algorithm"): set figure.caption(position: bottom)
+    show figure.where(kind: "algorithm"): set figure.caption(position: bottom)  // top placement for algorithms breaks line labels
 
     //// style links
 

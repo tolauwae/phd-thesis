@@ -5,9 +5,6 @@
 #import "../lib/book.typ": book, quote, is-page-empty, toc
 #import "../lib/comment.typ": comment
 
-// pseudocode
-#import "@preview/lovelace:0.3.0": pseudocode-list
-
 // code snippets
 #import "@preview/codly:1.2.0": *
 #show: codly-init.with()
@@ -34,7 +31,7 @@
 #show ref: it => {
   let el = it.element
   if el != none and el.has("kind") and el.kind == "codly-line" {
-    link(el.location(),numbering(
+    link(el.location(), numbering(
       el.numbering,
       ..counter(figure).at(el.location())
     ))
@@ -334,12 +331,12 @@ An unexamined program is not worth running.  // TODO in preface explain this quo
         let headings = query(heading);
 
         // Find the last heading before or on the current page
-        let last_heading = headings.filter(h => h.location().page() <= here().page()).last();
+        let last_heading = headings.filter(h => h.level == 2).filter(h => h.location().page() <= here().page()).last();
 
         if calc.odd(here().page()) {
             // Odd: a.b.c section title
             if last_heading != none {
-                align(right, [#counter(heading).display() #last_heading.body])
+                [#last_heading.body #h(1fr) #counter(page).display()]
             } else {
                 // If no heading is found, return a default header or none
                 none
@@ -351,13 +348,14 @@ An unexamined program is not worth running.  // TODO in preface explain this quo
 
             // Check if there are any such headings
             if headings.len() > 0 {
-              [Chapter #counter(heading.where(level: 1)).display(). #headings.last().body]
+              [#counter(page).display() #h(1fr) #headings.last().body \[Chap. #counter(heading.where(level: 1)).display()\]]
             } else {
               // Fallback content if no level 1 heading is found
               none
             }
         }
-    }
+    },
+    footer: none
 )
 
 = Introduction
@@ -409,6 +407,12 @@ With the fast rise of artificial intelligence solutions in industry and daily li
 
 == Debugger correctness
 
+#context {
+let last_heading = query(heading).filter(h => h.level == 2).filter(h => h.location().page() <= here().page()).last();
+align(right, [#text(size: 8pt, weight: "regular")[#repr(last_heading)] #last_heading.body])
+counter(heading).display("1.")
+}
+
 #lorem(256)
 
 == Proof of correctness for the $lambda^arrow.r$ debugger
@@ -419,8 +423,6 @@ With the fast rise of artificial intelligence solutions in industry and daily li
 
 #quote("after, George Orwell")[Those who abjure debugging can only do so by others debugging on their behalf.]
 // no single language is perfect, we want to enable any language on microcontrollers
-
-#comment("Note")[WARDuino paper chapter]
 
 #include "remote/remote.typ"
 

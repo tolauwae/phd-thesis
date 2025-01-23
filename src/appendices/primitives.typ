@@ -209,7 +209,7 @@ Then, a first inner loop increments the brightness of the LED from 0 to the maxi
 Each iteration of the loop waits five milliseconds before continuing.
 At the end of this inner loop, the $mono("br_if")$ instruction jumps back to the start of the loop if the loop iterator $mono("\$i")$ is less than 255.
 After the first loop when $mono("\$i")$ equals 255, a second inner loop decrements the brightness of the LED light in the same way.
-Once $mono("\$i")$ hits zero, we have reached the end of the cycle and the unconditional branch instruction $mono("(br \$infinite)")$, at #end, jumps back to the start of the main loop.
+Once $mono("\$i")$ hits zero, we have reached the endremote the cycle and the unconditional branch instruction $mono("(br \$infinite)")$, at #end, jumps back to the start of the main loop.
 ]
 
 == Serial Peripheral Interface<sec:serial-peripheral-interface>
@@ -246,7 +246,7 @@ We have used the SPI module to implement a display driver in WARDuino.
 We leave out the specifics of that implementation here, not only for brevity, but because the code is originally written in C, rather than directly in WebAssembly like our other examples.
 We refer any interested reader to the first paper on WARDuino \cite{gurdeep-singh19}.
 
-== Serial Port Communication<sec:serial-port-communication>
+== Serial Port Communication<remote:serial-port-communication>
 
 #figure(
   caption: [API and example code of the Serial module in WARDuino.],
