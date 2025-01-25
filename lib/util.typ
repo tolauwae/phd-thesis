@@ -13,10 +13,14 @@
 
 // hack line references with codly
 #let line(tag, supplement: "Line") = {
+    let prefix = supplement
+    if prefix != none {
+      prefix = prefix + " "
+    }
     show ref: it => {
       let el = it.element
       if el != none and el.has("kind") and el.kind == "codly-line" {
-        link(el.location(), [#supplement #numbering(
+        link(el.location(), [#prefix#numbering(
           el.numbering,
           ..counter(figure).at(el.location())
         )])
@@ -25,6 +29,10 @@
       }
     }
     ref(label(tag))
+}
+
+#let range(start, end, separator: " to ") = {
+    [#line(start, supplement: "Lines")#separator#line(end, supplement: none)]
 }
 
 #let code(offset: 0, body) = {

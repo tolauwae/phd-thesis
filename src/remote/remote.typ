@@ -2,7 +2,7 @@
 #import "@preview/lovelace:0.3.0": pseudocode, with-line-label, pseudocode-list, line-label
 
 // code snippets
-#import "../../lib/util.typ": line, code, snippet, circled, algorithm
+#import "../../lib/util.typ": line, range, code, snippet, circled, algorithm
 
 // reduction rules
 #import "@preview/curryst:0.3.0"
@@ -108,9 +108,6 @@ export function main(): void {
 #let sub     = "lst.program.0:16"
 #let loop    = "lst.program.0:18"
 #let check   = "lst.program.0:19"
-
-#let range(start, end) = {
-}
 
 The code in @lst.program starts by importing all necessary WARDuino primitives from the #emph[as-warduino] package for AssemblyScript on #line(imports).
 The `print` function is WARDuino’s primitive for printing to the serial bus. The `MQTT` and `WiFi` namespaces expose the functions for communicating via the MQTT protocol and connecting to Wi-Fi networks.
@@ -1163,14 +1160,14 @@ export function main(): void {
 
 // Describe the use-case used to evaluate/showcase warduino
 #[
-#let main = [@lst.smartlamp.1:31]
-#let callback = [@lst.smartlamp.0:14]
-#let callbackEnd = [@lst.smartlamp.0:24]
-#let toggle = [@lst.smartlamp.0:26]
-#let toggleEnd = [@lst.smartlamp.0:30]
-#let wifiStart = [@lst.smartlamp.1:36]
-#let wifiEnd = [@lst.smartlamp.1:39]
-#let subscribe = [@lst.smartlamp.1:47]
+#let main        = "lst.smartlamp.1:31"
+#let callback    = "lst.smartlamp.0:14"
+#let callbackEnd = "lst.smartlamp.0:24"
+#let toggle      = "lst.smartlamp.0:26"
+#let toggleEnd   = "lst.smartlamp.0:30"
+#let wifiStart   = "lst.smartlamp.1:36"
+#let wifiEnd     = "lst.smartlamp.1:39"
+#let subscribe   = "lst.smartlamp.1:47"
 
 Smart light applications are one of the most widely known and practically applied IoT applications.
 We investigate how well WARDuino performs for programming microcontrollers in practice by implementing a simple smart light application in AssemblyScript.
@@ -1181,14 +1178,14 @@ There are two recognized MQTT payloads: "on" and "off".
 
 @lst.smartlamp shows the source code of the software running on the ESP.
 On the left side, we import the WARDuino primitives, and we define some constants and helper functions.
-On the right side, we have the main entry point of the program, starting at Line #main.
+On the right side, we have the main entry point of the program, starting at #line(main).
 The main function first sets the correct modes of the $mono("LED")$ and $mono("BUTTON")$ pins.
-Next, it connects to the Wi-Fi network and prints the local IP address of the device on success (Lines #{wifiStart}-#wifiEnd).
-When the microcontroller is connected to the network, it connects to the MQTT broker (Lines #{wifiEnd}-#subscribe).
+Next, it connects to the Wi-Fi network and prints the local IP address of the device on success (#range(wifiStart, wifiEnd, separator: [--])).
+When the microcontroller is connected to the network, it connects to the MQTT broker (#range(wifiEnd, subscribe, separator: [--])).
 In @remote:developing, we already discussed the code required to set up these connections.
 
-With an established connection, the microcontroller subscribes to the "LED" MQTT topic on Line #subscribe.
-The supplied callback is defined on Lines #callback to #callbackEnd.
+With an established connection, the microcontroller subscribes to the "LED" MQTT topic on #line(subscribe).
+The supplied callback is defined on #range(callback, callbackEnd).
 It takes two arguments, the topic and the payload of the incoming message.
 First, it prints the message to the serial port using $mono("print")$.
 Then, we inspect the payload, if it is the string "on", we turn the LED on by using $mono("digitalWrite")$, otherwise we turn the LED off.
@@ -1196,12 +1193,12 @@ Then, we inspect the payload, if it is the string "on", we turn the LED on by us
 After subscribing, the $mono("main")$ function sends an "on" message to the "LED" topic using the $mono("MQTT.publish")$ primitive.
 When the device receives its own message, the $mono("callback")$ function will make the LED shine.
 
-On Line #subscribe we attach a callback to rising voltage changes of the button pin.
+On #line(subscribe) we attach a callback to rising voltage changes of the button pin.
 We use the $mono("interruptOn")$ primitive to do this.
 It takes three arguments: the pin to monitor, the kind of change to trigger for, and a callback to invoke when a change occurs.
 Here we monitor the pin of the button for a rising edge ($mono("InterruptMode.RISING")$).
 This means our callback, $mono("callback")$, will be invoked whenever the $mono("BUTTON")$ pin goes from low (not pressed) to high (pressed).
-Lines #toggle to #toggleEnd define $mono("toggleLED")$.
+#range(toggle, toggleEnd) define $mono("toggleLED")$.
 It reads the current state of the LED and then sends out an MQTT message with the opposite state.
 This message will then be received by $mono("callback")$, which in turn toggles the LED's state.
 
