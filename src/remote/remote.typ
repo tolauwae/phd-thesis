@@ -2,7 +2,7 @@
 #import "@preview/lovelace:0.3.0": pseudocode, with-line-label, pseudocode-list, line-label
 
 // code snippets
-#import "../../lib/util.typ": code, snippet, circled, algorithm
+#import "../../lib/util.typ": line, code, snippet, circled, algorithm
 
 // reduction rules
 #import "@preview/curryst:0.3.0"
@@ -99,25 +99,27 @@ export function main(): void {
 ```,))
 
 #[
-#let imports = [@lst.program.0:1]
-#let until = [@lst.program.0:3]
-#let main = [@lst.program.0:10]
-#let wifi = [@lst.program.0:11]
-#let ip = [@lst.program.0:14]
-#let init = [@lst.program.0:15]
-#let sub = [@lst.program.0:16]
-#let loop = [@lst.program.0:18]
-#let check = [@lst.program.0:19]
+#let imports = "lst.program.0:1"
+#let until   = "lst.program.0:3"
+#let main    = "lst.program.0:10"
+#let wifi    = "lst.program.0:11"
+#let ip      = "lst.program.0:14"
+#let init    = "lst.program.0:15"
+#let sub     = "lst.program.0:16"
+#let loop    = "lst.program.0:18"
+#let check   = "lst.program.0:19"
 
+#let range(start, end) = {
+}
 
-The code in @lst.program starts by importing all necessary WARDuino primitives from the #emph[as-warduino] package for AssemblyScript on Line #imports.
+The code in @lst.program starts by importing all necessary WARDuino primitives from the #emph[as-warduino] package for AssemblyScript on #line(imports).
 The `print` function is WARDuino’s primitive for printing to the serial bus. The `MQTT` and `WiFi` namespaces expose the functions for communicating via the MQTT protocol and connecting to Wi-Fi networks.
-On Line #until, we define a helper function `until()` that takes two functions as arguments: `connect` and `connected`.
+On #line(until), we define a helper function `until()` that takes two functions as arguments: `connect` and `connected`.
 When `until` is called, the `connect` function is executed every second until the `connected` function returns true. We use this function in our program to establish a connection to the Wi-Fi network and the MQTT broker.
 
-The entry point to our program is the `main` function (Line #main). It starts by connecting to the local Wi-Fi network with the help of `until()` and two WARDuino primitives: the `WiFi.connect` function that initiates a connection to a network, and the `WiFi.connected` that returns whether the microcontroller is connected to a Wi-Fi network. Once connected, Line #ip prints the microcontrollers IP address to the serial port. Again, two WARDuino primitives are used: `WiFi.localip` and `print`. The code then configures the URL and port of the MQTT broker (Line #init), and subsequently subscribes to the #emph[helloworld] topic (Line #sub). Alongside a topic string, the `MQTT.subscribe` primitive requires a callback function as second argument. WARDuino invokes this callback function for every incoming MQTT message with the set topic.
+The entry point to our program is the `main` function (#line(main)). It starts by connecting to the local Wi-Fi network with the help of `until()` and two WARDuino primitives: the `WiFi.connect` function that initiates a connection to a network, and the `WiFi.connected` that returns whether the microcontroller is connected to a Wi-Fi network. Once connected, #line(ip) prints the microcontrollers IP address to the serial port. Again, two WARDuino primitives are used: `WiFi.localip` and `print`. The code then configures the URL and port of the MQTT broker (#line(init)), and subsequently subscribes to the #emph[helloworld] topic (#line(sub)). Alongside a topic string, the `MQTT.subscribe` primitive requires a callback function as second argument. WARDuino invokes this callback function for every incoming MQTT message with the set topic.
 
-Now the microcontroller is ready to receive messages from the MQTT broker. A while loop (Line #loop) checks if there are messages. To ensure the client remains connected to the server, Line #check periodically checks if it is still connected, and otherwise attempts to reconnect. After verifying the connection, we call the `MQTT.poll` function to signal WARDuino to check for new messages.
+Now the microcontroller is ready to receive messages from the MQTT broker. A while loop (#line(loop)) checks if there are messages. To ensure the client remains connected to the server, #line(check) periodically checks if it is still connected, and otherwise attempts to reconnect. After verifying the connection, we call the `MQTT.poll` function to signal WARDuino to check for new messages.
 
 Our example highlights the goal of the WARDuino project: programming microcontrollers from many high-level language. The code illustrates how developers can use all the features of their high-level language, even those WebAssembly itself does not fully support, such as strings and anonymous functions. Using the WARDuino primitives in high-level languages, does require some glue code behind the scenes. The exact details are discussed in @remote:interoperability.
 
@@ -971,7 +973,7 @@ With these syntactic extensions to WebAssembly, we are now able to formalize how
   ]
 ]
 / callback: #block[
-    The #smallcaps[callback] reduction rule shows how the WebAssembly interpreter can replace the instruction sequence $e^(\*)$ with a callback construct, whenever there are unprocessed events and no other callback is being processed. We do not allow nested callback constructs. To enforce this, we change the running state to the #smallcaps[callback] value in the #smallcaps[callback] rule and change it back to #smallcaps[play] in the #smallcaps[resume] rule. The #smallcaps[callback] construct replaces the instruction sequence with a instruction. The replaced instruction sequence, is kept by the callback construct as a continuation (between curly braces). The new stack only holds the callback construct, which contains an indirect call with the index returned by the callback mapping $s_(c b s)$. Before the indirect call and the table index, the rule adds the topic and payload of the event to the stack as arguments for that function call. This means that every callback function must have type $sans("i32") #h(0em) sans("i32") #h(0em) sans("i32") #h(0em) sans("i32") arrow.r epsilon.alt$. Because we place the arguments on the stack at the same time as the indirect call, the body of the callback as a whole still has type $epsilon.alt arrow.r epsilon.alt$, as specified in figure~@fig:callback-typing.
+    The #smallcaps[callback] reduction rule shows how the WebAssembly interpreter can replace the instruction sequence $e^(\*)$ with a callback construct, whenever there are unprocessed events and no other callback is being processed. We do not allow nested callback constructs. To enforce this, we change the running state to the #smallcaps[callback] value in the #smallcaps[callback] rule and change it back to #smallcaps[play] in the #smallcaps[resume] rule. The #smallcaps[callback] construct replaces the instruction sequence with a instruction. The replaced instruction sequence, is kept by the callback construct as a continuation (between curly braces). The new stack only holds the callback construct, which contains an indirect call with the index returned by the callback mapping $s_(c b s)$. Before the indirect call and the table index, the rule adds the topic and payload of the event to the stack as arguments for that function call. This means that every callback function must have type $sans("i32") #h(0em) sans("i32") #h(0em) sans("i32") #h(0em) sans("i32") arrow.r epsilon.alt$. Because we place the arguments on the stack at the same time as the indirect call, the body of the callback as a whole still has type $epsilon.alt arrow.r epsilon.alt$, as specified in @fig:callback-typing.
   ]
 
 / step-callback: #block[
@@ -1058,7 +1060,6 @@ The remote debugging system we presented so far, allows developers to debug WebA
 #figure(caption: [Screenshot of the VS Code debugger extension for WARDuino with a WebAssembly program (blinking LED).],
     image("images/screenshot-blink-debug.png", width: 100%))<fig:screenshot>
 
-]
 At its core, a debugging plugin for an IDE sends the debug messages described above on behalf of the developer. This removes the need for them to know our specific debugging API. Having a plugin send the same messages as a developer would in the terminal, is enough to support WebAssembly level debugging in an IDE. @fig:screenshot shows a screenshot of the VS Code plugin debugging a remotely running WebAssembly blink program that is currently paused on the highlighted line (Line 28). The plugin also support provisional source mapping for AssemblyScript, which means most features of the plugin can be used to debug AssemblyScript code directly. The buttons at the top of the screen allow the execution to be resumed and steps to be taken. In the sidebar on the left we can inspect local variables and edit them. These edits are then immediately propagated to the device with a $u p d a t e_l$ message. At the bottom of the sidebar, we can inspect the call stack.
 
 === Building Emulators <remote:emulators>
@@ -1077,14 +1078,13 @@ We implemented a snake game for a custom game controller#footnote[Our ESP32-powe
 === Debugging High-Level Languages <debugging-high-level-languages>
 Debugging at the low level of WebAssembly is not workable for any real-world application. Our goal is to debug the high-level source code. So-called "source maps" make this possible. Source maps align the line numbers of the original code to the WebAssembly instructions they compile to. They typically come as a separate file containing only the mapping. By cross-referencing WARDuino’s instruction pointer with the source maps, we can derive the line we are executing in our program written in a high-level language.
 
-#link(<fig:screenshot-browser>)[\[fig:screenshot-browser\]] shows source mapping in action, the emulator is executing WebAssembly, but the code view on the right shows AssemblyScript code. The WebAssembly instruction pointer is translated into a line number in the AssemblyScript code by using source maps. AssemblyScript is not the only language with source mapping. Most high-level languages with good support for WebAssembly, can generate a source map during compilation. In fact, any language using the LLVM compiler infrastructure, can generate all the necessary information in DWARF format from which a source map can be derived.
+@fig:screenshot-browser shows source mapping in action, the emulator is executing WebAssembly, but the code view on the right shows AssemblyScript code. The WebAssembly instruction pointer is translated into a line number in the AssemblyScript code by using source maps. AssemblyScript is not the only language with source mapping. Most high-level languages with good support for WebAssembly, can generate a source map during compilation. In fact, any language using the LLVM compiler infrastructure, can generate all the necessary information in DWARF format from which a source map can be derived.
 
 == Evaluation<remote:evaluation>
 
 In this section we evaluate the WARDuino VM in terms of its runtime performance, and conformance to the WebAssembly standard.
-@remote:stability illustrates the usability of WARDuino in the real world, by presenting a qualitative evaluation of a smart light application written in AssemblyScript (section~@remote:stability).
-%We use this application to verify the stability and performance of the primitives in a real-world IoT context.
-Next, in section~@remote:performance-on-microcontrollers, we evaluate the performance of the virtual machine with a set of microbenchmarks.
+@remote:stability illustrates the usability of WARDuino in the real world, by presenting a qualitative evaluation of a smart light application written in AssemblyScript (@remote:stability).
+Next, in @remote:performance-on-microcontrollers, we evaluate the performance of the virtual machine with a set of microbenchmarks.
 We measure the runtime speed, as well as, the size of executables.
 Since WARDuino targets microcontrollers with limited memory, it is important to take into account the number of bytes that get flashed per program.
 We end the section by looking at WARDuino's conformity to the WebAssembly standard (@remote:comformance-to-the-wa-standard).

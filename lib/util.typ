@@ -11,9 +11,26 @@
     strong([(#body)])
 }
 
+// hack line references with codly
+#let line(tag, supplement: "Line") = {
+    show ref: it => {
+      let el = it.element
+      if el != none and el.has("kind") and el.kind == "codly-line" {
+        link(el.location(), [#supplement #numbering(
+          el.numbering,
+          ..counter(figure).at(el.location())
+        )])
+      } else {
+        none
+      }
+    }
+    ref(label(tag))
+}
+
 #let code(offset: 0, body) = {
     set text(size: 8pt)
-    codly(zebra-fill: none, offset: offset, display-name: false, radius: 0pt, fill: none, stroke: none, number-align: right + top, reference-sep: "", breakable: true)
+    codly(zebra-fill: none, offset: offset, display-name: false, radius: 0pt, fill: none, stroke: none, number-align: right + top, reference-sep: "", breakable: true,
+        number-format: (n) => text(size: 5pt)[#str(n)])
     body
 }
 
@@ -63,6 +80,32 @@
                 grid.hline(stroke: 0.5pt))
             ]#label(tag)
         ]
-        
     ]
 }
+
+#let semantics(caption, content) = {
+    [
+        #set text(8pt)
+        #figure(
+            caption: caption)[
+                #grid(
+                columns: 1,
+                column-gutter: 1mm,
+                inset: (x: 0pt, y: 2mm),
+                grid.hline(stroke: 0.5pt),
+                content,
+                grid.hline(stroke: 0.5pt))
+            ]#label(tag)
+    ]
+}
+
+//#figure([
+//    #let r = curryst.rule(
+//  name: "callback", 
+//  $s;v^*;e^* arrow.r.hook_i s';v^*; bold("callback") {e^*} (s_("evt")(0)_("payload")) (s_("cbs")(s_("evt")(0)_("topic"))) (bold("call_indirect") italic("tf")) bold("end")$
+//  )
+//#curryst.proof-tree(r)],
+//  caption: [Selected rules.],
+//    // todo more space between figure and caption. captions number bold
+//) <rules>
+

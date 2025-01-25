@@ -25,6 +25,12 @@
         margin: (inside: 2.5cm, outside: 2cm)
     )
 
+    // color scheme
+    let ugent-blue = rgb("#1E64C8")
+    let sky = rgb(4, 165, 229)
+
+    let links = sky
+
     // general styling
 
     //// Code snippets
@@ -33,14 +39,12 @@
 
     //// style figures
     set figure(placement: top)
-    show figure.where(kind: "algorithm"): set figure(placement: none)
+    show figure.where(kind: "algorithm"): set figure(placement: none)  // top placement for algorithms breaks line labels
 
     show figure.caption: set text(8pt)
     show figure.caption: it => {
         align(left)[#it]
     }
-
-    show figure.where(kind: "algorithm"): set figure.caption(position: bottom)  // top placement for algorithms breaks line labels
 
     //// style links
 
@@ -48,8 +52,37 @@
         text(weight: 700)[#it]
     }
 
-    if not print {
-        show link: bold // TODO only for online version not print
+    show link: it => {
+        if not print {
+            text(fill: links, it)
+        } else {
+            it
+        }
+    }
+
+    show footnote: it => {
+        if not print {
+            text(fill: links, it)
+        } else {
+            it
+        }
+    }
+
+    show ref: it => {
+        if not print and it.element != none {
+            text(fill: links, it)
+        } else {
+            it
+        }
+    }
+
+    show cite: it => {
+        if not print {
+            show regex("\d+"): set text(fill: links)
+            it
+        } else {
+            it
+        }
     }
 
     // Page setup
@@ -79,13 +112,14 @@
 //// Chapter quotes
 
 #let quote(source, body) = {
-    align(center)[
+    align(left)[
         #block(width: 70%)[
             #text(style: "italic", hyphenate: false, [#body]) \
             #text([— #source])
-            #v(1.25em)
+            #v(0.75em)
         ]
     ]
+    line(length: 100%, stroke: 0.5pt)
 }
 
 #let toc() = {

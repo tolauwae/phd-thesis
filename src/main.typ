@@ -16,31 +16,21 @@
 
 #let serif = ("Libertinus Serif", "Libertinus Math")  // "Noto Serif CJK SC", "Noto Sans Math", "JetBrainsMonoNL NFM", 
 
+
+#let print = false
+#if "print" in sys.inputs.keys() {
+    print = true // sys.inputs.print
+}
+
 #show: book.with(
     title: title,
-    print: true,
+    print: print
 )
 
 #set page(width: 170mm, height: 240mm)
 
 // General styling rules
 
-// Code snippets
-
-// hack line references with codly
-#show ref: it => {
-  let el = it.element
-  if el != none and el.has("kind") and el.kind == "codly-line" {
-    link(el.location(), numbering(
-      el.numbering,
-      ..counter(figure).at(el.location())
-    ))
-  } else if el != none and el.has("kind") and el.kind == raw {
-    none
-  } else {
-    it
-  }
-}
 
 // Cover
 
@@ -302,13 +292,23 @@ An unexamined program is not worth running.  // TODO in preface explain this quo
         #show heading.where(level: 1): it => {
             // start on odd page
             pagebreak(to: "odd")
-            set align(center)
+            //set align(center)
 
-            text(size: 16pt, weight: 600, [#counter(heading).display()])
-            v(0.15em)
-            text(weight: 600, style: "normal", size: 16pt, [#it.body])
-            v(1.25em)
+            text(size: 16pt, weight: 400, [Chapter #counter(heading).display()])
+            v(0em)
+            text(weight: 600, style: "normal", size: 18pt, [#it.body])
+            v(0.10em)
             [#metadata(none) <chapter-start>]
+        }
+
+        #show heading.where(level: 4): it => {
+            set text(style: "italic", weight: 400)
+            it
+        }
+
+        #show heading.where(level: 5): it => {
+            set text(style: "italic", weight: 400)
+            it
         }
 
         // section titles
@@ -328,15 +328,13 @@ An unexamined program is not worth running.  // TODO in preface explain this quo
         }
 
         // Retrieve all headings in the document
-        let headings = query(heading);
+        let headings = query(heading.where(level: 1).before(here()))
 
         // Find the last heading before or on the current page
-        let last_heading = headings.filter(h => h.level == 2).filter(h => h.location().page() <= here().page()).last();
-
         if calc.odd(here().page()) {
             // Odd: a.b.c section title
-            if last_heading != none {
-                [#last_heading.body #h(1fr) #counter(page).display()]
+            if headings.len() > 0 {
+                align(right)[#text(style: "italic")[#headings.last().body] #h(2mm) #counter(page).display()]
             } else {
                 // If no heading is found, return a default header or none
                 none
@@ -344,18 +342,23 @@ An unexamined program is not worth running.  // TODO in preface explain this quo
         } else {
             // Even pages : Chapter a. title
             // Retrieve all level 1 headings before the current position
-            let headings = query(heading.where(level: 1).before(here()))
 
             // Check if there are any such headings
             if headings.len() > 0 {
-              [#counter(page).display() #h(1fr) #headings.last().body \[Chap. #counter(heading.where(level: 1)).display()\]]
+              [#counter(page).display() #h(2mm) #text(style: "italic")[Chapter #counter(heading.where(level: 1)).display()]]
             } else {
               // Fallback content if no level 1 heading is found
               none
             }
         }
     },
-    footer: none
+    footer: context {
+        if query(selector.or(<chapter-start>)).any(it => (it.location().page() == here().page())) {
+            align(right)[#counter(page).display()]
+        } else {
+            none
+        }
+    }
 )
 
 = Introduction
@@ -407,21 +410,15 @@ With the fast rise of artificial intelligence solutions in industry and daily li
 
 == Debugger correctness
 
-#context {
-let last_heading = query(heading).filter(h => h.level == 2).filter(h => h.location().page() <= here().page()).last();
-align(right, [#text(size: 8pt, weight: "regular")[#repr(last_heading)] #last_heading.body])
-counter(heading).display("1.")
-}
-
 #lorem(256)
 
 == Proof of correctness for the $lambda^arrow.r$ debugger
 
 #lorem(512)
 
-= A remote debugger for WebAssembly  // An embedded WebAssembly virtual machine
+= A Remote Debugger for WebAssembly  // An embedded WebAssembly virtual machine
 
-#quote("after, George Orwell")[Those who abjure debugging can only do so by others debugging on their behalf.]
+#quote("after George Orwell")[Those who abjure debugging can only do so by others debugging on their behalf.]
 // no single language is perfect, we want to enable any language on microcontrollers
 
 #include "remote/remote.typ"
@@ -438,15 +435,6 @@ counter(heading).display("1.")
 //
 //== Formal specification
 //
-//#figure([
-//    #let r = curryst.rule(
-//  name: "callback", 
-//  $s;v^*;e^* arrow.r.hook_i s';v^*; bold("callback") {e^*} (s_("evt")(0)_("payload")) (s_("cbs")(s_("evt")(0)_("topic"))) (bold("call_indirect") italic("tf")) bold("end")$
-//  )
-//#curryst.proof-tree(r)],
-//  caption: [Selected rules.],
-//    // todo more space between figure and caption. captions number bold
-//) <rules>
 //
 //== Tool support for WARDuino
 //
