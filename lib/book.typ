@@ -111,11 +111,15 @@
 
 //// Chapter quotes
 
-#let quote(source, body) = {
+#let quote(author, source: none, body) = {
+    let suffix = ""
+    if source != none {
+        suffix = ", " + source
+    }
     align(left)[
         #block(width: 70%)[
             #text(style: "italic", hyphenate: false, [#body]) \
-            #text([— #source])
+            #text([— #author])#text(style: "italic", [#suffix])
             #v(0.75em)
         ]
     ]

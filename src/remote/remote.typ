@@ -179,7 +179,7 @@ WebAssembly is a stack based language, defined over an implicit operand stack. T
 
 @alg.interpretation shows the main interpretation loop of WARDuino as pseudocode. WARDuino executes a WebAssembly module $m$, instruction by instruction, in a single loop (@alg.interpretation:while). Before any instruction is interpreted, the #emph[resolveDebugMessage] function checks the debug message queue for new incoming messages (@alg.interpretation:debug), resolves the oldest one, and possibly pauses the runtime. If the runtime is not paused, the virtual machine checks the event queue for new asynchronous events, and possibly resolves at most one before starting the actual interpretation. If the runtime is paused however, the virtual machine will go to sleep until a new message arrives in the queue (@alg.interpretation:wait). The #emph[awaitDebugMessage] function does not resolve debug messages, instead the code jumps back to the start of the loop and the debug message is resolved by the #emph[resolveDebugMessage] function. We discuss the debug message and event resolution in more detail in, respectively @remote:debug and @remote:interrupts.
 
-For interpreting instructions, the virtual machine keeps track of its own program pointer $m . p c$, which points to the next instruction to be executed in the program buffer. We may dereference this pointer to get the next opcode to execute (@alg.interpretation:opcode), for example `0x7f`. A switch statement then matches the current opcode (#link(<alg.interpretation:switch>)[\[alg.interpretation:switch\]];). For our example, the switch determines our opcode to be a binary operator for 64-bit integers that will be handled by the #emph[interpretBinaryi64] function. This function resolves the instruction further and returns whether it succeeded. If so, the while-loop continues, and the next opcode is processed. Otherwise, $"success"$ will become false, and the while loop will stop interpretation.
+For interpreting instructions, the virtual machine keeps track of its own program pointer $m . p c$, which points to the next instruction to be executed in the program buffer. We may dereference this pointer to get the next opcode to execute (@alg.interpretation:opcode), for example `0x7f`. A switch statement then matches the current opcode (@alg.interpretation:switch). For our example, the switch determines our opcode to be a binary operator for 64-bit integers that will be handled by the #emph[interpretBinaryi64] function. This function resolves the instruction further and returns whether it succeeded. If so, the while-loop continues, and the next opcode is processed. Otherwise, $"success"$ will become false, and the while loop will stop interpretation.
 
 When the interpretation loop stops due to a failure, the virtual machine will throw the underlying trap (@alg.interpretation:trap)#footnote[We refer interested readers to the paper by #cite(<haas17>, form: "prose") for more information on traps in WebAssembly.];. Alternatively, interpretation halts whenever the end instruction (`0x0b`) of the main entry point is reached. In this case, the #emph[done] variable will be set to `true`, and the main interpretation loop will stop successfully without throwing a trap.
 
@@ -215,7 +215,7 @@ WARDuino programs can be developed in multiple high-level languages thanks to We
 
 The primitive operations (i.e. `digital_write`) are implemented in the WARDuino virtual machine in native C code. This implementation depends on the target microcontroller platform. Currently, WARDuino focuses on the Arduino platform which can be used with many families of embedded devices, such as ESP32’s, Arduino boards, and some Raspberry Pi devices. To illustrate the portability of WARDuino, the virtual machine includes partial support for ESP IDF#footnote[The current status of supported platforms can be found on the #link(
     "https://topllab.github.io/WARDuino/reference/primitives.html",
-  )[documentation website];];. The WebAssembly interface of the primitives is the same for both implementations, to provide the best portability for WARDuino programs. To make these interfaces compatible with the VM the primitives conform to the standard WebAssembly calling conventions, i.e. they read their arguments from the stack and place their return value on the stack.
+  )[documentation website].];. The WebAssembly interface of the primitives is the same for both implementations, to provide the best portability for WARDuino programs. To make these interfaces compatible with the VM the primitives conform to the standard WebAssembly calling conventions, i.e. they read their arguments from the stack and place their return value on the stack.
 
 === Callback Handling <remote:interrupts>
 The WARDuino callback handling system is used to call WebAssembly functions when specific real-world events occur. These events can range from interrupts caused by a local button press to MQTT messages arriving over Wi-Fi. Similar to debug messages, asynchronous events are received and placed into a queue concurrently to the main interpretation loop. As shown in @alg.interpretation, the main interpretation loop will resolve a single event—if any is present—immediately after checking for incoming debug messages.
@@ -308,37 +308,37 @@ This approach abstracts away the underlying WARDuino interfaces.
 Developers can now simply import the $mono("as-warduino")$ library as shown on the first line of the blinking LED program.
 When they do this, they can use the WARDuino primitives as if they were normal TypeScript functions.
 
-#snippet("fig:assemblyscript.level1", [Blinking LED example in AssemblyScript with the necessary and minimal glue code.], columns: 2,
+#snippet("fig:assemblyscript.level1", [Blinking LED example in AssemblyScript with the necessary and minimal glue code.], columns: (10fr, 16fr), continuous: false,
         (```ts
-import * from "as-warduino"; // -------->
+import * from "as-warduino";
 
 export function main(): void {
-    let led = 16;
-    pinMode(led, OUTPUT);
+  let led = 16;
+  pinMode(led, OUTPUT);
 
-    let pause = 1000;
-    while (true) {
-        digitalWrite(led, HIGH);
-        delay(pause);
-        digitalWrite(led, LOW);
-        delay(pause);
-    }
+  let pause = 1000;
+  while (true) {
+    digitalWrite(led, HIGH);
+    delay(pause);
+    digitalWrite(led, LOW);
+    delay(pause);
+  }
 }
 ```, ```ts
-// glue code
 export const LOW: u32 = 0;
 export const HIGH: u32 = 1;
-
 export const OUTPUT: u32 = 0x2;
 
 @external("env", "chip_delay")
 export declare function delay(ms: u32): void;
 
 @external("env", "chip_pin_mode")
-export declare function pinMode(pin: u32, mode: u32): void;
+export declare function pinMode(pin: u32,
+                                mode: u32): void;
 
 @external("env", "chip_digital_write")
-export declare function digitalWrite(pin: u32, value: u32): void;
+export declare function digitalWrite(pin: u32,
+                                     value: u32): void;
 ```
 ),)
 
@@ -370,43 +370,43 @@ Due to the encoding inconsistencies between AssemblyScript and WARDuino, strings
 Additionally, to receive a response, WARDuino expects a memory slice as last argument where the response is stored to.
 The developer must allocate an $mono("ArrayBuffer")$ for this and pass this as the last two arguments of the call.
 
-#snippet("fig:assemblyscript.level2", [Example AssemblyScript program with HTTP GET without strings.], columns: 2,
+#snippet("fig:assemblyscript.level2", [Example AssemblyScript program with HTTP GET without strings.], columns: (4fr, 3fr), continuous: false,
         (```ts
 import * from "as-warduino";
 export function main(): void {
-    // ... connect to Wi-Fi ...
-    // Send HTTP request
-    let url = "https://example.com/post";
-    let body = "Bridging the Language Barrier";
-    let content_type = "text/plain";
-    let response = new ArrayBuffer(100);
-    httpPOST(String.UTF8.encode(url, true),
-        String.UTF8.byteLength(url, true),
-        String.UTF8.encode(body, true),
-        String.UTF8.byteLength(body, true),
-        String.UTF8.encode(content_type, true),
-        String.UTF8.byteLength(content_type, true),
-        response,
-        response.byteLength);
+  // ... connect to Wi-Fi ...
+  // Send HTTP request
+  let url = "https://example.com/post";
+  let body = "Bridge the Language Gap";
+  let content_type = "text/plain";
+  let response = new ArrayBuffer(100);
+  httpPOST(String.UTF8.encode(url, true),
+    String.UTF8.byteLength(url, true),
+    String.UTF8.encode(body, true),
+    String.UTF8.byteLength(body, true),
+    String.UTF8.encode(content_type, true),
+    String.UTF8.byteLength(content_type, true),
+    response, response.byteLength);
 }
 ```, ```ts
 export const WL_CONNECTED: u32 = 3;
 
 @external("env", "http_get")
-export declare function httpGET(url: ArrayBuffer,
-    url_len: u32,
-    buffer: ArrayBuffer,
-    buffer_size: u32): i32;
+export declare function httpGET(
+  url: ArrayBuffer, url_len: u32,
+  buffer: ArrayBuffer,
+  buffer_size: u32): i32;
 
 @external("env", "http_post")
-export declare function httpPOST(url: ArrayBuffer,
-    url_len: u32,
-    body: ArrayBuffer,
-    body_len: u32,
-    content_type: ArrayBuffer,
-    content_type_len: u32,
-    buffer: ArrayBuffer,
-    buffer_size: u32): i32;
+export declare function httpPOST(
+  url: ArrayBuffer,
+  url_len: u32,
+  body: ArrayBuffer,
+  body_len: u32,
+  content_type: ArrayBuffer,
+  content_type_len: u32,
+  buffer: ArrayBuffer,
+  buffer_size: u32): i32;
 ```))
 
 Working with this minimal glue code requires very specific knowledge about the inner workings of WARDuino.
@@ -426,17 +426,17 @@ We can even use AssemblyScript namespaces to group the HTTP functions together, 
 Developers can now write the much more naturally feeling code on the left of @fig:assemblyscript.level3, where the post function accepts strings and returns a string.
 The type annotations on our wrapper function provide an extra benefit: they allow the AssemblyScript type checker to validate whether the function is indeed called with strings.
 
-#snippet("fig:assemblyscript.level3", [Example AssemblyScript program with HTTP GET with glue code for strings.], columns: 2,
+#snippet("fig:assemblyscript.level3", [Example AssemblyScript program with HTTP GET with glue code for strings.], columns: (3fr, 4fr), continuous: false,
         (```ts
 import {HTTP} from "as-warduino";
 
 export function main(): void {
-    // ... connect to Wi-Fi ...
-    // Send HTTP request
-    let response = HTTP.post(
-        "https://example.com/post",
-        "Bridging the Language Barrier",
-        "text/plain");
+  // ... connect to Wi-Fi ...
+  // Send HTTP request
+  let response = HTTP.post(
+    "https://example.com/post",
+    "Bridge the Language Gap",
+    "text/plain");
 }
 ```, ```ts
 @external("env", "http_get")
@@ -446,21 +446,23 @@ declare function _http_get(...): i32;
 declare function _http_post(...): i32;
 
 export namespace HTTP {
-    function get(url: string, buffer: ArrayBuffer): i32 {
-        return get(String.UTF8.encode(url, true),
-                     String.UTF8.byteLength(url, true),
-                     buffer, buffer.byteLength);}
-
-    function post(url: string, body: string, content_type: string): string {
-        let response = new ArrayBuffer(100);
-        _http_post(String.UTF8.encode(url, true),
+  function get(url: string,
+               buffer: ArrayBuffer): i32 {
+    return get(String.UTF8.encode(url, true),
                String.UTF8.byteLength(url, true),
-               String.UTF8.encode(body, true),
-               String.UTF8.byteLength(body, true),
-               String.UTF8.encode(content_type, true),
-               String.UTF8.byteLength(content_type, true),
-               response, response.byteLength);
-        return String.UTF8.decode(response, true);}
+               buffer, buffer.byteLength);}
+
+  function post(url: string, body: string,
+                content_type: string): string {
+    let response = new ArrayBuffer(100);
+    _http_post(String.UTF8.encode(url, true),
+      String.UTF8.byteLength(url, true),
+      String.UTF8.encode(body, true),
+      String.UTF8.byteLength(body, true),
+      String.UTF8.encode(content_type, true),
+      String.UTF8.byteLength(content_type, true),
+      response, response.byteLength);
+    return String.UTF8.decode(response, true);}
 }
 ```))
 
@@ -473,35 +475,36 @@ In @fig:assemblyscript.level4, we show a program, and the associated glue code w
 The class declaration on the first line of the right listing in @fig:assemblyscript.level4 defines that a value of type  $mono("Options")$ must have the keys $mono("url")$, $mono("body")$ and $mono("content_type")$ which all should be assigned to a string.
 Thanks to this definition, AssemblyScript's type system enforces that all required keys are present in the arguments to $mono("post")$.
 
-#snippet("fig:assemblyscript.level4", [Example AssemblyScript program with HTTP GET with glue code for objects.], columns: 2,
+#snippet("fig:assemblyscript.level4", [Example AssemblyScript program with HTTP GET with glue code for objects.], columns: (3fr, 4fr), continuous: false,
         (```ts
 import {HTTP} from "as-warduino";
 
 export function main(): void {
-    // ... connect to Wi-Fi ...
+  // ... connect to Wi-Fi ...
 
-    // Send HTTP request
-    let options: HTTP.Options = {
-        url: "https://example.com/post",
-        body: "Bridging the Language Barrier",
-        content_type: "text/plain"
-    };
-    let response = HTTP.post(options);
+  // Send HTTP request
+  let options: HTTP.Options = {
+    url: "https://example.com/post",
+    body: "Bridge the Language Gap",
+    content_type: "text/plain"
+  };
+  let response = HTTP.post(options);
 }
 ```, ```ts
 export namespace HTTP {
-class Options { url: string; body: string; content_type: string; }
+class Options { url: string; body: string;
+                content_type: string; }
 
 function post(options: Options): string {
-    let response = new ArrayBuffer(100);
-    _http_post(String.UTF8.encode(options.url, true),
-        String.UTF8.byteLength(options.url, true),
-        String.UTF8.encode(options.body, true),
-        String.UTF8.byteLength(options.body, true),
-        String.UTF8.encode(options.content_type, true),
-        String.UTF8.byteLength(options.content_type, true),
-        response, response.byteLength);
-    return String.UTF8.decode(response, true);
+  let response = new ArrayBuffer(100);
+  _http_post(String.UTF8.encode(options.url, true),
+    String.UTF8.byteLength(options.url, true),
+    String.UTF8.encode(options.body, true),
+    String.UTF8.byteLength(options.body, true),
+    String.UTF8.encode(options.content_type, true),
+    String.UTF8.byteLength(options.content_type, true),
+    response, response.byteLength);
+  return String.UTF8.decode(response, true);
 }}
 ```))
 
@@ -559,34 +562,36 @@ Our runtime checks are useful during the development of the primitives themselve
 
 The process for adding new primitives consists of the four steps we describe below.
 
-#snippet("fig:prim-impl", [#emph[Left]: The $mono("Type")$ struct. #emph[Middle]: A Type specifier for a primitive that takes two 32-bit unsigned integer ($mono("u32")$) and returns nothing. #emph[Right]: The implementation of the $mono("digital_write")$ primitive.], columns: 3,
+#snippet("fig:prim-impl", [#emph[Left]: The $mono("Type")$ struct. #emph[Middle]: A Type specifier for a primitive that takes two 32-bit unsigned integer ($mono("u32")$) and returns nothing. #emph[Right]: The implementation of the $mono("digital_write")$ primitive.], columns: (4fr, 5fr, 4fr), continuous: false,
         (```ts
 typedef struct Type {
-    uint8_t form;
-    uint32_t param_count;
-    uint32_t *params;
-    uint32_t result_count;
-    uint32_t *results;
-    uint64_t mask;
+  uint8_t form;
+  uint32_t param_count;
+  uint32_t *params;
+  uint32_t result_count;
+  uint32_t *results;
+  uint64_t mask;
 } Type;
 ```, ```ts
-uint32_t param_U32_arr_len2[2] = {U32, U32};
+uint32_t param_U32_arr_len2[2]
+  = {U32, U32};
 
 Type twoToNoneU32 = {
-        .form =  FUNC,
-        .param_count =  2,
-        .params =  param_U32_arr_len2,
-        .result_count =  0,
-        .results =  nullptr,
-        .mask =  0x80011
+  .form =  FUNC,
+  .param_count =  2,
+  .params =  param_U32_arr_len2,
+  .result_count =  0,
+  .results =  nullptr,
+  .mask =  0x80011
 };
 ```, ```ts
-def_prim(digital_write,twoToNoneU32) {
-    uint32_t pin = arg1.uint32;
-    uint32_t val = arg0.uint32;
-    digitalWrite(pin, val);
-    pop_args(2);
-    return true;
+def_prim(digital_write,
+         twoToNoneU32) {
+  auto pin = arg1.uint32;
+  auto val = arg0.uint32;
+  digitalWrite(pin, val);
+  pop_args(2);
+  return true;
 }
 ```))
 
@@ -632,28 +637,29 @@ To do this, we look at the implementation of two MQTT primitives: $mono("mqtt_in
 #snippet("fig:mqtt-init", [Implementation of the $mono("mqtt_init")$ (top) and $mono("mqtt_subscribe")$ (bottom) WARDuino MQTT primitives using the event-based callback handling system.],
 (```cpp
 def_prim(mqtt_init, threeToNoneU32) {  // Initialize the Arduino MQTT Client
-	uint32_t server_param = arg2.uint32; uint32_t length = arg1.uint32; uint32_t port = arg0.uint32;
-	const char *server = parse_utf8_string(m->memory.bytes, length, server_param).c_str();
-	mqttClient.setServer(server, port);
+  uint32_t server_param = arg2.uint32; uint32_t length = arg1.uint32;
+  uint32_t port = arg0.uint32;
+  const char *server = parse_utf8_string(m->memory.bytes, length, server_param).c_str();
+  mqttClient.setServer(server, port);
 
-	// Add MQTT messages as events to callback handling system
-	mqttClient.setCallback([](const char *topic, const unsigned char *payload, unsigned int length) {
-		CallbackHandler::push_event(topic, payload, length);
-	});
-
-	pop_args(3);
-	return true;
+  // Add MQTT messages as events to callback handling system
+  mqttClient.setCallback([](const char *topic, const unsigned char *payload,
+                            unsigned int length) {
+  	CallbackHandler::push_event(topic, payload, length);
+  });
+  pop_args(3);
+  return true;
 }
 
 def_prim(mqtt_subscribe, threeToOneU32) {  // Subscribe to a MQTT topic
-	uint32_t topic_param = arg2.uint32; uint32_t topic_length = arg1.uint32; uint32_t fidx = arg0.uint32;
+	uint32_t topic_param = arg2.uint32; uint32_t topic_length = arg1.uint32;
+    uint32_t fidx = arg0.uint32;
 	const char *topic = parse_utf8_string(m->memory.bytes, topic_length, topic_param).c_str();
 
 	Callback c = Callback(m, topic, fidx);
 	CallbackHandler::add_callback(c);  // Register callback function with WARDuino
 
 	bool ret = mqttClient.subscribe(topic);
-
 	pop_args(2);
 	pushInt32((int)ret);
 	return true;

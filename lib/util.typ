@@ -38,7 +38,7 @@
 #let code(offset: 0, body) = {
     set text(size: 8pt)
     codly(zebra-fill: none, offset: offset, display-name: false, radius: 0pt, fill: none, stroke: none, number-align: right + top, reference-sep: "", breakable: true,
-        number-format: (n) => text(size: 5pt)[#str(n)])
+        number-format: (n) => text(size: 6pt, font: "Libertinus Serif")[#str(n)])
     body
 }
 
@@ -62,7 +62,7 @@
         #figure(caption: caption, supplement: [Listing], kind: "code", placement: top)[
             #grid(
                 columns: columns,
-                column-gutter: 1mm,
+                column-gutter: 0.5mm,
                 inset: (x: 0pt, y: 2mm),
                 grid.hline(stroke: 0.5pt),
                 ..snippets,

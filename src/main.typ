@@ -130,6 +130,7 @@
     Theory and Operations of Programming Languages Lab
 
     #v(.4em)
+    This dissertation was typeset using Typst. \
     Cover art #sym.copyright Tom Lauwaerts
 
     ]
@@ -227,6 +228,10 @@ The following previously published work features prominently within this dissert
 - Tom Lauwaerts, Carlos Rojas Castillo, Robbert Gurdeep Singh, Matteo Marra, Christophe Scholliers, and Elisa Gonzalez Boix. Event-Based Out-of-Place Debugging. In MPLR, pages 85–97. ACM, 2022.
 - Tom Lauwaerts, Robbert Gurdeep Singh, Christophe Scholliers. WARDuino: An embedded WebAssembly virtual machine. In Journal of Computer Languages, Volume 79. Elsevier, 2024.
 - Tom Lauwaerts, Stefan Marr, Christophe Scholliers. Latch: Enabling large-scale automated testing on constrained systems. In Science of Computer Programming, Volume 238. Elsevier, 2024.
+
+At the time of writing, the following works were submitted at peer reviewed conferences or journals, and are still under review.
+
+- Tom Lauwaerts, Maarten Steevens, Christophe Scholliers. MIO: Multiverse Debugging in the face of Input/Output.
 
 The software developed as part of this dissertation is available publicly on the Theory and Operations of Programming Languages Lab's #link("https://github.com/TOPLLab")[GitHub page]. The following software was developed as part of this dissertation:
 
@@ -363,6 +368,7 @@ An unexamined program is not worth running.  // TODO in preface explain this quo
 
 = Introduction
 
+//#quote("Bertie Wooster", source: "Right Ho, Jeeves")[I don’t know if you have had the same experience, but the snag I always come up against when I’m telling a story is this dashed difficult problem of where to begin it.]
 #quote("Edsger W. Dijkstra")[If debugging is the process of removing software bugs,\ then programming must be the process of putting them in.]
 
 // todo the very first sentence should say something about bugs
@@ -418,7 +424,7 @@ With the fast rise of artificial intelligence solutions in industry and daily li
 
 = A Remote Debugger for WebAssembly  // An embedded WebAssembly virtual machine
 
-#quote("after George Orwell")[Those who abjure debugging can only do so by others debugging on their behalf.]
+#quote([#text(style: "italic", [after]) George Orwell])[Those who abjure debugging can only do so by others debugging on their behalf.]
 // no single language is perfect, we want to enable any language on microcontrollers
 
 #include "remote/remote.typ"
@@ -447,7 +453,7 @@ With the fast rise of artificial intelligence solutions in industry and daily li
 
 = Multiverse debugging on microcontrollers
 
-#quote("Pierre Eugene du Simitiere")[E pluribus unum.]
+#quote("Karl Popper", source: "Knowledge without Authority")[Our knowledge can only be finite, while our ignorance must necessarily be infinite.]
 
 #comment("Note")[PLDI paper chapter]
 
@@ -483,7 +489,9 @@ When a program's execution path is determined by the input from the external env
 
 #lorem(70)
 
-= Conclusion
+= Conclusions and future work
+
+#quote("P.G. Wodehouse", source: "Jeeves Takes Charge")[I pressed down the mental accelerator. The old lemon throbbed fiercely. I got an idea.]
 
 #lorem(57)
 
@@ -492,7 +500,7 @@ When a program's execution path is determined by the input from the external env
 #pagebreak()
 #metadata(none) <appendix>
 
-#bibliography("references.bib", style: "springer-basic")<bibliography>
+#bibliography("references.bib")<bibliography>
 
 #counter(heading).update(0)
 #set heading(numbering: "A.1")
