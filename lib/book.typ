@@ -1,6 +1,8 @@
 #let book(
     title: [Book title],
 
+    theme: "standard",
+
     paper-size: none,
 
     paper-width: 148mm,
@@ -10,6 +12,12 @@
 
     body
 ) = {
+    let themes = ("modern", "standard", "classic")
+
+    if not theme in themes {
+        panic("Unknown theme: " + theme)
+    }
+
     if paper-size == none {
         set page(width: paper-width, height: paper-height)
     } else {
@@ -96,6 +104,14 @@
         margin: (inside: 2.5cm, outside: 2cm)
     )
 
+    // Style section headings
+    let heading-font = "Libertinus Serif"
+    if theme == "modern" {
+        heading-font = "Libertinus Sans"
+    }
+
+    show heading: set text(font: heading-font)
+
     [
         //#add-headers()[#body]
         #body
@@ -111,19 +127,30 @@
 
 //// Chapter quotes
 
-#let quote(author, source: none, body) = {
+#let quote(author, source: none, theme: "modern", body) = {
+    let alignment = left
+    let spacing = 0.75em
+    if theme == "classic" {
+        alignment = center
+        spacing = 1.25em
+    } else if theme == "standard" {
+        alignment = right
+    }
+
     let suffix = ""
     if source != none {
         suffix = ", " + source
     }
-    align(left)[
+    align(alignment)[
         #block(width: 70%)[
             #text(style: "italic", hyphenate: false, [#body]) \
             #text([— #author])#text(style: "italic", [#suffix])
-            #v(0.75em)
+            #v(spacing)
         ]
     ]
-    line(length: 100%, stroke: 0.5pt)
+    if theme == "modern" or theme == "standard" {
+        line(length: 100%, stroke: 0.5pt)
+    }
 }
 
 #let toc() = {

@@ -22,8 +22,11 @@
     print = true // sys.inputs.print
 }
 
+#let theme = "modern"
+
 #show: book.with(
     title: title,
+    theme: theme,
     print: print
 )
 
@@ -278,98 +281,149 @@ An unexamined program is not worth running.  // TODO in preface explain this quo
 #counter(page).update(1)
 
 #[
+    // Page mark up
+    // TODO fix page numbering mark up
 
-        // Page mark up
-        // TODO fix page numbering mark up
+    // Headers mark up
+    #set heading(outlined: true)
 
-        // Headers mark up
-        #set heading(outlined: true)
+    // make page breaks detectable
+    #show pagebreak: it => {
+      [#metadata(none) <empty-page-start>]
+      it
+      [#metadata(none) <empty-page-end>]
+    }
 
-        // make page breaks detectable
-        #show pagebreak: it => {
-          [#metadata(none) <empty-page-start>]
-          it
-          [#metadata(none) <empty-page-end>]
-        }
-
-        // check whether this is an empty page
-        // chapter titles
-        #show heading.where(level: 1): it => {
-            // start on odd page
-            pagebreak(to: "odd")
-            //set align(center)
-
+    // check whether this is an empty page
+    // chapter titles
+    #show heading.where(level: 1): it => {
+        // start on odd page
+        pagebreak(to: "odd")
+        if theme == "classic" {
+            set align(center)
+                        text(size: 16pt, weight: 600, [#counter(heading).display()])
+            v(0.15em)
+            text(weight: 600, style: "normal", size: 16pt, [#it.body])
+            v(1.25em)
+        } else {
             text(size: 16pt, weight: 400, [Chapter #counter(heading).display()])
             v(0em)
             text(weight: 600, style: "normal", size: 18pt, [#it.body])
             v(0.10em)
-            [#metadata(none) <chapter-start>]
         }
+        [#metadata(none) <chapter-start>]
+    }
 
-        #show heading.where(level: 4): it => {
-            set text(style: "italic", weight: 400)
-            it
-        }
+    #show heading.where(level: 4): it => {
+        set text(style: "italic", weight: 400)
+        it
+    }
 
-        #show heading.where(level: 5): it => {
-            set text(style: "italic", weight: 400)
-            it
-        }
+    #show heading.where(level: 5): it => {
+        set text(style: "italic", weight: 400)
+        it
+    }
 
-        // section titles
-        #set heading(numbering: "1.1")
-        #counter(heading).update(0)
+    // section titles
+    #set heading(numbering: "1.1")
+    #counter(heading).update(0)
 
-// page headers
-#set page(
-    header: context {
-        if is-page-empty() {
-            return
-        }
+    // page headers
+    #set page(
+        header: context {
+            if is-page-empty() {
+                return
+            }
 
-        let i = here().page()
-        if query(selector.or(<chapter-start>)).any(it => (it.location().page() == i)) {
-            return
-        }
+            let i = here().page()
+            if query(selector.or(<chapter-start>)).any(it => (it.location().page() == i)) {
+                return
+            }
 
-        // Retrieve all headings in the document
-        let headings = query(heading.where(level: 1).before(here()))
+            // Retrieve all headings in the document
+            let headings = query(heading.where(level: 1).before(here()))
 
-        // Find the last heading before or on the current page
-        if calc.odd(here().page()) {
-            // Odd: a.b.c section title
-            if headings.len() > 0 {
-                align(right)[#text(style: "italic")[#headings.last().body] #h(2mm) #counter(page).display()]
+            // Find the last heading before or on the current page
+            if calc.odd(here().page()) {
+                // Odd: a.b.c section title
+                if headings.len() > 0 {
+                    align(right)[#text(style: "italic")[#headings.last().body] #h(2mm) #counter(page).display()]
+                } else {
+                    // If no heading is found, return a default header or none
+                    none
+                }
             } else {
-                // If no heading is found, return a default header or none
+                // Even pages : Chapter a. title
+                // Retrieve all level 1 headings before the current position
+
+                // Check if there are any such headings
+                if headings.len() > 0 {
+                  [#counter(page).display() #h(2mm) #text(style: "italic")[Chapter #counter(heading.where(level: 1)).display()]]
+                } else {
+                  // Fallback content if no level 1 heading is found
+                  none
+                }
+            }
+        },
+    ) if theme == "classic" or theme == "standard"
+
+    // page headers
+    #set page(
+        header: context {
+            if is-page-empty() {
+                return
+            }
+    
+            let i = here().page()
+            if query(selector.or(<chapter-start>)).any(it => (it.location().page() == i)) {
+                return
+            }
+    
+            // Retrieve all headings in the document
+            let headings = query(heading);
+    
+            // Find the last heading before or on the current page
+            let last_heading = headings.filter(h => h.level == 2).filter(h => h.location().page() <= here().page()).last();
+    
+            if calc.odd(here().page()) {
+                // Odd: a.b.c section title
+                if last_heading != none {
+                    [#last_heading.body #h(1fr) #counter(page).display()]
+                } else {
+                    // If no heading is found, return a default header or none
+                    none
+                }
+            } else {
+                // Even pages : Chapter a. title
+                // Retrieve all level 1 headings before the current position
+                let headings = query(heading.where(level: 1).before(here()))
+    
+                // Check if there are any such headings
+                if headings.len() > 0 {
+                  [#counter(page).display() #h(1fr) #headings.last().body \[Chap. #counter(heading.where(level: 1)).display()\]]
+                } else {
+                  // Fallback content if no level 1 heading is found
+                  none
+                }
+            }
+        }
+    ) if theme == "modern"
+
+    // page footers
+    #set page(
+        footer: context {
+            if query(selector.or(<chapter-start>)).any(it => (it.location().page() == here().page())) {
+                align(right)[#counter(page).display()]
+            } else {
                 none
             }
-        } else {
-            // Even pages : Chapter a. title
-            // Retrieve all level 1 headings before the current position
-
-            // Check if there are any such headings
-            if headings.len() > 0 {
-              [#counter(page).display() #h(2mm) #text(style: "italic")[Chapter #counter(heading.where(level: 1)).display()]]
-            } else {
-              // Fallback content if no level 1 heading is found
-              none
-            }
         }
-    },
-    footer: context {
-        if query(selector.or(<chapter-start>)).any(it => (it.location().page() == here().page())) {
-            align(right)[#counter(page).display()]
-        } else {
-            none
-        }
-    }
-)
+    )
 
 = Introduction
 
 //#quote("Bertie Wooster", source: "Right Ho, Jeeves")[I don’t know if you have had the same experience, but the snag I always come up against when I’m telling a story is this dashed difficult problem of where to begin it.]
-#quote("Edsger W. Dijkstra")[If debugging is the process of removing software bugs,\ then programming must be the process of putting them in.]
+#quote("Edsger W. Dijkstra", theme: theme)[If debugging is the process of removing software bugs,\ then programming must be the process of putting them in.]
 
 // todo the very first sentence should say something about bugs
 
@@ -402,7 +456,7 @@ With the fast rise of artificial intelligence solutions in industry and daily li
 
 = Foundations for Debugging Techniques
 
-#quote("Donald Knuth")[Beware of bugs in the above code;\ I have only proved it correct, not tried it.]
+#quote("Donald Knuth", theme: theme)[Beware of bugs in the above code;\ I have only proved it correct, not tried it.]
 
 #lorem(128)
 
@@ -424,7 +478,7 @@ With the fast rise of artificial intelligence solutions in industry and daily li
 
 = A Remote Debugger for WebAssembly  // An embedded WebAssembly virtual machine
 
-#quote([#text(style: "italic", [after]) George Orwell])[Those who abjure debugging can only do so by others debugging on their behalf.]
+#quote([#text(style: "italic", [after]) George Orwell], theme: theme)[Those who abjure debugging can only do so by others debugging on their behalf.]
 // no single language is perfect, we want to enable any language on microcontrollers
 
 #include "remote/remote.typ"
@@ -453,7 +507,7 @@ With the fast rise of artificial intelligence solutions in industry and daily li
 
 = Multiverse debugging on microcontrollers
 
-#quote("Karl Popper", source: "Knowledge without Authority")[Our knowledge can only be finite, while our ignorance must necessarily be infinite.]
+#quote("Karl Popper", source: "Knowledge without Authority", theme: theme)[Our knowledge can only be finite, while our ignorance must necessarily be infinite.]
 
 #comment("Note")[PLDI paper chapter]
 
@@ -477,21 +531,21 @@ When a program's execution path is determined by the input from the external env
 
 = Managed testing
 
-//#quote("Laozi")[Anticipate the difficult by managing the easy.]
+//#quote("Laozi", theme: theme)[Anticipate the difficult by managing the easy.]
 
-#quote("Miyamoto Musashi")[If you know the way broadly, you will see it in everything.] // TODO find a better quote
+#quote("Miyamoto Musashi", theme: theme)[If you know the way broadly, you will see it in everything.] // TODO find a better quote
 
 #comment("Note")[Latch paper]
 
 = Validation
 
-#quote([Attributed to Rutherford B. Hayes#footnote[It is often reported that the 19#super[th] president of the United states Rutherford B. Hayes spoke these words upon seeing a telephone for the first time, however, this is almost definitely not true. In fact, Hayes was a technology buff who had the first telephone installed in the White House @kessler12.]])[An amazing invention#box(sym.dash.em)but who would ever want to use one?] // TODO add a reference to the footnote
+#quote([Attributed to Rutherford B. Hayes#footnote[It is often reported that the 19#super[th] president of the United states Rutherford B. Hayes spoke these words upon seeing a telephone for the first time, however, this is almost definitely not true. In fact, Hayes was a technology buff who had the first telephone installed in the White House @kessler12.]], theme: theme)[An amazing invention#box(sym.dash.em)but who would ever want to use one?] // TODO add a reference to the footnote
 
 #lorem(70)
 
 = Conclusions and future work
 
-#quote("P.G. Wodehouse", source: "Jeeves Takes Charge")[I pressed down the mental accelerator. The old lemon throbbed fiercely. I got an idea.]
+#quote("P.G. Wodehouse", source: "Jeeves Takes Charge", theme: theme)[I pressed down the mental accelerator. The old lemon throbbed fiercely. I got an idea.]
 
 #lorem(57)
 
