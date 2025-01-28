@@ -112,7 +112,35 @@
         heading-font = sans
     }
 
+    let big = 1.000em
+    let mid = 0.618em
+    let sml = 0.382em
+    if theme == "modern" {
+        big = 1.618em
+        mid = 1.000em
+        sml = 0.618em
+    }
+
     show heading: set text(font: heading-font)
+    show heading.where(level: 2): it => {
+        v(big)
+        it
+        v(mid)
+    }
+
+    show heading.where(level: 3): it => {
+        v(mid)
+        it
+        v(sml)
+    }
+
+    show heading.where(level: 4).or(heading.where(level: 5)): it => {
+        set text(style: "italic", weight: 400, size: normal) if theme != "modern"
+        v(mid)
+        it
+        v(sml)
+    }
+
 
     [
         //#add-headers()[#body]

@@ -312,16 +312,6 @@ An unexamined program is not worth running.  // TODO in preface explain this quo
         [#metadata(none) <chapter-start>]
     }
 
-    #show heading.where(level: 4): it => {
-        set text(style: "italic", weight: 400)
-        it
-    }
-
-    #show heading.where(level: 5): it => {
-        set text(style: "italic", weight: 400)
-        it
-    }
-
     // section titles
     #set heading(numbering: "1.1")
     #counter(heading).update(0)
