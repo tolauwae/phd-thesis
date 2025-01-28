@@ -4,6 +4,7 @@
 
 #import "../lib/book.typ": book, quote, is-page-empty, toc
 #import "../lib/comment.typ": comment
+#import "../lib/fonts.typ": serif, mass, normal, small
 
 // code snippets
 #import "@preview/codly:1.2.0": *
@@ -13,9 +14,6 @@
 #let maintitle = [Foundations for Constrained Debugging Techniques]
 #let subtitle = [Finding software faults in constrained environments with out-of-place and multiverse debugging techniques]
 #let title =  maintitle + ": " + subtitle
-
-#let serif = ("Libertinus Serif", "Libertinus Math")  // "Noto Serif CJK SC", "Noto Sans Math", "JetBrainsMonoNL NFM", 
-
 
 #let print = false
 #if "print" in sys.inputs.keys() {
@@ -116,7 +114,7 @@
 
     #pagebreak()
 
-    #text(font: serif, ligatures: true, discretionary-ligatures: false, size: 8pt, weight: "regular")[
+    #text(font: serif, ligatures: true, discretionary-ligatures: false, size: small, weight: "regular")[
 
     #v(1fr)
 
@@ -146,7 +144,7 @@
 #set page(
     fill: none,
     header: [
-        #set text(10pt)
+        #set text(normal)
     ],
     numbering: "i",
     )
@@ -156,9 +154,9 @@
         font: serif,
         ligatures: true,
         discretionary-ligatures: false,
-        size: 10pt, 
+        size: normal,
         lang: "en",
-        weight: 400)
+        weight: mass)
 
 #show heading: it => [
   #set align(center)
@@ -273,9 +271,9 @@ An unexamined program is not worth running.  // TODO in preface explain this quo
         font: serif,
         ligatures: true,
         discretionary-ligatures: false,
-        size: 10pt, 
+        size: normal,
         lang: "en",
-        weight: 400)
+        weight: mass)
 
 #set page(numbering: "1")
 #counter(page).update(1)
@@ -383,6 +381,10 @@ An unexamined program is not worth running.  // TODO in preface explain this quo
             let headings = query(heading);
     
             // Find the last heading before or on the current page
+            if headings.filter(h => h.level == 2).filter(h => h.location().page() <= here().page()).len() == 0 {
+                return
+            }
+
             let last_heading = headings.filter(h => h.level == 2).filter(h => h.location().page() <= here().page()).last();
     
             if calc.odd(here().page()) {

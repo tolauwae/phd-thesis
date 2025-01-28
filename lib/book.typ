@@ -1,3 +1,5 @@
+#import "fonts.typ": serif, sans, normal, small
+
 #let book(
     title: [Book title],
 
@@ -27,7 +29,7 @@
     set page(
         fill: none,
         header: [
-            #set text(10pt)
+            #set text(normal)
         ],
         numbering: "i",
         margin: (inside: 2.5cm, outside: 2cm)
@@ -49,7 +51,7 @@
     set figure(placement: top)
     show figure.where(kind: "algorithm"): set figure(placement: none)  // top placement for algorithms breaks line labels
 
-    show figure.caption: set text(8pt)
+    show figure.caption: set text(small)
     show figure.caption: it => {
         align(left)[#it]
     }
@@ -98,16 +100,16 @@
     set page(
         fill: none,
         header: [
-            #set text(10pt)
+            #set text(normal)
         ],
         numbering: "i",
         margin: (inside: 2.5cm, outside: 2cm)
     )
 
     // Style section headings
-    let heading-font = "Libertinus Serif"
+    let heading-font = serif
     if theme == "modern" {
-        heading-font = "Libertinus Sans"
+        heading-font = sans
     }
 
     show heading: set text(font: heading-font)
