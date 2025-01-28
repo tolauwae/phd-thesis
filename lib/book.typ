@@ -43,7 +43,7 @@
 
     // general styling
 
-    //// Code snippets
+    //// code snippets
     set raw(tab-size: 2)
     set raw(theme: "printable.thTheme") if print
 
@@ -106,22 +106,23 @@
         margin: (inside: 2.5cm, outside: 2cm)
     )
 
-    // Style section headings
+    // Section headings styling
     let heading-font = serif
     if theme == "modern" {
         heading-font = sans
     }
 
     let big = 1.000em
-    let mid = 0.618em
-    let sml = 0.382em
+    let mid = 0.494em
+    let sml = 0.305em
     if theme == "modern" {
-        big = 1.618em
-        mid = 1.000em
-        sml = 0.618em
+        big = 1.294em
+        mid = 0.800em
+        sml = 0.494em
     }
 
-    show heading: set text(font: heading-font)
+    show heading: set text(font: heading-font, hyphenate: false)
+    show heading: set par(justify: false)
     show heading.where(level: 2): it => {
         v(big)
         it
@@ -140,7 +141,6 @@
         it
         v(sml)
     }
-
 
     [
         //#add-headers()[#body]

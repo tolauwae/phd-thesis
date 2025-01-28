@@ -20,7 +20,7 @@
     print = true // sys.inputs.print
 }
 
-#let theme = "modern"
+#let theme = "classic"
 
 #show: book.with(
     title: title,
