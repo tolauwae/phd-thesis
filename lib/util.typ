@@ -91,7 +91,7 @@
     ]
 }
 
-#let semantics(caption, content) = {
+#let semantics(caption, content, tag) = {
     [
         #set text(8pt)
         #figure(
@@ -100,9 +100,7 @@
                 columns: 1,
                 column-gutter: 1mm,
                 inset: (x: 0pt, y: 2mm),
-                grid.hline(stroke: 0.5pt),
-                content,
-                grid.hline(stroke: 0.5pt))
+                content)
             ]#label(tag)
     ]
 }

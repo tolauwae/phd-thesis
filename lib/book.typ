@@ -32,7 +32,7 @@
             #set text(normal)
         ],
         numbering: "i",
-        margin: (inside: 2.5cm, outside: 2cm)
+        margin: (inside: 15.5cm, outside: 2cm)
     )
 
     // color scheme
@@ -55,6 +55,9 @@
     show figure.caption: it => {
         align(left)[#it]
     }
+
+    //// style footnote
+    show footnote.entry: set text(small)
 
     //// style links
 

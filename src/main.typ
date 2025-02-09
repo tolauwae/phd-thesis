@@ -20,7 +20,7 @@
     print = true // sys.inputs.print
 }
 
-#let theme = "classic"
+#let theme = "modern"
 
 #show: book.with(
     title: title,
@@ -403,6 +403,7 @@ An unexamined program is not worth running.  // TODO in preface explain this quo
 
     // page footers
     #set page(
+        margin: (inside: 3.0cm, outside: 2cm),
         footer: context {
             if query(selector.or(<chapter-start>)).any(it => (it.location().page() == here().page())) {
                 align(right)[#counter(page).display()]
@@ -537,7 +538,8 @@ When a program's execution path is determined by the input from the external env
 
 = Conclusions and future work
 
-#quote("P.G. Wodehouse", source: "Jeeves Takes Charge", theme: theme)[I pressed down the mental accelerator. The old lemon throbbed fiercely. I got an idea.]
+#quote("Terry Pratchet", source: "A Hat Full of Sky", theme: theme)[Why do you go away? So that you can come back. So that you can see the place you came from with new eyes and extra colors. And the people there see you differently, too. Coming back to where you started is not the same as never leaving.]
+//#quote("P.G. Wodehouse", source: "Jeeves Takes Charge", theme: theme)[I pressed down the mental accelerator. The old lemon throbbed fiercely. I got an idea.]
 
 #lorem(57)
 
