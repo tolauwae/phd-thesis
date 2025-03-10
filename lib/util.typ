@@ -1,6 +1,6 @@
 #import "@preview/codly:1.2.0": codly
 #import "@preview/lovelace:0.3.0": pseudocode
-#import "fonts.typ": serif, mono, normal, small, script, tiny
+#import "fonts.typ": serif, monospace, normal, small, script, tiny
 
 //#let circled(body) = {
 //circle(radius: 0.5em, stroke: 0.2mm)[
@@ -38,14 +38,14 @@
 
 #let code(offset: 0, body) = {
     codly(zebra-fill: none, offset: offset, display-name: false, radius: 0pt, fill: none, stroke: none, number-align: right + top, reference-sep: "", breakable: true,
-        number-format: (n) => text(size: tiny, font: mono)[#str(n)])
+        number-format: (n) => text(size: tiny, font: monospace, weight: 500)[#str(n)])
     body
 }
 
 #let snippet(tag, caption, columns: 1, offset: 0, continuous: true, content) = {
     show figure: set block(breakable: true)
 
-    show raw: set text(size: script, font: mono)
+    show raw: set text(size: script, font: monospace)
 
     set figure(placement: none)
     [

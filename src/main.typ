@@ -4,7 +4,7 @@
 
 #import "../lib/book.typ": book, quote, is-page-empty, toc
 #import "../lib/comment.typ": comment
-#import "../lib/fonts.typ": serif, mass, normal, small
+#import "../lib/fonts.typ": serif, fonts, mass, normal, small
 
 // code snippets
 #import "@preview/codly:1.2.0": *
@@ -12,7 +12,7 @@
 #set raw(syntaxes: "../lib/wast.sublime-syntax")
 
 #let maintitle = [Foundations for Constrained Debugging Techniques]
-#let subtitle = [Finding software faults in constrained environments with out-of-place and multiverse debugging techniques]
+#let subtitle = [Finding software faults in constrained environments with sound out-of-place and multiverse debugging techniques]
 #let title =  maintitle + ": " + subtitle
 
 #let print = false
@@ -75,7 +75,7 @@
     #align(center)[
         #text(2.4em, maintitle)
     
-        #text(1.2em, subtitle) // TODO heterogenous environments?
+        #text(1.2em, hyphenate: false, subtitle) // TODO heterogenous environments?
     ]
 
     #v(4cm)
@@ -114,7 +114,7 @@
 
     #pagebreak()
 
-    #text(font: serif, ligatures: true, discretionary-ligatures: false, size: small, weight: "regular")[
+    #text(font: fonts, ligatures: true, discretionary-ligatures: false, size: small, weight: "regular")[
 
     #v(1fr)
 
@@ -246,12 +246,7 @@ The software developed as part of this dissertation is available publicly on the
 
 = Preface <preface>
 
-At the start of this dissertation, are the words, "An unexamined program is not worth running".
-After the famous words Socrates supposedly spoke at his trial, "And unexamined live is not worth living".
-Rather less philosophically impressive, our version is a reminder that debugging is a unavoidable part of programming.
-No matter how good testing, automated fault detection, or formal verification become, mistakes with unknown causes will always exist, making debugging inescapable.
-Even those developers who refuse to use debuggers, instead rely on print statements to examine their program's behaviour, which is in essense an inefficient and outdated form of debugging.
-You really cannot run from it.
+#lorem(80)
 
 // TODO short passionate defense of debuggers with clear arguments
 
@@ -259,7 +254,7 @@ You really cannot run from it.
 
 #v(30%)
 #align(center)[
-An unexamined program is not worth running.  // TODO in preface explain this quote comes from Socrates -- or maybe find a better quote and use this one at the start of a chapter
+To the apple of my eye  // TODO end dedication with a period?
 ]
 
 #pagebreak(to: "odd")
@@ -268,7 +263,7 @@ An unexamined program is not worth running.  // TODO in preface explain this quo
 
 #set par(justify: true)
 #set text(
-        font: serif,
+        font: fonts,
         ligatures: true,
         discretionary-ligatures: false,
         size: normal,
@@ -471,7 +466,7 @@ With the fast rise of artificial intelligence solutions in industry and daily li
 
 = A Remote Debugger for WebAssembly  // An embedded WebAssembly virtual machine
 
-#quote([#text(style: "italic", [after]) George Orwell], theme: theme)[Those who abjure debugging can only do so by others debugging on their behalf.]
+#quote([#text(style: "italic", [adapted from]) George Orwell], theme: theme)[Those who abjure debugging can only do so by others debugging on their behalf.]
 // no single language is perfect, we want to enable any language on microcontrollers
 
 #include "remote/remote.typ"
@@ -548,7 +543,7 @@ When a program's execution path is determined by the input from the external env
 #pagebreak()
 #metadata(none) <appendix>
 
-#bibliography("references.bib")<bibliography>
+#bibliography("references.bib", style: "elsevier-harvard")<bibliography>
 
 #counter(heading).update(0)
 #set heading(numbering: "A.1")

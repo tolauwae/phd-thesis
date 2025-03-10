@@ -3,7 +3,7 @@
 
 // code snippets
 #import "../../lib/util.typ": line, range, code, snippet, circled, algorithm, semantics
-#import "../../lib/fonts.typ": small
+#import "../../lib/fonts.typ": monospace, small, script, monot
 
 // reduction rules
 #import "@preview/curryst:0.3.0"
@@ -539,13 +539,18 @@ For instance, programs written in C, Rust, and AssemblyScript have been used wit
 
 == Extending the Virtual Machine<remote:extending>
 
-In the previous sections we explained that WARDuino has native support for the most significant features of the microcontroller, such as $mono("GPIO")$, $mono("PWM")$, $mono("SPI")$, as well as communication protocols, such as $mono("HTTP")$ and $mono("MQTT")$.
+#[
+#show raw: set text(size: script, font: monospace)
+
+
+In the previous sections we explained that WARDuino has native support for the most significant features of the microcontroller, such as monot("GPIO->SPI"), $mono("PWM")$, $mono("SPI")$, as well as communication protocols, such as $mono("HTTP")$ and $mono("MQTT")$.
 However, we need to keep the memory constraints of the microcontrollers in mind.
 Given the #emph[hardware limitations] of embedded devices, it is important to keep the WARDuino virtual machine as small as possible.
 We therefore restricted the supported libraries to the most essential ones for embedded applications.
 Furthermore, when compiling the virtual machine, developers can disable select primitives to reduce the size of WARDuino further.#footnote[For readers familiar with OS architectures, this is somewhat familiar to the unikernel approach.]
 On the other hand, developers can add new primitives to the WARDuino VM for specific functionality or hardware they require for their projects.
-In this section we give an overview of how to add new primitives to the WARDuino VM. 
+In this section we give an overview of how to add new primitives to the WARDuino VM.
+]
 
 === Creating User-Defined Primitives<remote:sub:extending>
 
@@ -764,53 +769,31 @@ To differentiate the debugger semantics from the underlying language, we write t
 
 The semantics of the debugger consists of a state transitioning system where each state consists of a debugger state #emph[dbg];, zero or more local values $v^(\*)$ and a focused operation $e^(\*)$. The main state of the debugger #emph[dbg] is represented as a 5-tuple that holds the running state $r s$, the last incoming message $m s g_i$ the last outgoing message $"msg"_o$, the WebAssembly store $s$ and, a set of breakpoints $b p$. The running state indicates whether the virtual machine is paused (#smallcaps[pause];) or running (#smallcaps[play];). Rules for setting $"msg"_i$ when messages are received, and for clearing $"msg"_o$ when delivering outbound messages are omitted from our semantics as these are dependent on the communication method. The reduction rules for remote debugging are shown in the lower part of @fig:dbg:syntax, we describe them below.
 
-/ vm-run: #block[
-    When in the #smallcaps[play] state with no incoming or outgoing messages and no applicable breakpoints, the debugger takes one small step of the small step operational semantics $arrow.r.hook""_i$. That is, a regular WebAssembly step is taken.
-  ]
+/ vm-run: When in the #smallcaps[play] state with no incoming or outgoing messages and no applicable breakpoints, the debugger takes one small step of the small step operational semantics $arrow.r.hook""_i$. That is, a regular WebAssembly step is taken.
 
-/ db-pause: #block[
-    When the debugger receives a $p a u s e$ message, the debugger transitions to the #smallcaps[pause] state. Note that it is allowed to transition from any previous state to the paused state. After transitioning to the paused state, the rule #smallcaps[vm-run] is no longer applicable.
-  ]
+/ db-pause: When the debugger receives a $p a u s e$ message, the debugger transitions to the #smallcaps[pause] state. Note that it is allowed to transition from any previous state to the paused state. After transitioning to the paused state, the rule #smallcaps[vm-run] is no longer applicable.
 
-/ db-dump: #block[
-    In the paused state the debugger can request a dump of the virtual machine’s state. This dump is communicated to the debugging host by an outgoing message, which contains the full WebAssembly state and the breakpoints of the debugger.
-  ]
+/ db-dump: In the paused state the debugger can request a dump of the virtual machine’s state. This dump is communicated to the debugging host by an outgoing message, which contains the full WebAssembly state and the breakpoints of the debugger.
 
-/ db-run: #block[
-    When the debugger is in the #smallcaps[pause] state, the programmer can restart execution by sending a $r u n$ message.
-  ]
+/ db-run: When the debugger is in the #smallcaps[pause] state, the programmer can restart execution by sending a $r u n$ message.
 
-/ db-step: #block[
-    When the debugger receives the $"step"$ message in the #smallcaps[pause] state, it takes one step ($arrow.r.hook""_i$). The debugger remains in the #smallcaps[pause] state.
-  ]
+/ db-step: When the debugger receives the $"step"$ message in the #smallcaps[pause] state, it takes one step ($arrow.r.hook""_i$). The debugger remains in the #smallcaps[pause] state.
 
-/ db-bp-add: #block[
-    Breakpoints can be added in any run state.
-  ]
+/ db-bp-add: Breakpoints can be added in any run state.
 
-/ db-bp-rem: #block[
-    Breakpoints can be removed in any run state.
-  ]
+/ db-bp-rem: Breakpoints can be removed in any run state.
 
-/ db-break: #block[
-    When the debugger is not in the #smallcaps[pause] state, and the $i d$ of the currently executing expression is in the list of breakpoints the debugger transitions to the #smallcaps[pause] state.
-  ]
+/ db-break: When the debugger is not in the #smallcaps[pause] state, and the $i d$ of the currently executing expression is in the list of breakpoints the debugger transitions to the #smallcaps[pause] state.
 
 It is important to note that the #smallcaps[db-dump] adds a message to the outgoing messages, but the other rules expect the outgoing messages to be empty. Since the communication is abstracted away, we assume that incoming and outgoing messages are added and removed by an external system, and the debugging semantics cannot get stuck. In other words, the other rules in the semantics only handle incoming messages after all the outgoing messages are removed by the external communication system.
 
 Below, we show three derived commands for stepping through the WebAssembly code after a breakpoint is hit. These are not written as rules in our formal semantics as they are simply a combination of the rules we already introduced.
 
-/ step-into: #block[
-    This stepping command is offered only for function calls. In order for the debugger client to verify whether this command should be active it can request a dump of the current execution and enable the step-into command in the GUI. Execution of the #smallcaps[step-into] command is the same as #smallcaps[db-step];.
-  ]
+/ step-into: This stepping command is offered only for function calls. In order for the debugger client to verify whether this command should be active it can request a dump of the current execution and enable the step-into command in the GUI. Execution of the #smallcaps[step-into] command is the same as #smallcaps[db-step];.
 
-/ step-out: #block[
-    When the programmer is debugging inside a function, they might want to step out of the function call. Because the end of a function is an actual instruction in WebAssembly the debugger can inspect the body of the function and add breakpoints for all the exit points of the function. Important here is that the debugger needs to take note of the call stack at the moment a #smallcaps[step-out] is requested. To handle recursive calls correctly, the program should only be paused if one of the breakpoints is hit while the call stack has the same height. If the breakpoint is hit on a larger call stack, the program should be resumed (by sending $p l a y$).
-  ]
+/ step-out: When the programmer is debugging inside a function, they might want to step out of the function call. Because the end of a function is an actual instruction in WebAssembly the debugger can inspect the body of the function and add breakpoints for all the exit points of the function. Important here is that the debugger needs to take note of the call stack at the moment a #smallcaps[step-out] is requested. To handle recursive calls correctly, the program should only be paused if one of the breakpoints is hit while the call stack has the same height. If the breakpoint is hit on a larger call stack, the program should be resumed (by sending $p l a y$).
 
-/ step-over: #block[
-    Like step-into, step-over only activates for the next call instructions. Instead of following the call the step-over stepping command stops the debugger when the call is finished. The instruction sequence to express step-over with our basic debugging constructs are: take one step to go into the function (#smallcaps[db-step];), execute the #smallcaps[step-out] stepping command.
-  ]
+/ step-over: Like step-into, step-over only activates for the next call instructions. Instead of following the call the step-over stepping command stops the debugger when the call is finished. The instruction sequence to express step-over with our basic debugging constructs are: take one step to go into the function (#smallcaps[db-step];), execute the #smallcaps[step-out] stepping command.
 
 The semantics allow for more elaborate debugging operations to be build on top of those presented here. However, the previous three operations represent the most widely used debug operations, and should therefore accommodate most developers debugging needs.
 
@@ -825,29 +808,16 @@ In the semantics we leave out the specifics of the communication, and assume the
 ]
 The left-hand side of the double implication presents a single step in the normal evaluation ($arrow.r.hook""_i$) of a WebAssembly program, while the right-hand side presents one or more steps in the debugging semantics ($arrow.r.hook""_(d , i)^(\*)$) where only a single step is externally visible ($arrow.r.hook""_e$). We will start by sketching the proof for the first implication, that is, an evaluation step in the WebAssembly semantics implies an equivalent series of debugging steps.
 
-#block[
   In case the debugger is in the #smallcaps[play] state, two cases need to be considered. First, if there is no applicable breakpoint, the only applicable rule that is externally visible is the #smallcaps[vm-run] rule. Applying this rule, will transition the state $S$ to $S'$ by construction. Second, a number of internal rules of the debugger can transition the system into a #smallcaps[pause] state (e.g., #smallcaps[db-pause];, #smallcaps[db-break];). By assumption, processing the stream of messages $M^(\*)$ leads to exactly one externally visible step. None of the internally visible rules (e.g., #smallcaps[db-pause];, #smallcaps[db-bp-add];) change the underlying state $S$ of the program. This means, that whenever the externally visible step is taken, it will do so with the same underlying state $S$ as at the start of the debugging steps. The only externally visible steps, are #smallcaps[db-step] and #smallcaps[vm-run];, which take exactly the same transition as the underlying WebAssembly semantics. In case the debugger starts in the #smallcaps[pause] state, a similar argument holds.
 
-]
 Now we will provide the proof sketch for the second implication, that is a series of evaluation steps in the debugger semantics implies an equivalent evaluation step in the WebAssembly semantics.
 
-#block[
-  Only the #smallcaps[vm-run] and the #smallcaps[db-step] rules change the WebAssembly configuration $S$ in the debugging configuration $D$. By construction, both rules rely directly on the underlying WebAssembly semantics for transitioning $S$ to $S'$.
-]
+Only the #smallcaps[vm-run] and the #smallcaps[db-step] rules change the WebAssembly configuration $S$ in the debugging configuration $D$. By construction, both rules rely directly on the underlying WebAssembly semantics for transitioning $S$ to $S'$.
 
 === Safe Over-the-air Code Updates <remote:safe-dynamic-code-updates>
 Our over-the-air update system allows programmers to upload new programs and to update functions and local variables. Here, we present the system as an extension of the debugger semantics, but the over-the-air updates can also be defined on their own without the debugger as we show in @remote:live-code-updates-integrated-with-debugging. Note that the observational equivalence of the debugger semantics will no longer hold with the addition of over-the-air updates, since they allow for arbitrary code changes.
 
 @fig:red_update gives an overview of the additional reduction rules to dynamically update a WebAssembly program. In these rules the debug messages are extended with three update messages.#footnote[As with the debug semantics, rules for setting $m s g_i$ are omitted.] In order to improve the usability of the semantics, the over-the-air updates can only be executed in the paused state. Additionally, the program will remain in the paused state to allow setting new breakpoints.
-
-#block[
-
-
-  #block[
-
-
-  ]
-]
 
 #figure(
     caption: [#strong[Core debugger semantics.] Small step reduction rules ($arrow.r.hook""_(d,i)$) for the WARDuino remote debugger, as extensions to the WebAssembly semantics.],
@@ -877,19 +847,13 @@ grid(
 #curryst.proof-tree(r)]
 ))<fig:red_update>
 
-/ upload-m: #block[
-    An $u p l o a d$ message instructs WebAssembly to restart execution with a new set of modules $m^(\*)$. We require all these modules to be well typed, $(tack.r m)^(\*)$. The meta-function bootstrap represents WebAssembly’s initialization procedure, described in the original WebAssembly chapter @haas17. Note that this procedure replaces the entire configuration, including the WebAssembly state, locals and stack. Furthermore, upon receiving the $u p l o a d$ message the debugger state is reset and all breakpoints removed.
-  ]
+/ upload-m: An $u p l o a d$ message instructs WebAssembly to restart execution with a new set of modules $m^(\*)$. We require all these modules to be well typed, $(tack.r m)^(\*)$. The meta-function bootstrap represents WebAssembly’s initialization procedure, described in the original WebAssembly chapter @haas17. Note that this procedure replaces the entire configuration, including the WebAssembly state, locals and stack. Furthermore, upon receiving the $u p l o a d$ message the debugger state is reset and all breakpoints removed.
 
-/ update-f: #block[
-    The message to update a function specifies the function to update and its new code ($c o d e_f$). To identify a function we must supply the ID of the instance $i d_i$ it lives in and the index it exists at $i d_f$ in that instance. The meta-function $sans("update")_f$ replaces the function in the state $s$ and validates that its type remains the same.
+/ update-f: The message to update a function specifies the function to update and its new code ($c o d e_f$). To identify a function we must supply the ID of the instance $i d_i$ it lives in and the index it exists at $i d_f$ in that instance. The meta-function $sans("update")_f$ replaces the function in the state $s$ and validates that its type remains the same.
 
     WebAssembly’s formalization transforms every function in a closure that holds its code $f$ and the module instance it was originally defined in. When a function is imported into another module or placed in a table, its closure is copied to the other module instance. Because the closure holds the original instance, it can be executed in the right context. When it calls other functions, for example, these must be the functions from the original module rather than from the calling module. We extended closures with an extra identifier idx, which holds the index of the function in its defining module. Thanks to this, the $sans("update")_f$ can replace all closures in $s$ where the inst is $i d_i$ and the idx is $i d_f$.
-  ]
 
-/ update-local: #block[
-    Updating a local is done with an $u p d a t e_l$ message. This message holds the index of the local to be updated and its new value. We validate that the type of the new value is the same constant type $epsilon.alt arrow.r t$ as the original value at the chosen index.
-  ]
+/ update-local: Updating a local is done with an $u p d a t e_l$ message. This message holds the index of the local to be updated and its new value. We validate that the type of the new value is the same constant type $epsilon.alt arrow.r t$ as the original value at the chosen index.
 
 Note that we only allow updates if the underlying types remain the same. While this provides safety, it can still have undesirable effects. For example when updating, in the middle of a recursive function the new base conditions might have already been exceeded. The WARDuino VM does not tackle these kinds of problems. In future work we hope to improve on this by incorporating techniques from work on dynamic software updates~@tesone18.
 
@@ -979,45 +943,25 @@ With these syntactic extensions to WebAssembly, we are now able to formalize how
 
   ]
 ]
-/ callback: #block[
-    The #smallcaps[callback] reduction rule shows how the WebAssembly interpreter can replace the instruction sequence $e^(\*)$ with a callback construct, whenever there are unprocessed events and no other callback is being processed. We do not allow nested callback constructs. To enforce this, we change the running state to the #smallcaps[callback] value in the #smallcaps[callback] rule and change it back to #smallcaps[play] in the #smallcaps[resume] rule. The #smallcaps[callback] construct replaces the instruction sequence with a instruction. The replaced instruction sequence, is kept by the callback construct as a continuation (between curly braces). The new stack only holds the callback construct, which contains an indirect call with the index returned by the callback mapping $s_(c b s)$. Before the indirect call and the table index, the rule adds the topic and payload of the event to the stack as arguments for that function call. This means that every callback function must have type $sans("i32") #h(0em) sans("i32") #h(0em) sans("i32") #h(0em) sans("i32") arrow.r epsilon.alt$. Because we place the arguments on the stack at the same time as the indirect call, the body of the callback as a whole still has type $epsilon.alt arrow.r epsilon.alt$, as specified in @fig:callback-typing.
-  ]
+/ callback: The #smallcaps[callback] reduction rule shows how the WebAssembly interpreter can replace the instruction sequence $e^(\*)$ with a callback construct, whenever there are unprocessed events and no other callback is being processed. We do not allow nested callback constructs. To enforce this, we change the running state to the #smallcaps[callback] value in the #smallcaps[callback] rule and change it back to #smallcaps[play] in the #smallcaps[resume] rule. The #smallcaps[callback] construct replaces the instruction sequence with a instruction. The replaced instruction sequence, is kept by the callback construct as a continuation (between curly braces). The new stack only holds the callback construct, which contains an indirect call with the index returned by the callback mapping $s_(c b s)$. Before the indirect call and the table index, the rule adds the topic and payload of the event to the stack as arguments for that function call. This means that every callback function must have type $sans("i32") #h(0em) sans("i32") #h(0em) sans("i32") #h(0em) sans("i32") arrow.r epsilon.alt$. Because we place the arguments on the stack at the same time as the indirect call, the body of the callback as a whole still has type $epsilon.alt arrow.r epsilon.alt$, as specified in @fig:callback-typing.
 
-/ step-callback: #block[
-    The #smallcaps[step-callback] rule describes how the code inside the body of the is executed until it is empty.
-  ]
+/ step-callback: The #smallcaps[step-callback] rule describes how the code inside the body of the is executed until it is empty.
 
-/ resume: #block[
-    Once a callback is completed, the #smallcaps[resume] rule replace s the empty construct with its stored continuation. From this point onward evaluation resumes normally. We know that the body of the construct will always become empty because its type is $epsilon.alt arrow.r epsilon.alt$.
-  ]
+/ resume: Once a callback is completed, the #smallcaps[resume] rule replace s the empty construct with its stored continuation. From this point onward evaluation resumes normally. We know that the body of the construct will always become empty because its type is $epsilon.alt arrow.r epsilon.alt$.
 
-/ skip-message: #block[
-    When no callback function is registered in the callback mapping $s_("cbs")$ for the event at the top of the FIFO event queue $s_(e v t) (0)$, the skip-message rule takes a step by removing the top event from the event queue in the store.
-  ]
+/ skip-message: When no callback function is registered in the callback mapping $s_("cbs")$ for the event at the top of the FIFO event queue $s_(e v t) (0)$, the skip-message rule takes a step by removing the top event from the event queue in the store.
 
-/ callback-trap: #block[
-    Because code within the construct is reduced with the existing WebAssembly reduction rules, it can result in a . In that case, the trap should be propagated upward by replacing the entire callback with it.
-  ]
+/ callback-trap: Because code within the construct is reduced with the existing WebAssembly reduction rules, it can result in a . In that case, the trap should be propagated upward by replacing the entire callback with it.
 
-/ register: #block[
-    The takes an immediate memory slice, which corresponds with a topic string. The instruction takes a table index $j$ pointing to a function from the stack, and updates the callback mapping so the set of indices returned for the given topic now includes the table index $j$.
-  ]
+/ register: The takes an immediate memory slice, which corresponds with a topic string. The instruction takes a table index $j$ pointing to a function from the stack, and updates the callback mapping so the set of indices returned for the given topic now includes the table index $j$.
 
-/ register-trap: #block[
-    If the table index that the pops from the stack, does not refer to a WebAssembly function with the correct type ($sans("i32") #h(0em) sans("i32") #h(0em) sans("i32") #h(0em) sans("i32") arrow.r epsilon.alt$), the instruction will result in a trap as shown in rule #smallcaps[register-trap];.
-  ]
+/ register-trap: If the table index that the pops from the stack, does not refer to a WebAssembly function with the correct type ($sans("i32") #h(0em) sans("i32") #h(0em) sans("i32") #h(0em) sans("i32") arrow.r epsilon.alt$), the instruction will result in a trap as shown in rule #smallcaps[register-trap];.
 
-/ deregister: #block[
-    Callback functions can be removed from the callback mapping. The function updates the mapping by removing the index $j$ from the set of indices corresponding with the topic immediate.
-  ]
+/ deregister: Callback functions can be removed from the callback mapping. The function updates the mapping by removing the index $j$ from the set of indices corresponding with the topic immediate.
 
-/ callbacks: #block[
-    Looking up callbacks can be done with the instructions, which returns a vector of the table indices registered for the given topic.
-  ]
+/ callbacks: Looking up callbacks can be done with the instructions, which returns a vector of the table indices registered for the given topic.
 
-/ push-event: #block[
-    The instruction adds a new event to the global event queue. Analogous to the previous callback instructions, this instruction takes a topic immediate. The payload of the event is taken from the stack. As shown, in @fig:callback-typing a payload is a memory slice, which consists of two numeric values: the offset in memory and the length of the slice.
-  ]
+/ push-event: The instruction adds a new event to the global event queue. Analogous to the previous callback instructions, this instruction takes a topic immediate. The payload of the event is taken from the stack. As shown, in @fig:callback-typing a payload is a memory slice, which consists of two numeric values: the offset in memory and the length of the slice.
 
 Our formalization closely describes the callback handling system as introduced in @remote:interrupts. It does so with a limited amount of reduction rules. We can keep the formalization small because we reuse the existing instruction when adding a callback to the sequence of instructions. Using a smaller set of rules, means it is easier to reason about the formalization and the impact of the extension on WebAssembly. Furthermore, it means implementing the extension in a WebAssembly runtime is less work, because where the formalization reuses parts of the WebAssembly specification, the existing infrastructure of the runtime can likewise be reused.
 

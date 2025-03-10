@@ -1,4 +1,4 @@
-#import "fonts.typ": serif, sans, normal, small
+#import "fonts.typ": serif, sans, monospace, normal, small, script
 
 #let book(
     title: [Book title],
@@ -91,7 +91,7 @@
 
     show cite: it => {
         if not print {
-            show regex("\d+"): set text(fill: links)
+            show regex("[^()]+"): set text(fill: links)
             it
         } else {
             it
@@ -192,6 +192,8 @@
         #set heading(outlined: false)
         = Contents <toc>
 
+        #set outline.entry(fill: none)
+
         #[
             #show outline.entry.where(
               level: 1
@@ -200,7 +202,6 @@
             }
 
             #outline(title: none,
-                fill: none,
                 target: selector(heading).before(selector(label("toc")), inclusive: false),
             )
         ]
@@ -208,7 +209,6 @@
         #v(1em)
         #outline(
             title: none,
-            fill: none,
             indent: auto,
             depth: 2,
             target: selector(heading).after(selector(label("toc")), inclusive: false).before(selector(label("appendix")), inclusive: false),
@@ -224,7 +224,6 @@
             }
 
             #outline(title: none,
-                fill: none,
                 depth: 1,
                 target: selector(heading).after(selector(label("appendix")), inclusive: true),
             )
