@@ -1,11 +1,23 @@
 #import "fonts.typ": serif, sans, monospace, normal, small, script
+#import "@preview/drafting:0.2.2": set-margin-note-defaults, set-page-properties, margin-note
+
+//#let inside-margin = 16.5mm
+//#let outside-margin = 49.5mm
+//#let note-padding = 49.5mm
+#let note-padding = 9.54mm
+
+#let t = 21.98mm
+#let f = 35.40mm
+#let s = 19.08mm
+#let e = 38.16mm ;; outside margin
+
+#let inside-margin = s
+#let outside-margin = e
 
 #let book(
     title: [Book title],
 
     theme: "standard",
-
-    paper-size: none,
 
     paper-width: 148mm,
     paper-height: 210mm,
@@ -20,20 +32,22 @@
         panic("Unknown theme: " + theme)
     }
 
-    if paper-size == none {
-        set page(width: paper-width, height: paper-height)
-    } else {
-        set page(paper: paper-size)
-    }
+    // page setup
+
+    set page(width: paper-width, height: paper-height)
 
     set page(
         fill: none,
         header: [
             #set text(normal)
         ],
-        numbering: "i",
-        margin: (inside: 15.5cm, outside: 2cm)
+        numbering: "1",
+        margin: (inside: 16.5mm, top: 16.5mm, outside: outside-margin, bottom: outside-margin)
     )
+
+    // margin notes
+    set-margin-note-defaults(margin-outside: outside-margin, stroke: none, side: auto)
+    //set-page-properties(margin-outside: note-padding)
 
     // color scheme
     let ugent-blue = rgb("#1E64C8")
@@ -98,17 +112,6 @@
         }
     }
 
-    // Page setup
-
-    set page(
-        fill: none,
-        header: [
-            #set text(normal)
-        ],
-        numbering: "i",
-        margin: (inside: 2.5cm, outside: 2cm)
-    )
-
     // Section headings styling
     let heading-font = serif
     if theme == "modern" {
@@ -144,6 +147,10 @@
         it
         v(sml)
     }
+
+    // paragraph styling
+    set par(justify: true)
+    //show margin-note: set par(justify: false)
 
     [
         //#add-headers()[#body]

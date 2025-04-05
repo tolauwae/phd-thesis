@@ -1,4 +1,4 @@
-#import "@preview/codly:1.2.0": codly
+#import "@preview/codly:1.3.0": codly
 #import "@preview/lovelace:0.3.0": pseudocode
 #import "fonts.typ": serif, monospace, normal, small, script, tiny
 
@@ -95,7 +95,9 @@
     [
         #set text(8pt)
         #figure(
-            caption: caption)[
+            caption: caption,
+            supplement: [Figure]
+        )[
                 #grid(
                 columns: 1,
                 column-gutter: 1mm,

@@ -1,0 +1,151 @@
+#import "../../../lib/util.typ": semantics
+#import "../../../lib/class.typ": small, note
+
+#import "@preview/curryst:0.5.0": rule, prooftree
+
+#let lineWidth = 0.4pt
+#let headHeight = 1.3em
+#let tablehead(text) = align(left, rect(height: headHeight, stroke: none, text))
+
+#let definition = (name, addendum, rules, types, division: (1fr, 1.5em, 6fr, 9fr)) => [
+    #let lines = range(rules.len()).map(_ => "").zip(range(rules.len()).map(_ => ""), rules, types).flatten()
+    #set table(align: (x, _) => if x == 3 { right } else { left })
+    #table(
+        columns: division,
+        stroke: none,
+        inset: 0.3em,
+        name,
+        sym.colon.double.eq, "", addendum,
+        ..lines)
+]
+
+// Figures
+
+#let stlc = [  // Simply Typed Lambda Calculus without base types
+    #show table.cell: set text(style: "italic")
+    #set table.cell(align: horizon)
+
+    #grid(columns: (5fr, 7fr), stroke: none, align: top,
+
+            table(columns: (1fr), align: (left), stroke: none,
+                tablehead("Syntax"),
+                definition("t", "(terms)",
+                    ($x$, $lambda x : T . t$, $t space t$),
+                    ("variable", "abstraction", "application")),
+                definition("v", "(values)",
+                    ($lambda x : T . t$,),
+                    ("abstraction",)),
+                definition("T", "(types)",
+                    ($T arrow T$,),
+                    ("function type",)),
+                definition($Gamma$, "(contexts)",
+                    ($nothing$, $Gamma, x : T$),
+                    ("empty context", "variable binding")),
+            ),
+                grid.vline(stroke: lineWidth),
+            [
+            #set table(align: (x, y) => if x == 1 { right } else { center })
+            #set table(inset: (left: 0.3em))
+
+            #table(columns: (3fr, 1fr), stroke: none,
+                tablehead("Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.3em, bottom: 0.3em), $t arrow.r.long t'$),
+                prooftree(rule($t_1 space t_2 arrow.r.long t'_1 space t_2$, $t_1 arrow.r.long t'_1$)), "(E-App1)",
+                prooftree(rule($v_1 space t_2 arrow.r.long v_1 space t'_2$, $t_2 arrow.r.long t'_2$)), "(E-App2)",
+                $(lambda x : T_11 . t_12) space v_2 arrow.r.long [x arrow.r.bar v_2] space t_12$, "(E-AppAbs)",
+
+                tablehead("Typing"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.3em, bottom: 0.3em), $Gamma tack.r t : T$),
+                prooftree(rule($Gamma tack.r x : T$, $x : T in Gamma$)), "(T-Var)",
+                prooftree(rule($Gamma tack.r lambda x : T_1 . t_2 : T_1 arrow.r T_2$, $Gamma, x : T_1 tack.r t_2 : T_2$)), "(T-Abs)",
+                prooftree(rule($Gamma tack.r t_1 space t_2 : T_12$, $Gamma tack.r t_1 : T_11 arrow.r T_12$, $Gamma tack.r t_2 : T_11$)), "(T-App)",
+            )],
+        )
+]
+
+#let nat = [  // Natural numbers and booleans for stlc
+    #show table.cell: set text(style: "italic")
+    #set table.cell(align: horizon)
+
+
+    #grid(columns: (5fr, 7fr), stroke: none, align: top,
+            table(columns: (1fr), align: (left), stroke: none,
+                tablehead("Syntax"),
+                definition("t", "(terms)",
+                    ("...", "true", "false", "if t then t else t", "0", "succ t", "iszero t"),
+                    ("", "constant true", "constant false", "conditional", "constant zero", "succ", "iszero"), division: (1em, 1.5em, 1fr, 1fr)),
+
+                definition("v", "(values)",
+                    ("...", "true", "false", "n"),
+                    ("", "true value", "false value", "numerical value"), division: (1em, 1.5em, 3fr, 5fr)),
+
+                definition("n", "(numeric values)",
+                    ("0", "succ n"),
+                    ("", "constant true", "constant false", "conditional", "constant zero", "succ", "iszero"), division: (1em, 1.5em, 3fr, 5fr)),
+
+                definition("T", "(types)",
+                    ("...", "Bool", "Nat"),
+                    ("", "booleans", "natural numbers"), division: (1em, 1.5em, 3fr, 5fr)),
+            ),
+
+            grid.vline(stroke: lineWidth),
+
+            [
+                #set table(align: (x, y) => if x == 1 { right } else { center })
+                #set table(inset: (left: 0.3em))
+                #show math.equation: set text(style: "italic")
+
+                #let ifelse(t1, t2, t3) = [if #t1 then #t2 else #t3]
+
+                #table(columns: (3fr, 1fr), stroke: none,
+                    tablehead("Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.3em, bottom: 0.3em), $t arrow.r.long t'$),
+
+                    prooftree(rule($"if true then " t_1 " else " t_2 arrow.r.long t_1$)), "(E-IfTrue)", // 
+                    prooftree(rule($"if false then " t_1 " else " t_2 arrow.r.long t_2$)), "(E-IfFalse)",
+                    prooftree(vertical-spacing: 0.5em, rule(align(center, $"if " t_1 " then " t_2 " else " t_3 \ arrow.r.long "if " t'_1 " then " t_2 " else " t_3$), $t_1 arrow.r.long t'_1$)), "(E-If)",
+
+                    tablehead("Typing"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.3em, bottom: 0.3em), $Gamma tack.r t : T$),
+
+                )
+            ])
+]
+
+#let debugger = [
+    #show table.cell: set text(style: "italic")
+    #set table.cell(align: horizon)
+
+    #let config = "d"
+    #let message = $m$
+    #let operation = $kappa.alt$
+
+    #grid(columns: (5fr, 7fr), stroke: none, align: top,
+        table(columns: (1fr), align: (left), stroke: none,
+            tablehead("Syntax"),
+            definition(config, "(debugger config)",
+                ($t bar.v message$,),
+                ("",), division: (1fr, 1.5em, 4fr, 8fr)),
+
+            definition("m", "(output)",
+                ($nothing$, "t", [ack #operation],),
+                ("nothing", "term", "acknowledgement"), division: (1fr, 1.5em, 4fr, 8fr)),
+
+            definition(operation, "(debug operations)",
+                ($nothing$, "step", "inspect"),
+                ("nothing", "single step", "inspection"), division: (1fr, 1.5em, 4fr, 8fr)),
+        ),
+
+        grid.vline(stroke: lineWidth),
+
+        [
+            #set table(align: (x, y) => if x == 1 { right } else { center })
+            #set table(inset: (left: 0.3em))
+
+            #table(columns: (3fr, 1fr), stroke: none,
+                tablehead("Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.2em), $d attach(arrow.r.long, t: operation) d'$),
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v nothing attach(arrow.r.long, t: "step") t' bar.v $, " ack step")), $t arrow.r.long t'$)), "(E-Step)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v nothing attach(arrow.r.long, t: "inspect") t bar.v t$)))), "(E-Inspect)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v message attach(arrow.r.long, t: nothing) t bar.v nothing$)))), "(E-Read)",
+
+            // todo: gray background for messages
+            // rect(fill: blue, width: auto, height: auto, text(top-edge: "ascender", "ack step"))
+            )
+        ])
+]
