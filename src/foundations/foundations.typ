@@ -1,75 +1,191 @@
 #import "../../lib/class.typ": small, note
 #import "../../lib/util.typ": semantics
 
-#import "figures/semantics.typ": stlc, nat, debugger
+#import "figures/semantics.typ": rules-stlc, nat, debugger, operation, boxed, dbgarrow
+
+#import "@preview/ctheorems:1.1.3": *
+#show: thmrules.with(qed-symbol: text(size: small, $space square$))
+
+#let theorem = thmbox("theorem", "Theorem", base_level: 1, titlefmt: body => strong[#body.], namefmt: body => strong[(#body)], separator: h(0.6em, weak: true)).with(numbering: "1-1")
+#let proof = thmproof("proof", "Proof", titlefmt: body => strong[#body.], namefmt: body => strong[(#body)], separator: h(0.6em, weak: true))
 
 A central concern of this dissertation is the design of debuggers, and what makes a good debugger.
 To understand and answer this question, there are currently few formal foundations to build upon.
 Important to any formal foundation, is the question of what constitutes correctness.
-Over the course of writing this dissertation, several correctness criteria for debuggers emerged, the essence of which we distill in this chapter.
-We believe our distilled criterion can serve as a general definition of correctness for debuggers.
+Over the course of writing this dissertation, several correctness criteria for debuggers emerged, the essence of which we distill in this chapter into a general definition of correctness for debuggers.
 
 == Semantics of debuggers
 
 Before we can begin to reason about the correctness of debuggers, we need to establish their formal semantics.
-Until recently, defining the semantics of debuggers received only minimal attention in the literature, and existing formalizations focus on very different aspects, and in very different ways.
-However, recent works in the field have shown an increased interest in formalising the operations of debuggers, and a general approach seems to be emerging---where the debugger is defined in terms of the underlying language semantics.
+Unfortunately, defining the semantics of debuggers has always received less attention than formalizations for programming languages or compilers @da-silva92.
+This lack of interest, has resulted in a very sparse collection of existing semantics, which focus on very different aspects, and are defined in very different ways.
+To this day, there is no clear consensus on what constitutes correctness for debuggers, or even, which are the essential aspects for a tool to fall under the broad category of debuggers.
 
-An early attempt used PowerEpsilon @zhu91 @zhu92 to describe the source mapping used in a debugger as a denotational semantics for a toy language that can compile to a toy instruction set @zhu01.
+When examining recent works in debuggers, there does appear to be an emerging consensus on how to define the semantics of debuggers, where the operations of the debugger are defined in terms of an underlying language semantics.
+
+=== A brief history of formal debuggers
+
+To our knowledge, the earliest attempt at formally defining a debugger-like system is by #cite(form: "prose", <bahlke86>) 
+
+Another early attempt used PowerEpsilon @zhu91 @zhu92 to describe the source mapping used in a debugger as a denotational semantics for a toy language that can compile to a toy instruction set @zhu01.
 While an interesting formalization, it does not say anything about the debugging operations themselves or their correctness.
 
 The work by #cite(form: "prose", <li12>) focussed on automatic debuggers.
 Its formalization is based on a kernel of the C language, and defines operational semantics for tracing, and for backwards searching based on those traces.
-The work proofs that its trace and search operations terminate, but defines no general correctness criteria for their automatic debugging procedure.
+The work proofs that its trace and search operations terminate, but defines no general correctness criteria.
 
 // todo add some other approaches
 
+// todo fabio q b da silva: Correctness Proofs of Compilers and Debuggers: an Overview of an Approach Based on Structural Operational Semantics
+//
+// -> is really trying to do what we do in this chapter too, but for automatic debuggers
+// BUT we are focussing on manual/interactive debuggers
+
+// todo go through papers of the big names: robert hirshfeld and andreas zeller
+
+// todo berstein is probably not the first
 In 1995, #cite(form: "prose", <bernstein95a>), are the first to define a debugger in terms of an underlying language semantic.
-This approach has been used in a number of recent works @ferrari01 @torres17 @lauwaerts24 @holter24, and is the basis for the approach we take in this dissertation.
+By defining the semantics of a debugger in terms of the underlying language, it becomes much easier to reason about the correctness of the debugger, since the correctness can now be stated in terms of the underlying language.
+In hindsight, this may seem an obvious solution to the reader, but that speaks to the fact that this is by far the best and most intuitive approach to take.
+
+The approach has been used in a number of recent works @ferrari01 @torres17 @lauwaerts24 @holter24, and is the basis for the approach we take in this dissertation.
 
 // TODO where to add?
 //A more recent work presented a new type of debugger, called an abstract debugger, that uses static analysis to allow developers to explore abstract program states rather than concrete ones @holter24.
 //The work defines operational semantics for their abstract debugger, and an operational semantics for a concrete debugger.
-//The soundness of the abstract debugger is defined in terms this concrete debugger, where every debugging session in the concrete world is guaranteed to correspond to a session in the abstract world.
+//The soundness of the abstract debugger is defined in terms this concrete debugger, where every debug session in the concrete world is guaranteed to correspond to a session in the abstract world.
 //The opposite direction cannot hold since the static analysis relies on an over-approximation, which means there can always be sessions in the abstract world which are impossible in the concrete world.
 //This is in stark contrast with the soundness theorem in our work, which states that any path in the debugging semantics can be observed in the underlying language semantics.
 
 
 
+While there are still large differences in the way debuggers are formalised in recent works, it is clear that defining their semantics in terms of the underlying language is now accepted as the canonical approach.
+An approach we will therefore use throughout this dissertation.
+
 // todo so we take the simplest language: simply typed lambda calculus
 
+#let stlc = $lambda^arrow.r$
+#let remotedbg = $lambda^arrow.r_DD$
+#let oparrow = box(height: 0.4em, $attach(arrow.r.long, t: operation)$)
 
-
-== A remote debugger for $lambda^arrow.r$
+== #stlc as the running example
 
 #semantics(
-    [#note([The rules for $lambda^arrow.r$ shown here, in @fig:stlc and @fig:nat, are taken from the definitive work, _Types and Programming Languages_ from Benjamin C. Pierce.])#strong[Pure simply typed lambda calculus $lambda^arrow.r$.] The syntax, evaluation, and typing rules for the simply typed lambda calculus with no base types @pierce02.],
-    [#stlc],
+    [#note([The rules for #stlc, in both @fig:stlc and @app:stlc, are taken from the definitive work, _Types and Programming Languages_ from Benjamin C. Pierce.])#strong[Pure simply typed lambda calculus #stlc.] The syntax, evaluation, and typing rules for the simply typed lambda calculus with no base types @pierce02.],
+    [#rules-stlc],
     "fig:stlc") // todo. bug: counter always starts at 1
 
-Let us consider one of the simplest languages, the _simply typed lambda calculus_ ($lambda^arrow.r$), the rules for which are shown in @fig:stlc.
+In order to present our generalized correctness theorem, we need a simple yet illustrative language.
+Fortunately there is a straightforward choice, the _simply typed lambda calculus_ (#stlc), proposed by #cite(form: "prose", <church40>).
+Most readers will be familiar with the simply typed lambda calculus, but for those who are not, we provide a brief introduction.
 
-== Debugger correctness
+The simply typed lambda calculus, is arguably the simplest, and most well-known formal system used to study computation and programming languages.
+For fullness, we provide the core rules for the simply typed lambda calculus without any base types in @fig:stlc.
+In the lambda calculus, functions are the central form of computation, and there are only two basic operations; function application, and function abstraction.
+Function application is used to apply a function to another, while abstraction binds free variables to the function.
+// todo say something about abstraction being a value
+In the simply typed version, each expression is assigned a type, and functions are given types that describe the kinds of inputs they accept and outputs they produce.
+
+== A remote debugger for #stlc
+
+We start by defining the syntax of a tiny remote debugger for #stlc with booleans and natural numbers, defined as peano numbers @peano91 @kennedy74.
+The complete set of syntax, evaluation, and typing rules for booleans and natural numbers for #stlc can be found in @app:stlc.
+We start with a simple remote debugger, because the debuggers we discuss in this dissertation are each debuggers for distributed systems, and therefore remote debuggers of a kind.
+However, the easiest way to define such a debugger is to start from a local debugger, and simply add a messaging system on top of it.//---which is the way in which we will present the debugger in this section.
 
 #semantics(
-    [*Remote debugger semantics $lambda^arrow.r_DD$.* The syntax and evaluation rules for a simple remote debugger for the simply typed lambda calculus $lambda^arrow.r$ with natural numbers and booleans.],
+    [*Remote debugger semantics #remotedbg.* The syntax and evaluation rules for a simple remote debugger ($dbgarrow$) for the simply typed lambda calculus #stlc with natural numbers and booleans, defined over the local operations (#oparrow).],
     [#debugger],
     "fig:stlc.debugger")
 
-#lorem(256)
+The rules for our tiny remote debugger are shown in @fig:stlc.debugger#sym.dash.em#[these] rules define the operation of the debugger backend.
+Typically, a debugger will also have a frontend for users to interact with the debugger, but this is beyond the scope of the semantics.
+The rules therefore only model the interface between the backend and the frontend as a simple messaging system.
 
-== Proof of correctness for the $lambda^arrow.r_DD$ debugger
+The evaluation rules in @fig:stlc.debugger are split into two sets, the local debugging steps (#oparrow) with $o$ the debugging operation, and the remote debugging steps ($dbgarrow$), which wraps the former steps.
+The rules specific to the remote debugger are highlighted in the figure, without them, the remaining rules define a tiny local debugger.
 
+=== The syntax rules of the #remotedbg debugger
 
-== Modeling a reversible debugger $lambda^arrow.l_DD$
+The configuration of the local debugger is split into two parts, (1) the current state of the program---in this case a #stlc term $t$---and (2) the output displayed by the debugger frontend, modeled as the message box $boxed(m)$.
+Messages boxes are our way of modeling both inter-process and intra-process communication.
+In the case of the local debugger, the message box is used to model the inter-process communication between the debugger backend and the debugger frontend within the same debugger process.
+Therefore, we can think of $boxed(m)$ as a high-level abstraction of the debugger frontend.
 
-== Modeling a reflective debugger $lambda^arrow.r_RR$
+The configuration of the remote debugger is similar, but the message box $boxed(m)$ now models the intra-process communication from backend to frontend, and a second message box $boxed(o)$ models the intra-process communication from frontend to backend.
+This corresponds, respectively, to the output returned from the debugger, and the instructions send to it.
+
+The debugger can return as output, either nothing, a term, or an acknowledgement of a debug operation.
+The debug operations supported by the debugger are _step_ and _inspect_---to take a simple step in the program, and to inspect the current state of the program.
+Sometimes we also need the local steps (#oparrow) to perform an internal step, which does not correspond to a debug operation visible to the user.
+For such cases, we also provide a nothing operation ($nothing$).
+
+=== The evaluation rules of the #remotedbg debugger
+
+The entire evaluation of the debugger ($delta dbgarrow delta'$) is captured by only four rules.
+The first three steps are local steps, which describe the operation of a local debugger.
+
+/ E-step: When the current term $t$ can reduce to $t'$, than the debugger can take a step to $t'$ and output an acknowledgement of the successful step.
+
+/ E-Inspect: The inspect step outputs the current term $t$.
+
+/ E-read: The previous two steps require the output to be empty, to clear the output we introduce the _E-Read_ rule.
+
+To lift these local steps to describe the operation of a remote debugger, we only need to add one rule which takes the next debug operation from the input message box, and takes the correct corresponding local step.
+
+/ E-Remote: The remote debugger takes the next debug operation $o$ from the input message box, and performs the corresponding local step (#oparrow).
+
+Now that we have the formal semantics for a remote debugger that can step through and inspect a #stlc program, we can define what correctness means for such a debugger.
+
+=== Correctness criteria for the #remotedbg debugger
+
+Since we define our debugger in terms of the underlying language, the most intuitive definition of correctness for a debugger is that it should not change the semantics of the program being debugged.
+An intuition shared by the earliest works on debugger correctness such as // todo
+We develop the idea into two correctness criteria, _debugger soundness_ and _debugger completeness_.
+
+Debugger soundness demands that for any debug session that begins at the start of the program, there is a path in the underlying language semantics that leads to the same final program state.
+In the theorem, we use the shorthand notation $t_delta$ to denote the current term of a debugging configuration $delta$.
+
+#theorem("Debugger soundness")[
+  Let $delta_"start"$ be the initial configuration of the debugger for some program $t$. Then:
+  $ forall space delta space . space ( delta_"start" attach(dbgarrow, tr: *) delta ) arrow.r.double.long ( t attach(arrow.r.long, tr: *) t_delta ) $
+]
+#proof[
+  The proof proceeds by induction on the number of steps taken in the debugger.
+  Since the only rule that changes the term $t$ in the debugger configuration is _E-step_, uses the local step $t arrow.r.long t'$, there is necessarily a path $t attach(arrow.r.long, tr: *) t_delta$ in the underlying language semantics.
+]
+
+Debugger completeness is the dual of soundness, but in the opposite direction.
+Completeness demands that any path in the underlying semantics can be observed in the debugger.
+
+#theorem("Debugger completeness")[
+  Let $t$ be a #stlc program, and $delta_"start"$ the start configuration of a debug session for this program. Then:
+  $ forall space t' space . space ( t attach(arrow.r.long, tr: *) t' ) arrow.r.double.long exists space delta space . space delta = boxed(o) bar t' bar boxed(m) and ( delta_"start" attach(dbgarrow, tr: *) delta ) $
+]
+#proof[
+]
+
+Debugger soundness and completeness together ensure that the debugger does not deviate from the semantics of the program being debugged, and that the debugger and the normal execution observe the same program behaviour.
+This is the most essential property for any type of debugger.
+
+Both theorems are trivial to prove for our tiny remote debugger #remotedbg, however, this by no means implies that they are trivial to prove for every debugger, or that they have no value.
+To illustrate the usefulness of the correctness criteria, //and show they are by no means trivial to prove for every debugger, 
+we will discuss them for a few interesting debuggers built on our tiny remote semantic.
+
+== A reversible debugger for #stlc
+
+Another extension to the tiny remote debugger, is to turn it into a reversible debugger.
+// go back to start and rerun -> we need to keep track of the number of steps
+
+== A reflective debugger for #stlc
+
+// change variable value
+
+== General debugger correctness
 
 // == Debuggers that break correctness
 
 // todo do we need a section where we discuss debuggers which do not satisfy this criterion? + its implications / harmful effects
 //
 // is this not easy with a reversible debugger?
-
-#lorem(512)
 

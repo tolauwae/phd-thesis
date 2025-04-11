@@ -7,6 +7,8 @@
 #let headHeight = 1.3em
 #let tablehead(text) = align(left, rect(height: headHeight, stroke: none, text))
 
+#let highlight(fill, content) = rect(fill: fill, stroke: none, outset: 0mm, inset: (left: 1mm, top: 2mm, bottom: 2mm , right: 1mm), content)
+
 #let definition = (name, addendum, rules, types, division: (1fr, 1.5em, 6fr, 9fr)) => [
     #let lines = range(rules.len()).map(_ => "").zip(range(rules.len()).map(_ => ""), rules, types).flatten()
     #set table(align: (x, _) => if x == 3 { right } else { left })
@@ -15,13 +17,14 @@
         stroke: none,
         inset: 0.3em,
         name,
-        sym.colon.double.eq, "", addendum,
+        sym.colon.double.eq, "",
+        addendum,
         ..lines)
 ]
 
 // Figures
 
-#let stlc = [  // Simply Typed Lambda Calculus without base types
+#let rules-stlc = [  // Simply Typed Lambda Calculus without base types
     #show table.cell: set text(style: "italic")
     #set table.cell(align: horizon)
 
@@ -108,28 +111,35 @@
             ])
 ]
 
+#let local = "d"
+#let remote = $delta$
+#let message = $m$
+#let operation = "o" // $kappa.alt$
+#let boxed(it) = $[ it ]$
+#let dbgarrow = $attach(arrow.r.long, br: text(size: small, DD))$ // $harpoon.rt$
+
 #let debugger = [
     #show table.cell: set text(style: "italic")
     #set table.cell(align: horizon)
 
-    #let config = "d"
-    #let message = $m$
-    #let operation = $kappa.alt$
-
     #grid(columns: (5fr, 7fr), stroke: none, align: top,
         table(columns: (1fr), align: (left), stroke: none,
             tablehead("Syntax"),
-            definition(config, "(debugger config)",
-                ($t bar.v message$,),
-                ("",), division: (1fr, 1.5em, 4fr, 8fr)),
+            definition(local, "(local debugger)",
+                ($t bar.v boxed(message)$,),
+                ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
+
+            definition(remote, highlight(silver, "(remote debugger)"),
+                (highlight(silver, $boxed(o) bar.v d$),),
+                ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
 
             definition("m", "(output)",
                 ($nothing$, "t", [ack #operation],),
-                ("nothing", "term", "acknowledgement"), division: (1fr, 1.5em, 4fr, 8fr)),
+                ("nothing", "term", "acknowledgement"), division: (1.0em, 1.5em, 4fr, 9fr)),
 
             definition(operation, "(debug operations)",
                 ($nothing$, "step", "inspect"),
-                ("nothing", "single step", "inspection"), division: (1fr, 1.5em, 4fr, 8fr)),
+                ("nothing", "single step", "inspection"), division: (1.0em, 1.5em, 4fr, 9fr)),
         ),
 
         grid.vline(stroke: lineWidth),
@@ -138,12 +148,12 @@
             #set table(align: (x, y) => if x == 1 { right } else { center })
             #set table(inset: (left: 0.3em))
 
-            #table(columns: (3fr, 1fr), stroke: none,
-                tablehead("Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.2em), $d attach(arrow.r.long, t: operation) d'$),
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v nothing attach(arrow.r.long, t: "step") t' bar.v $, " ack step")), $t arrow.r.long t'$)), "(E-Step)",
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v nothing attach(arrow.r.long, t: "inspect") t bar.v t$)))), "(E-Inspect)",
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v message attach(arrow.r.long, t: nothing) t bar.v nothing$)))), "(E-Read)",
-
+            #table(columns: (3fr, 1.2fr), stroke: none,
+                tablehead("Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $delta dbgarrow delta'$),
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v boxed(nothing) attach(arrow.r.long, t: "step") t' bar.v space$, boxed[_ack step_])), $t arrow.r.long t'$)), "(E-Step)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v boxed(nothing) attach(arrow.r.long, t: "inspect") t bar.v boxed(t)$)))), "(E-Inspect)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v boxed(message) attach(arrow.r.long, t: nothing) t bar.v boxed(nothing)$)))), "(E-Read)",
+                highlight(silver, prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $boxed(operation) bar.v d dbgarrow boxed(nothing) bar.v d'$)), $d attach(arrow.r.long, t: operation) d'$))), highlight(silver, "(E-remote)"),
             // todo: gray background for messages
             // rect(fill: blue, width: auto, height: auto, text(top-edge: "ascender", "ack step"))
             )

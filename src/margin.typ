@@ -118,6 +118,9 @@
     }
 
     // running headers
+    #let runningheader(number, body) = [
+      #body \[Chap. #number\]
+    ]
     #set page(
         header: context {
             if is-page-empty() {
@@ -158,7 +161,7 @@
                 // Check if there are any such headings
                 if headings.len() > 0 {
                   [
-                    #counter(page).display() #h(1fr) #headings.last().body \[Chap. #counter(heading.where(level: 1)).display()\]
+                    #counter(page).display() #h(1fr) #runningheader(counter(heading.where(level: 1)).display(), headings.last().body)
                     #v(0.5em)
                   ]
                 } else {
@@ -207,16 +210,38 @@
 
 #include "foundations/foundations.typ"
 
+#[
+#counter(heading).update(1)
+#set heading(numbering: "A.1", supplement: [Appendix])
+
+#show heading: it => [
+  #set align(center)
+  #set text(weight: 600)
+  #pagebreak()
+  #block(smallcaps(it.body))
+  #v(1.25em)
+]
+
+    #let runningheader(number, body) = [
+      #body
+    ]
+#set figure(placement: none)
 
 // Appendices
 #metadata(none) <appendix>
 
 #bibliography("references.bib", style: "elsevier-harvard")<bibliography>
 
-#counter(heading).update(0)
-#set heading(numbering: "A.1")
+#show heading: it => [
+  #set align(center)
+  #set text(weight: 600)
+  #pagebreak()
+  #block(smallcaps[#counter(heading).display(). #it.body])
+  #v(1.25em)
+]
 
-= Appendix chapter 2
+= Simply typed lambda calculus extensions<app:stlc>
 
 #include "foundations/appendix.typ"
 
+]
