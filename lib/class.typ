@@ -22,7 +22,7 @@
             margin-note(side: side, dy: -1.52em, rect: rectangle, [
                 #set par(justify: false)
                 #set align(opposite(side))
-                #set text(size: small)
+                #set text(size: small, hyphenate: true)
                 #body
             ])
         }
