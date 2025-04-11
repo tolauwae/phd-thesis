@@ -125,17 +125,17 @@ For such cases, we also provide a nothing command ($nothing$).
 The entire evaluation of the debugger ($delta dbgarrow delta'$) is captured by only four rules.
 The first three steps are local steps, which describe the operation of a local debugger.
 
-/ E-step: When the current term $t$ can reduce to $t'$, than the debugger can take a step to $t'$, and output an acknowledgement of the successful step.
+/ E-Step: When the current term $t$ can reduce to $t'$, than the debugger can take a step to $t'$, and output an acknowledgement of the successful step.
 
-/ E-fallback: This fallback rule allows the debugger to drop _step_ messages in case there is no $t arrow.r.long t'$. For the #stlc, this means that the term must be a value $v$. In this case, we output an acknowledgement of $nothing$, to indicate that the command was processed, but did not have any effects.
+/ E-Fallback: This fallback rule allows the debugger to drop _step_ messages in case there is no $t arrow.r.long t'$. For the #stlc, this means that the term must be a value $v$. In this case, we output an acknowledgement of $nothing$, to indicate that the command was processed, but did not have any effects.
 
 / E-Inspect: The inspect step outputs the current term $t$.
 
-/ E-read: The previous two steps require the output to be empty, to clear the output we introduce the _E-Read_ rule.
+/ E-Read: The previous two steps require the output to be empty, to clear the output we introduce the _E-Read_ rule.
 
 To lift these local steps to describe the operation of a remote debugger, we only need to add one rule which takes the next debug command from the input message box, and takes the correct corresponding local step.
 
-/ E-Remote: The remote debugger takes the next debug command $o$ from the input message box, and performs the corresponding local step (#oparrow).
+/ E-Remote: The remote debugger takes the next debug command $operation$ from the input message box, and performs the corresponding local step (#oparrow).
 
 The evaluation of the remote debugger is informed by the commands that arrive in the input message box, a debug session can therefore be seen as a series of remote steps ($delta multi(dbgarrow) delta'$) that are the result of a sequence of debug commands, which we write as ($multi(operation)$).
 
@@ -167,7 +167,7 @@ Completeness demands that any path in the underlying semantics can be observed i
   $ forall space t' space . space ( t multi(arrow.r.long) t' ) arrow.r.double.long exists space delta space . space (delta = boxed(operation) bar.v t' bar.v boxed(m)) and ( delta_"start" multi(dbgarrow) delta ) $
 ]
 #proof[
-  Given any path $t multi(arrow.r.long) t'$ in #stlc, we can construct a sequence of debug commands $multi(operation)$ to be the exact number of _step_ commands corresponding to the path in #stlc. Then the debug session starting in $delta_"start"$ with the commands $multi(operation)$ will take the exact same path by construction (see rule _E-remote_ and _E-Step_), resulting in a configuration ($boxed(nothing) bar.v t' bar.v boxed(nothing)$).
+  Given any path $t multi(arrow.r.long) t'$ in #stlc, we can construct a sequence of debug commands $multi(operation)$ to be the exact number of _step_ commands corresponding to the path in #stlc. Then the debug session starting in $delta_"start"$ with the commands $multi(operation)$ will take the exact same path by construction (see rule _E-Remote_ and _E-Step_), resulting in a configuration ($boxed(nothing) bar.v t' bar.v boxed(nothing)$).
 ]
 
 Debugger soundness and completeness together ensure that the debugger does not deviate from the semantics of the program being debugged, and that the debugger and the normal execution observe the same program behaviour.
@@ -179,7 +179,7 @@ we will discuss them for a few interesting debuggers built on our tiny remote se
 
 #note[In fact, we only noticed when going over the progress proof, that the _E-Fallback_ rule was missing in the first version of #remotedbg.]Aside from these specific correctness criteria for debuggers, it is often a good idea to also proof the typical _progress_ and _preservation_ properties @pierce02 for the debugger semantics.
 Especially progress, generally serves as an important sanity check that the debugger is well-defined, and that there are no missing rules.
-We provide the proofs for progress and preservation for our tiny remote debugger, and all other semantics in this chapter, in @app:progress.
+We provide the proofs for progress and preservation for our tiny remote debugger, and all other debuggers that follow in this chapter, in @app:progress.
 
 == A conventional debugger for #stlc
 
@@ -195,13 +195,31 @@ Another extension to the tiny remote debugger, is to turn it into a reversible d
 
 // change variable value
 Our debuggers so far have only observed the execution of a program, without interceding in it.
-However, many debuggers support some form of _reflection_, where they change the program's execution.
+However, many debuggers support some form of _reflection_ @maes87 @papoulias13, where they change the program's execution.
 
 == General debugger correctness
+
+The correctness criteria for debuggers presented in this chapter, differ slightly in notation, but they all follow the general principle of _soundness_ and _completeness_.
 
 // == Debuggers that break correctness
 
 // todo do we need a section where we discuss debuggers which do not satisfy this criterion? + its implications / harmful effects
 //
 // is this not easy with a reversible debugger?
+
+== Conclusion
+
+//The formal framework for debuggers presented in this chapter, is the basis for the formalisations at the heart of this dissertation.
+This chapter is at the heart of the formalisations in this dissertation.
+As we explore how to develop sound out-of-place and multiverse debugging techniques for constrained environments, we will test our models with the correctness criteria presented in this chapter.
+Furthermore, the spirit of the debugger semantics in this chapter closely align to the design of the debuggers we will present in the following chapters.
+
+//The rest of this dissertation is build on the correctness criteria for debuggers presented in this chapter.
+//The dissertation itself will also follow the structure of this chapter, by first presenting a simple remote debugger, and then extending it with more advanced features in the following chapters.
+//
+//The remote debugger presented in the next chapter is designed to debug microcontrollers, and is built on top of the WebAssembly language.
+//The reasons for exploring the foundations for debuggers on microcontrollers, are twofold.
+//First, debugging technology is still lacking behind in the embedded world, where developers are still to a large extend using print statement debugging, or simple remote debuggers that require dedicated hardware.
+//Second, 
+//We already touched on the motivation for the WebAssembly language in the introduction, but this become even clearer in the next chapter.
 

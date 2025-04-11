@@ -1,4 +1,5 @@
 #import "@preview/drafting:0.2.2": set-margin-note-defaults, set-page-properties, margin-note, rule-grid
+#import "@preview/codly:1.3.0": *
 #import "../lib/book.typ": is-page-empty, quote
 #import "../lib/class.typ": s, t, e, f, note-padding, note-gutter, note, small, normal
 
@@ -198,17 +199,34 @@
         numbering("1-1", counter(heading).get().first(), num.pos().first())
     )
 
+    // style code snippets
+    #show: codly-init.with()
+    #set raw(syntaxes: "../lib/wast.sublime-syntax")
+
+
+
+// Chapters
+
 = Introduction
 
 #quote("Edsger W. Dijkstra", theme: theme)[If debugging is the process of removing software bugs,\ then programming must be the process of putting them in.]
 
 #include "introduction/introduction.typ"
 
+
 = Foundations for Debugging Techniques<chapter:foundations>
 
 #quote("Donald Knuth", theme: theme)[Beware of bugs in the above code;\ I have only proved it correct, not tried it.]
 
 #include "foundations/foundations.typ"
+
+
+= A Remote Debugger for WebAssembly  // An embedded WebAssembly virtual machine
+
+#quote([#text(style: "italic", [adapted from]) George Orwell], theme: theme)[Those who abjure debugging can only do so by others debugging on their behalf.]
+
+#include "remote/remote.typ"
+// Appendices and references
 
 #[
 #counter(heading).update(1)
@@ -227,7 +245,6 @@
     ]
 #set figure(placement: none)
 
-// Appendices
 #metadata(none) <appendix>
 
 #bibliography("references.bib", style: "elsevier-harvard")<bibliography>
@@ -243,4 +260,5 @@
 
 #include "foundations/appendix.typ"
 
+#include "remote/appendix.typ"
 ]
