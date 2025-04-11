@@ -1,13 +1,13 @@
 #import "../../lib/class.typ": small, note
 #import "../../lib/util.typ": semantics
 
-#import "figures/semantics.typ": rules-stlc, nat, debugger, operation, boxed, dbgarrow
+#import "figures/semantics.typ": rules-stlc, nat, debugger, operation, boxed, dbgarrow, multi
 
 #import "@preview/ctheorems:1.1.3": *
 #show: thmrules.with(qed-symbol: text(size: small, $space square$))
 
-#let theorem = thmbox("theorem", "Theorem", base_level: 1, titlefmt: body => strong[#body.], namefmt: body => strong[(#body)], separator: h(0.6em, weak: true)).with(numbering: "1-1")
-#let proof = thmproof("proof", "Proof", titlefmt: body => strong[#body.], namefmt: body => strong[(#body)], separator: h(0.6em, weak: true))
+#let theorem = thmbox("theorem", "Theorem", inset: 0em, base_level: 1, titlefmt: body => strong[#body.], namefmt: body => strong[(#body)], separator: h(0.6em, weak: true)).with(numbering: "1-1")
+#let proof = thmproof("proof", "Proof", inset: (left: 0em, top: 0em, right: 0em, bottom: 1.2em), titlefmt: body => strong[#body.], namefmt: body => strong[(#body)], separator: h(0.6em, weak: true))
 
 A central concern of this dissertation is the design of debuggers, and what makes a good debugger.
 To understand and answer this question, there are currently few formal foundations to build upon.
@@ -25,7 +25,7 @@ When examining recent works in debuggers, there does appear to be an emerging co
 
 === A brief history of formal debuggers
 
-To our knowledge, the earliest attempt at formally defining a debugger-like system is by #cite(form: "prose", <bahlke86>) 
+To our knowledge, the earliest attempt at formally defining a debugger-like system is by #cite(form: "prose", <bahlke86>). // todo ...
 
 Another early attempt used PowerEpsilon @zhu91 @zhu92 to describe the source mapping used in a debugger as a denotational semantics for a toy language that can compile to a toy instruction set @zhu01.
 While an interesting formalization, it does not say anything about the debugging operations themselves or their correctness.
@@ -115,25 +115,29 @@ Therefore, we can think of $boxed(m)$ as a high-level abstraction of the debugge
 The configuration of the remote debugger is similar, but the message box $boxed(m)$ now models the intra-process communication from backend to frontend, and a second message box $boxed(o)$ models the intra-process communication from frontend to backend.
 This corresponds, respectively, to the output returned from the debugger, and the instructions send to it.
 
-The debugger can return as output, either nothing, a term, or an acknowledgement of a debug operation.
-The debug operations supported by the debugger are _step_ and _inspect_---to take a simple step in the program, and to inspect the current state of the program.
-Sometimes we also need the local steps (#oparrow) to perform an internal step, which does not correspond to a debug operation visible to the user.
-For such cases, we also provide a nothing operation ($nothing$).
+The debugger can return as output, either nothing, a term, or an acknowledgement of a debug command.
+The debug commands supported by the debugger are _step_ and _inspect_---to take a simple step in the program, and to inspect the current state of the program.
+Sometimes we also need the local steps (#oparrow) to perform an internal step, which does not correspond to a debug command visible to the user.
+For such cases, we also provide a nothing command ($nothing$).
 
 === The evaluation rules of the #remotedbg debugger
 
 The entire evaluation of the debugger ($delta dbgarrow delta'$) is captured by only four rules.
 The first three steps are local steps, which describe the operation of a local debugger.
 
-/ E-step: When the current term $t$ can reduce to $t'$, than the debugger can take a step to $t'$ and output an acknowledgement of the successful step.
+/ E-step: When the current term $t$ can reduce to $t'$, than the debugger can take a step to $t'$, and output an acknowledgement of the successful step.
+
+/ E-fallback: This fallback rule allows the debugger to drop _step_ messages in case there is no $t arrow.r.long t'$. For the #stlc, this means that the term must be a value $v$. In this case, we output an acknowledgement of $nothing$, to indicate that the command was processed, but did not have any effects.
 
 / E-Inspect: The inspect step outputs the current term $t$.
 
 / E-read: The previous two steps require the output to be empty, to clear the output we introduce the _E-Read_ rule.
 
-To lift these local steps to describe the operation of a remote debugger, we only need to add one rule which takes the next debug operation from the input message box, and takes the correct corresponding local step.
+To lift these local steps to describe the operation of a remote debugger, we only need to add one rule which takes the next debug command from the input message box, and takes the correct corresponding local step.
 
-/ E-Remote: The remote debugger takes the next debug operation $o$ from the input message box, and performs the corresponding local step (#oparrow).
+/ E-Remote: The remote debugger takes the next debug command $o$ from the input message box, and performs the corresponding local step (#oparrow).
+
+The evaluation of the remote debugger is informed by the commands that arrive in the input message box, a debug session can therefore be seen as a series of remote steps ($delta multi(dbgarrow) delta'$) that are the result of a sequence of debug commands, which we write as ($multi(operation)$).
 
 Now that we have the formal semantics for a remote debugger that can step through and inspect a #stlc program, we can define what correctness means for such a debugger.
 
@@ -148,11 +152,11 @@ In the theorem, we use the shorthand notation $t_delta$ to denote the current te
 
 #theorem("Debugger soundness")[
   Let $delta_"start"$ be the initial configuration of the debugger for some program $t$. Then:
-  $ forall space delta space . space ( delta_"start" attach(dbgarrow, tr: *) delta ) arrow.r.double.long ( t attach(arrow.r.long, tr: *) t_delta ) $
+  $ forall space delta space . space ( delta_"start" multi(dbgarrow) delta ) arrow.r.double.long ( t multi(arrow.r.long) t_delta ) $
 ]
 #proof[
   The proof proceeds by induction on the number of steps taken in the debugger.
-  Since the only rule that changes the term $t$ in the debugger configuration is _E-step_, uses the local step $t arrow.r.long t'$, there is necessarily a path $t attach(arrow.r.long, tr: *) t_delta$ in the underlying language semantics.
+  Since _E-Step_ is the only rule that changes the term $t$ in the debugger configuration, and _E-Step_ uses the local step ($arrow.r.long$); there is necessarily a path $t multi(arrow.r.long) t_delta$ in the underlying language semantics.
 ]
 
 Debugger completeness is the dual of soundness, but in the opposite direction.
@@ -160,9 +164,10 @@ Completeness demands that any path in the underlying semantics can be observed i
 
 #theorem("Debugger completeness")[
   Let $t$ be a #stlc program, and $delta_"start"$ the start configuration of a debug session for this program. Then:
-  $ forall space t' space . space ( t attach(arrow.r.long, tr: *) t' ) arrow.r.double.long exists space delta space . space delta = boxed(o) bar t' bar boxed(m) and ( delta_"start" attach(dbgarrow, tr: *) delta ) $
+  $ forall space t' space . space ( t multi(arrow.r.long) t' ) arrow.r.double.long exists space delta space . space (delta = boxed(operation) bar.v t' bar.v boxed(m)) and ( delta_"start" multi(dbgarrow) delta ) $
 ]
 #proof[
+  Given any path $t multi(arrow.r.long) t'$ in #stlc, we can construct a sequence of debug commands $multi(operation)$ to be the exact number of _step_ commands corresponding to the path in #stlc. Then the debug session starting in $delta_"start"$ with the commands $multi(operation)$ will take the exact same path by construction (see rule _E-remote_ and _E-Step_), resulting in a configuration ($boxed(nothing) bar.v t' bar.v boxed(nothing)$).
 ]
 
 Debugger soundness and completeness together ensure that the debugger does not deviate from the semantics of the program being debugged, and that the debugger and the normal execution observe the same program behaviour.
@@ -172,14 +177,25 @@ Both theorems are trivial to prove for our tiny remote debugger #remotedbg, howe
 To illustrate the usefulness of the correctness criteria, //and show they are by no means trivial to prove for every debugger, 
 we will discuss them for a few interesting debuggers built on our tiny remote semantic.
 
+#note[In fact, we only noticed when going over the progress proof, that the _E-Fallback_ rule was missing in the first version of #remotedbg.]Aside from these specific correctness criteria for debuggers, it is often a good idea to also proof the typical _progress_ and _preservation_ properties @pierce02 for the debugger semantics.
+Especially progress, generally serves as an important sanity check that the debugger is well-defined, and that there are no missing rules.
+We provide the proofs for progress and preservation for our tiny remote debugger, and all other semantics in this chapter, in @app:progress.
+
+== A conventional debugger for #stlc
+
+The tiny remote debugger $remotedbg$ is perhaps to simple to be really considered---what we conventionally call---a remote debugger.
+The most obvious missing pieces are _pause_ and _play_ commands, and support for _breakpoints_.
+
 == A reversible debugger for #stlc
 
-Another extension to the tiny remote debugger, is to turn it into a reversible debugger.
+Another extension to the tiny remote debugger, is to turn it into a reversible debugger @engblom12.
 // go back to start and rerun -> we need to keep track of the number of steps
 
 == A reflective debugger for #stlc
 
 // change variable value
+Our debuggers so far have only observed the execution of a program, without interceding in it.
+However, many debuggers support some form of _reflection_, where they change the program's execution.
 
 == General debugger correctness
 

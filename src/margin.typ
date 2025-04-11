@@ -204,7 +204,7 @@
 
 #include "introduction/introduction.typ"
 
-= Foundations for Debugging Techniques
+= Foundations for Debugging Techniques<chapter:foundations>
 
 #quote("Donald Knuth", theme: theme)[Beware of bugs in the above code;\ I have only proved it correct, not tried it.]
 
@@ -240,7 +240,6 @@
   #v(1.25em)
 ]
 
-= Simply typed lambda calculus extensions<app:stlc>
 
 #include "foundations/appendix.typ"
 
