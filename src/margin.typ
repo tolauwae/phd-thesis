@@ -3,6 +3,9 @@
 #import "../lib/book.typ": is-page-empty, quote
 #import "../lib/class.typ": s, t, e, f, note-padding, note-gutter, note, small, normal
 
+#import "@preview/ctheorems:1.1.3": *
+#show: thmrules.with(qed-symbol: text(size: small, $space square$))
+
 #let maintitle = [Foundations for Constrained Debugging Techniques]
 #let subtitle = [Finding software faults in constrained environments with sound out-of-place and multiverse debugging techniques]
 #let title =  maintitle + ": " + subtitle

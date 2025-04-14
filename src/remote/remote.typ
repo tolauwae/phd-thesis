@@ -4,19 +4,21 @@
 // code snippets
 #import "../../lib/util.typ": line, range, code, snippet, circled, algorithm, semantics
 #import "../../lib/fonts.typ": monospace, small, script, monot
+#import "../../lib/class.typ": note, theorem, proofsketch
 
 // reduction rules
-#import "@preview/curryst:0.3.0"
+#import "@preview/curryst:0.5.0"
 
 In order to investigate future debugging techniques for microcontrollers, within our own formal framework as outlined in the previous chapter, we needed a virtual machine that could run on microcontrollers, and that supported a language that was easily formalised.
 Luckily, earlier work at Ghent University, developed just such a virtual machine, called WARDuino.
 
 However, the original work was limited to a proof of concept, and many of the promises of the new WebAssembly-based approach to programming microcontrollers were not fully realised.
 In this chapter we present a more complete version of WARDuino, developed as part of this dissertation.
-However, the main focus of this chapter is the formalisation of the remote debugger, and asynchronous code in the virtual machine. // todo 3 components? also include primitives? -> rename to actions
-These two components will be crucial for developing our advanced out-of-place and multiverse debugging techniques.
+We will discuss the full range of features and benefits of the new approach to programming microcontrollers proposed by WARDuino.
+However, the main focus of this chapter remains the formalisation of the _remote debugger_, atomic _actions_ for I/O operations, and _asynchronous code_ in the virtual machine.
+These three components will be crucial for developing our advanced out-of-place and multiverse debugging techniques.
 
-== Challenges
+== Challenges of Programming Microcontrollers
 
 Recent advances in microcontroller technology have enabled everyday objects (things) to be connected through the internet. Smart lamps, smart scales, smart ovens and refrigerators have all become commodity devices which are connected through the internet, making up the Internet of Things (IoT). This is largely thanks to microcontrollers—small and energy efficient computers—becoming very cheap. However, the drawbacks of microcontrollers are their limited processing power and memory size. Furthermore, microcontrollers typically do not run a full-fledged operating system @vansickle01, but instead run statically compiled firmware, or a tiny real-time operating system (RTOS) @tan09@hambarde14@de23 specialized for microcontrollers. Due to these differences and the resource constraints of the underlying hardware, developing software for microcontrollers differs significantly from conventional computer programming, where these severe constraints do not exist to the same degree. In this chapter we seek to close this gap, and focus on the following six major challenges unique to IoT development.
 
@@ -32,19 +34,25 @@ Recent advances in microcontroller technology have enabled everyday objects (thi
 
 / Bare-metal execution environments.: Finally, due to their heavy constraints, microcontrollers rarely run full-fledged operating systems. Instead, software is run on top of a tiny RTOS, or simply as statically compiled firmware.
 
-By using higher-level languages, many of these difficulties disappear. The abstractions in these languages can prevent whole classes of bugs and can ease development. Specifically, high-level languages relieve the programmer from manual memory management, and can provide stronger type systems to further avoid mistakes. They also make it easier to support advanced features such as over-the-air updates—where software is updated without flashing via a physical connection—and remote debugging, where a device is debugged through instructions sent from another remote device.
+== Programming Microcontrollers with High-level Languages
+
+Many of the difficulties in programming microcontrollers disappear when using higher-level languages.
+The abstractions in these languages can prevent whole classes of bugs and can ease development. Specifically, high-level languages relieve the programmer from manual memory management, and can provide stronger type systems to further avoid mistakes. They also make it easier to support advanced features such as over-the-air updates—where software is updated without flashing via a physical connection—and remote debugging, where a device is debugged through instructions sent from another remote device.
 
 Some high-level languages have been ported to embedded devices using small custom virtual machines @williams14@zerynth-s-r-l-21@nanoframework-contributors21. Unfortunately, these virtual machines only support a subset of the language’s features and only work on a specific range of hardware platforms. A popular example is MicroPython @george21, which is a subset of Python for microcontrollers. For performance reasons access to the peripherals is often baked into high-level programming language. In MicroPython support for displays and sensors is baked into the language and implemented directly in C. As such, if a specific peripheral device is not supported, the language is of limited use. Another issue, is the lack of debuggers for these languages. This is also the case for MicroPython, which has no official debugger, and third party alternatives are very limited. The Mu debugger for example, supports only classic breakpoints and step instructions, and works exclusively on Raspberry Pi devices, which are much more powerful than embedded devices under consideration in this chapter. Finally, many high-level languages do not directly support embedded devices at all, as we will discuss further in @remote:related-work.
 
-== Objectives
+//== WebAssembly: a Promise of a Universal Compile Target
+== WARDuino: WebAssembly for Microcontrollers
 
-In this work we take a different approach aimed at enabling multiple high-level languages on microcontrollers while mitigating their downsides. To accomplish this goal, we created WARDuino~@gurdeep19, a virtual machine (VM) designed to run WebAssembly~@haas17 on microcontrollers#footnote[WARDuino supports the first release of WebAssembly (MVP).]. Since WebAssembly is a universal compile target, it can enable programs written in a wide variety of languages to run on low-end embedded devices. This is an important design choice to improve the #emph[portability] of our solution. The design of WebAssembly further focuses on a compact representation, since the byte code is intended to be streamable and efficient~@haas17. This compactness is especially important when executing programs within the #emph[hardware limitations] of the embedded devices. Additionally, WebAssembly can achieve performance speeds close to native code~@haas17@jangda19, potentially outperforming other interpreters for high-level languages on microcontrollers.
+In this work we take a different approach aimed at enabling multiple high-level languages on microcontrollers while mitigating their downsides.
+To accomplish this goal, we created WARDuino~@gurdeep19, a virtual machine (VM) designed to run WebAssembly~@haas17 on microcontrollers#note[WARDuino supports the first release of WebAssembly (MVP).]. // todo "we created" does this feel right given the introduction of this chapter?
+Since WebAssembly is a universal compile target, it can enable programs written in a wide variety of languages to run on low-end embedded devices. This is an important design choice to improve the #emph[portability] of our solution. The design of WebAssembly further focuses on a compact representation, since the byte code is intended to be streamable and efficient~@haas17. This compactness is especially important when executing programs within the #emph[hardware limitations] of the embedded devices. Additionally, WebAssembly can achieve performance speeds close to native code~@haas17@jangda19, potentially outperforming other interpreters for high-level languages on microcontrollers.
 
-The WARDuino virtual machine was first presented in 2019 by #cite(<gurdeep19>, form: "prose");, and addressed #emph[the slow development cycle] and the challenging #emph[debuggability] through the initial implementation of a remote debugger with over-the-air reprogramming capabilities. The chapter presented these two features as extensions to the operational semantics of WebAssembly, in order to show their interaction and compatibility with the WebAssembly standard, and to ease re-implementation in other virtual machines. Additionally, WARDuino provided support for a limited set of hardware features through WebAssembly functions embedded in the virtual machine. It is necessary to embed this support in the virtual machine, since the #emph[bare-metal execution environments] of embedded devices provide no conventional interfaces to the hardware. Simultaneously, the primitives should be exposed at the level of WebAssembly in order to achieve the highest #emph[portability] possible. However, the chapter left some important problems as future work.
+The WARDuino virtual machine was first presented in 2019 by #cite(<gurdeep19>, form: "prose");, and addressed #emph[the slow development cycle] and the challenging #emph[debuggability] through the initial implementation of a remote debugger with over-the-air reprogramming capabilities. The paper presented these two features as extensions to the operational semantics of WebAssembly, in order to show their interaction and compatibility with the WebAssembly standard, and to ease re-implementation in other virtual machines. Additionally, WARDuino provided support for a limited set of hardware features through WebAssembly functions embedded in the virtual machine. It is necessary to embed this support in the virtual machine, since the #emph[bare-metal execution environments] of embedded devices provide no conventional interfaces to the hardware. Simultaneously, the primitives should be exposed at the level of WebAssembly in order to achieve the highest #emph[portability] possible. However, the paper left some important problems as future work.
 
 First, WebAssembly does not natively support asynchronous code, but many standard M2M protocols for IoT applications such as MQTT rely on asynchronous events. Similarly, IoT applications often rely on asynchronous handling of hardware interrupts. Due to this limitation in WebAssembly, WARDuino lacked any support for either hardware primitives that rely on asynchronicity, or M2M protocols. In this chapter, we extend the WebAssembly operational semantics with support for event-driven callback handling. Through this system, callback functions can subscribe to asynchronous events at the WebAssembly level. The functions will be executed whenever such an event occurs. While other proposals for asynchronous code in WebAssembly are being developed @webassembly-community-group22a, these proposals are still in early stages, and often focus heavily on browser applications, making them unsuitable for resource-constrained microcontrollers.
 
-Second, since hardware support is exposed at the WebAssembly level, there is a language barrier that has to be bridged for every higher-level language. The original version of WARDuino did not address this issue, and in practice lacked any real support for high-level languages. In this chapter, we show that WARDuino can practically solve the #emph[low-level coding] challenge as promised in the original chapter~@gurdeep19. We illustrate how WARDuino can support high-level languages through language symbiosis, by showing different levels of language integration for AssemblyScript, a TypeScript-like language. These examples serve as a general recipe for implementing other language libraries.
+Second, since hardware support is exposed at the WebAssembly level,paperthere is a language barrier that has to be bridged for every higher-level language. The original version of WARDuino did not address this issue, and in practice lacked any real support for high-level languages. In this chapter, we show that WARDuino can practically solve the #emph[low-level coding] challenge as promised in the original paper~@gurdeep19. We illustrate how WARDuino can support high-level languages through language symbiosis, by showing different levels of language integration for AssemblyScript, a TypeScript-like language. These examples serve as a general recipe for implementing other language libraries.
 
 Third, the formal rules for the debugger semantics were not used to prove any interesting properties or guarantees for the debugger. In this chapter, we improve the semantics for the debugging and over-the-air updates, and provide a proof for observational equivalence between the debugger semantics, and the underlying WebAssembly semantics. This equivalence means that the executions observed by the debugger semantics are precisely the same as those observed by the underlying language semantics.
 
@@ -52,9 +60,9 @@ Fourth, the virtual machine was never used to implement a real-world IoT applica
 
 To further illustrate how WARDuino can provide an improved development experience, closer to conventional programming, we present how WebAssembly enables fast prototyping of emulators, and the improved tool support with the visual debugger plugin for WARDuino in the VS Code IDE. This plugin is an important contribution towards the increased #emph[debuggability] of IoT software in WARDuino. The chapter also includes additional code examples that explain how hardware peripherals can be accessed from WebAssembly, as well as a notably improved and expanded presentation of the WARDuino virtual machine architecture.
 
-In summary, our novel contributions compared to the initial chapter~@gurdeep19 are:
+In summary, our novel contributions compared to the initial paper~@gurdeep19 are:
 
-- A detailed and expanded presentation of the #emph[improved WARDuino VM];: A WebAssembly virtual machine for embedded devices#footnote[The code of our VM is freely available under the Mozilla Public License 2.0 at #link("https://github.com/TOPLLab/WARDuino/");];. (@remote:architecture)
+- A detailed and expanded presentation of the #emph[improved WARDuino VM];: A WebAssembly virtual machine for embedded devices#note[The latest version of the VM is freely available under the Mozilla Public License 2.0];. (@remote:architecture)
 
 - #emph[Support for IoT primitives] (asynchronous hardware peripherals and common M2M protocols) at the WebAssembly level. (@remote:extending and @primitives)
 
@@ -73,13 +81,15 @@ In summary, our novel contributions compared to the initial chapter~@gurdeep19 a
 The rest of the chapter is organized as follows. First, we show an example program and illustrate how WebAssembly code can access hardware peripherals in @remote:modules. In @remote:architecture we discuss the overall design of WARDuino.
 The section goes into further detail on the execution of WebAssembly programs, and the handling of interrupts within the virtual machine. Then we show how we bridge the language barrier with WebAssembly in @remote:interoperability. @remote:extending briefly discusses how developers can extend the WARDuino machine themselves to support new or custom hardware peripherals. A formal description of our extensions is given in @remote:formal. In @remote:tools we give a detailed overview of the available tools for debugging WARDuino applications. We follow this discussion with the evaluation of our implementation in @remote:evaluation. Finally, we present related works in @remote:related-work and conclude in @remote:conclusion.
 
-== WARDuino: WebAssembly for Microcontrollers<remote:modules>
+//== WARDuino: WebAssembly for Microcontrollers<remote:modules>
+== WARDuino: WebAssembly Programming in Practice<remote:modules>
+
 WARDuino is a virtual machine for the 2019 core WebAssembly standard @rossberg19. The standard does not provide instructions to interact with the environment, for example controlling the pins of a microcontroller. Neither does the #emph[bare-metal execution environment] of embedded devices provide useful abstractions and interfaces to interact with the hardware, in the way a full-fledged operating system might. To address this shortcoming, WARDuino provides a set of primitives to interact with the environment as importable WebAssembly functions.
 
 However, the end goal of WARDuino is not to develop IoT applications in WebAssembly, instead it is meant to enable IoT developers to use high-level programming languages. Many high-level languages can already be compiled to WebAssembly, and we can lift the WARDuino primitives to those programming languages. This means that developers can use the WARDuino primitives as normal functions in their high-level language of choice. We start with a small example to make this general idea more concrete.
 
 === Developing IoT programs<remote:developing>
-Programs in over 40 languages can be compiled to WebAssembly bytecode#footnote[There is no official list of languages that compile to WebAssembly, but the community maintains #link("https://github.com/appcypher/awesome-wasm-langs")[a nearly complete list];.];, and many popular languages provide additional support such as interacting with WebAssembly directly. Developers can use these languages to write programs for WARDuino. We will use the AssemblyScript @the-assemblyscript-project23 programming language as an example in this section. AssemblyScript is a language specifically designed for WebAssembly. The main purpose of AssemblyScript is to allow web developers to use WebAssembly without needing to learn a new language. This is why the language is based#footnote[AssemblyScript is not TypeScript but a variant of it.] on TypeScript, and many TypeScript programs are indeed valid AssemblyScript programs. AssemblyScript’s main purpose strongly aligns with our goal of letting developers program embedded systems in the languages they already know and prefer. Furthermore, by being a standalone language AssemblyScript can better prioritize small code size and fast code execution, which are both very important for embedded software.
+Programs in over 40 languages can be compiled to WebAssembly bytecode#note[There is no official list of languages that compile to WebAssembly, but the community maintains #link("https://github.com/appcypher/awesome-wasm-langs")[a nearly complete list];.];, and many popular languages provide additional support such as interacting with WebAssembly directly. Developers can use these languages to write programs for WARDuino. We will use the AssemblyScript @the-assemblyscript-project23 programming language as an example in this section. AssemblyScript is a language specifically designed for WebAssembly. The main purpose of AssemblyScript is to allow web developers to use WebAssembly without needing to learn a new language. This is why the language is based#note[AssemblyScript is not TypeScript but a variant of it.] on TypeScript, and many TypeScript programs are indeed valid AssemblyScript programs. AssemblyScript’s main purpose strongly aligns with our goal of letting developers program embedded systems in the languages they already know and prefer. Furthermore, by being a standalone language AssemblyScript can better prioritize small code size and fast code execution, which are both very important for embedded software.
 
 @lst.program contains a minimal example of an MQTT program written in AssemblyScript. MQTT @banks14 is one of the most used M2M protocols @mishra20 for communication in IoT applications. It allows devices to communicate with a large network of other devices via a server, designated as the MQTT broker. The broker accepts topic-based messages from clients and passes these messages on to all clients that have subscribed to these topics. WARDuino provides an MQTT module with all the necessary primitives for the microcontroller to function as an MQTT client.
 
@@ -162,10 +172,14 @@ WARDuino allows developers to debug and update the running program over the air.
 
 Importantly, WARDuino contains a number of WebAssembly modules, implementing common libraries and functionality for microcontrollers, such as the `Serial` module or the `HTTP` module #circled([C]). WebAssembly programs can use the primitives from these modules in order to access the hardware of the microcontrollers. Due to the primitives being defined at the level of WebAssembly, it is not always straightforward for developers to use the primitives in their high-level source language. Language specific libraries can enhance the interoperability between a source language and the low-level interfaces of the WebAssembly primitives. @remote:interoperability goes into further detail on supporting high-level languages through language specific libraries.
 
-Microcontrollers often receive signals from peripherals through hardware interrupts. These are then typically processed by asynchronous interrupt handlers. This way, the embedded device does not have to block execution by actively waiting for input. Unfortunately, calling a function asynchronously is not supported by standard WebAssembly. In other words, a standard WebAssembly virtual machine cannot call a function to handle asynchronous events such as MQTT messages, hardware interrupts, and so on. To address this shortcoming, we have implemented a novel callback handling system for executing WebAssembly functions when certain events happen. WARDuino programs can use this callback handling system to handle asynchronous events. The MQTT module, for instance, can be used to register a WebAssembly function from the loaded program#footnote[This is reflected in the interface of the MQTT primitives listed in @fig:mqtt of @app:mqtt, where the #emph[subscribe] primitive expects the table index of a WebAssembly function as an argument.] as a callback for specific events #circled([D]). Whenever these events occur, our callback handler will invoke the registered function and pass all relevant information to it #circled([E]). In the rest of our chapter, we will refer to these functions as callback functions or simply callbacks.
+Microcontrollers often receive signals from peripherals through hardware interrupts. These are then typically processed by asynchronous interrupt handlers. This way, the embedded device does not have to block execution by actively waiting for input. Unfortunately, calling a function asynchronously is not supported by standard WebAssembly. In other words, a standard WebAssembly virtual machine cannot call a function to handle asynchronous events such as MQTT messages, hardware interrupts, and so on.
+#note[In @app:mqtt the MQTT _subscribe_ primitive illustates how primitives can receive the table index of callback functions as arguments.]
+To address this shortcoming, we have implemented a novel callback handling system for executing WebAssembly functions when certain events happen. WARDuino programs can use this callback handling system to handle asynchronous events. The MQTT module, for instance, can be used to register a WebAssembly function from the loaded program as a callback for specific events #circled([D]).
+Whenever these events occur, our callback handler will invoke the registered function and pass all relevant information to it #circled([E]).
+In the rest of our chapter, we will refer to these functions as callback functions or simply callbacks.
 
 === WARDuino Interpretation <remote:executing>
-WebAssembly is a stack based language, defined over an implicit operand stack. This means WebAssembly runtimes do not have to explicitly use this stack. In WARDuino, however, we implement the VM as a stack based virtual machine based on the open source `wac` C-project by Joel Martin#footnote[#link("https://github.com/kanaka/wac");];. Our WebAssembly operand stack is implemented as two separate stacks: the main operand stack, and a call stack. The call stack keeps track of the active functions and blocks#footnote[In WebAssembly `loop` and `if` instructions are also placed on the call stack as so-called "blocks". These blocks are needed to ensure that branch `(br)` instructions can only jump to safe locations.] of the program and where the execution should continue once they complete. When initializing the module, we seed the call stack with a call to the main entry point of the program. The main operand stack holds a list of numeric values from which WebAssembly operations pop their arguments, and to which they push their results. This stack starts out empty.
+WebAssembly is a stack based language, defined over an implicit operand stack. This means WebAssembly runtimes do not have to explicitly use this stack. In WARDuino, however, we implement the VM as a stack based virtual machine based on the open source `wac` C-project by Joel Martin#footnote[#link("https://github.com/kanaka/wac");];. Our WebAssembly operand stack is implemented as two separate stacks: the main operand stack, and a call stack. The call stack keeps track of the active functions and blocks#note[In WebAssembly `loop` and `if` instructions are also placed on the call stack as so-called "blocks". These blocks are needed to ensure that branch `(br)` instructions can only jump to safe locations.] of the program and where the execution should continue once they complete. When initializing the module, we seed the call stack with a call to the main entry point of the program. The main operand stack holds a list of numeric values from which WebAssembly operations pop their arguments, and to which they push their results. This stack starts out empty.
 
 #let tri = text(size: 6pt)[$triangle.filled.r$]
 #algorithm(
@@ -194,7 +208,7 @@ WebAssembly is a stack based language, defined over an implicit operand stack. T
 
 For interpreting instructions, the virtual machine keeps track of its own program pointer $m . p c$, which points to the next instruction to be executed in the program buffer. We may dereference this pointer to get the next opcode to execute (@alg.interpretation:opcode), for example `0x7f`. A switch statement then matches the current opcode (@alg.interpretation:switch). For our example, the switch determines our opcode to be a binary operator for 64-bit integers that will be handled by the #emph[interpretBinaryi64] function. This function resolves the instruction further and returns whether it succeeded. If so, the while-loop continues, and the next opcode is processed. Otherwise, $"success"$ will become false, and the while loop will stop interpretation.
 
-When the interpretation loop stops due to a failure, the virtual machine will throw the underlying trap (@alg.interpretation:trap)#footnote[We refer interested readers to the chapter by #cite(<haas17>, form: "prose") for more information on traps in WebAssembly.];. Alternatively, interpretation halts whenever the end instruction (`0x0b`) of the main entry point is reached. In this case, the #emph[done] variable will be set to `true`, and the main interpretation loop will stop successfully without throwing a trap.
+When the interpretation loop stops due to a failure, the virtual machine will throw the underlying trap (@alg.interpretation:trap)#note[We refer interested readers to the paper by #cite(<haas17>, form: "prose") for more information on traps in WebAssembly.];. Alternatively, interpretation halts whenever the end instruction (`0x0b`) of the main entry point is reached. In this case, the #emph[done] variable will be set to `true`, and the main interpretation loop will stop successfully without throwing a trap.
 
 In @alg.binary we show the most relevant parts of #emph[interpretBinaryi64];. The function is used to interpret all binary operators defined by WebAssembly on 64-bit integers. First, it gets the two arguments for the binary operation from the operand stack (@alg.binary:pop). Next, the function matches the opcode with a specific operation, in our case the `i64.div_s` operation. If the arguments are valid for the operation, the division is executed (@alg.binary:calculate), the result is placed on the top of the stack (@alg.binary:result), and the function returns `true` indicating success (@alg.binary:success). When the function encounters an illegal operation such as a division by zero, it returns `false` instead (@alg.binary:trap). In that case, the main loop of the virtual machine will stop interpretation of the program and throw an exception, as shown on @alg.interpretation:trap in @alg.interpretation. Most of the code for interpreting the WebAssembly operations is structured analogously to the function highlighted in @alg.binary.
 
@@ -247,14 +261,15 @@ Before events can be resolved, callback functions must be registered for the top
 ]
 Precisely for these concerns, we developed a reactive event-driven system.
 
-Callback handling in WARDuino works as follows. Within WebAssembly, functions can be stored into a table, enabling them to be referenced by their table indices. WARDuino uses this same mechanism for the callback functions. For instance, consider an MQTT `subscribe` primitive that subscribes to an MQTT topic with a given callback function (more information can be found in @app:mqtt). In the WebAssembly program we pass the table index of the callback function to the `subscribe` primitive, as shown in @fig.callbackhandler . The WARDuino MQTT library then uses this index to register a callback with the global callback handler in the WARDuino virtual machine. This handler holds a mapping of topic strings to table indices. Each topic string can be mapped to at most one callback.#footnote[We do not allow multiple callbacks for a single topic string at the level of WebAssembly instructions, but the WebAssembly primitives we built on top of this system do in fact support registering multiple callbacks. This gives the same result for developers writing programs in a high-level language in WARDuino. However, it does make a significant difference for the WebAssembly specification, as we will explain in @remote:callback-handling.]
+Callback handling in WARDuino works as follows. Within WebAssembly, functions can be stored into a table, enabling them to be referenced by their table indices. WARDuino uses this same mechanism for the callback functions. For instance, consider an MQTT `subscribe` primitive that subscribes to an MQTT topic with a given callback function (more information can be found in @app:mqtt). In the WebAssembly program we pass the table index of the callback function to the `subscribe` primitive, as shown in @fig.callbackhandler . The WARDuino MQTT library then uses this index to register a callback with the global callback handler in the WARDuino virtual machine. This handler holds a mapping of topic strings to table indices. Each topic string can be mapped to at most one callback.
+#note[We do not allow multiple callbacks for a single topic string at the level of WebAssembly instructions, but the WebAssembly primitives we built on top of this system do in fact support registering multiple callbacks. This gives the same result for developers writing programs in a high-level language in WARDuino. However, it does make a significant difference for the WebAssembly specification, as we will explain in @remote:callback-handling.]  // todo make shorter or place in the main body
 
-Whenever the virtual machine wants to resolve an event (@alg.interpretation, @alg.interpretation:events), the callback handler takes the oldest event from the queue and looks up its topic in the callback mapping . The mapping returns the table index of the registered callback function. Through this index the callback handler can set up the call for the correct WebAssembly function on the call stack, and add the topic and payload of the event as arguments to the operand stack . In other words, the callback handler does not execute the callback functions itself, it merely sets up the appropriate calls on the stacks. When the interpretation loop resumes it will automatically execute the callback function. Executing callbacks is therefore completely transparent to the virtual machine, since it is just another function call. Furthermore, the virtual machine does not need to know whether an event was actually processed by the callback handler. This does force callback functions to never return a value.#footnote[The precise signature is shown as part of the operational semantics in @remote:callback-handling.] However, this is a reasonable requirement that many other microcontroller platforms also impose on their interrupt callbacks @espressif-systems23@banzi08. After all, since the callbacks are executed concurrently to interpretation and in complete isolation, there is no way of using the return value anyway. Therefore, after the callback function is resolved, the interpretation of the program continues as if no additional function was called.
+Whenever the virtual machine wants to resolve an event (@alg.interpretation, @alg.interpretation:events), the callback handler takes the oldest event from the queue and looks up its topic in the callback mapping . The mapping returns the table index of the registered callback function. Through this index the callback handler can set up the call for the correct WebAssembly function on the call stack, and add the topic and payload of the event as arguments to the operand stack . In other words, the callback handler does not execute the callback functions itself, it merely sets up the appropriate calls on the stacks. When the interpretation loop resumes it will automatically execute the callback function. Executing callbacks is therefore completely transparent to the virtual machine, since it is just another function call. Furthermore, the virtual machine does not need to know whether an event was actually processed by the callback handler. This does force callback functions to never return a value.#note[The precise signature is shown as part of the operational semantics in @remote:callback-handling.] However, this is a reasonable requirement that many other microcontroller platforms also impose on their interrupt callbacks @espressif-systems23@banzi08. After all, since the callbacks are executed concurrently to interpretation and in complete isolation, there is no way of using the return value anyway. Therefore, after the callback function is resolved, the interpretation of the program continues as if no additional function was called.
 
-There is a possible pitfall with adding callbacks to the call stack at any point during execution. In light of the microcontroller’s limited memory, it is easy for the call stack to grow too rapidly. Therefore, we prohibit that callbacks interrupt other callbacks#footnote[Note that the blocked callbacks do not get lost, they are processed after the current callback completes.];. In practice, the virtual machine keeps track of whether a callback is being executed by adding a marker on the call stack just before the callback. When the virtual machine encounters this marker again, it knows that the callback completed. So when #emph[resolveEvent] is called in @alg.interpretation, and the last callback has not yet completed, the callback handler will never resolve an event.
+There is a possible pitfall with adding callbacks to the call stack at any point during execution. In light of the microcontroller’s limited memory, it is easy for the call stack to grow too rapidly. Therefore, we prohibit that callbacks interrupt other callbacks#note[Note that the blocked callbacks do not get lost, they are processed after the current callback completes.];. In practice, the virtual machine keeps track of whether a callback is being executed by adding a marker on the call stack just before the callback. When the virtual machine encounters this marker again, it knows that the callback completed. So when #emph[resolveEvent] is called in @alg.interpretation, and the last callback has not yet completed, the callback handler will never resolve an event.
 
 === Summary <summary>
-The WARDuino virtual machine has all the ingredients to develop IoT applications for microcontrollers in high-level languages. We discuss the practicalities of using high-level languages in @remote:interoperability, The virtual machine includes primitives that give the WebAssembly programs access to the hardware peripherals and other IoT capabilities of the microcontrollers. The architecture of our virtual machine is extensible in many ways, as we discuss in @remote:extending. Through the framework discussed in @remote:extending many Arduino libraries can be implemented in WARDuino#footnote[A current list of already implemented libraries can be found in the #link(
+The WARDuino virtual machine has all the ingredients to develop IoT applications for microcontrollers in high-level languages. We discuss the practicalities of using high-level languages in @remote:interoperability, The virtual machine includes primitives that give the WebAssembly programs access to the hardware peripherals and other IoT capabilities of the microcontrollers. The architecture of our virtual machine is extensible in many ways, as we discuss in @remote:extending. Through the framework discussed in @remote:extending many Arduino libraries can be implemented in WARDuino#note[A current list of already implemented libraries can be found in the #link(
     "https://topllab.github.io/WARDuino/reference/primitives.html",
   )[official documentation] of WARDuino.];.
 
@@ -547,7 +562,7 @@ By doing so, WARDuino has similar function signatures to other libraries in the 
 To use high-level languages with WARDuino in practice, the primitives need to be lifted from their WebAssembly interface to the host language.
 In this section we showed how this interoperability can be implemented to various degrees, ranging from using the low-level WebAssembly interface directly, to a high-level interface that integrates completely with the paradigms of the higher-level language.
 The examples listed here can be used as a general recipe for implementing language integration libraries in other languages that compile to WebAssembly.
-For instance, programs written in C, Rust, and AssemblyScript have been used with WARDuino using the implementation strategies outlined here.#footnote[Example programs can be found on the #link("https://topllab.github.io/WARDuino/")[documentation website] and in the #link("https://github.com/TOPLLab/WARDuino")[GitHub repository]]
+For instance, programs written in C, Rust, and AssemblyScript have been used with WARDuino using the implementation strategies outlined here.#note[Example programs can be found on the #link("https://topllab.github.io/WARDuino/")[documentation website] and in the #link("https://github.com/TOPLLab/WARDuino")[GitHub repository]]
 
 == Extending the Virtual Machine<remote:extending>
 
@@ -559,7 +574,7 @@ In the previous sections we explained that WARDuino has native support for the m
 However, we need to keep the memory constraints of the microcontrollers in mind.
 Given the #emph[hardware limitations] of embedded devices, it is important to keep the WARDuino virtual machine as small as possible.
 We therefore restricted the supported libraries to the most essential ones for embedded applications.
-Furthermore, when compiling the virtual machine, developers can disable select primitives to reduce the size of WARDuino further.#footnote[For readers familiar with OS architectures, this is somewhat familiar to the unikernel approach.]
+Furthermore, when compiling the virtual machine, developers can disable select primitives to reduce the size of WARDuino further.#note[For readers familiar with OS architectures, this is somewhat familiar to the unikernel approach.]
 On the other hand, developers can add new primitives to the WARDuino VM for specific functionality or hardware they require for their projects.
 In this section we give an overview of how to add new primitives to the WARDuino VM.
 ]
@@ -731,6 +746,9 @@ The execution of a WebAssembly program is described by the small step reduction 
 === Remote Debugging Extensions <remote:debugging>
 To formalize our debugging system, we extend the operational semantics of WebAssembly with the necessary remote debugging constructs. The goal of these extensions, is to provide constructs that are as lightweight as possible while still being powerful enough to provide the most common remote debugging facilities. We follow the recipe for defining a debugger semantics as outlined by #cite(<torres19>, form: "prose");, where the semantics of the debugger are defined in terms of the underlying language’s semantics: in this case the WebAssembly specifications. One advantage of this approach, is that it leads to a very concise description of the debugger semantics. More importantly, with this recipe you get a debugger whose semantics are observationally equivalent to those of the underlying language’s semantics. This means that the debugger does not interfere with the underlying semantics, and therefore, only observes real executions. Or more precisely, any execution in the WARDuino debugger corresponds to an execution of a WebAssembly program, and conversely that any execution of a program is observed by the debugger. The recipe also makes it straightforward to proof this non-interference of the debugger, as we will show in @remote:proofsketch.
 
+#let wasmarrow = $attach(arrow.r.hook, br: i)$
+#let debugarrow = $attach(arrow.r.hook, br: [d,i])$
+
 #semantics(
     [#strong[Core debugger semantics.] Small step reduction rules ($arrow.r.hook""_(d,i)$) for the WARDuino remote debugger, as extensions to the WebAssembly semantics.],
     [
@@ -740,33 +758,33 @@ To formalize our debugging system, we extend the operational semantics of WebAss
         &"(Messages)"& "msg" &colon.double.eq nothing bar.v "play" bar.v "pause" bar.v "step" bar.v "dump" bar.v "break"^+ "id" bar.v "break"^- "id" \
     $
 
-    #curryst.proof-tree(curryst.rule(name: [#text(size: small, [vm-run])],
+    #curryst.prooftree(curryst.rule(name: [#text(size: small, [vm-run])],
         $brace.l "play", nothing, nothing, "s", "bp" brace.r ; v^* ; e^* arrow.r.hook""_(d,i) brace.l "play", nothing, nothing, "s", "bp" brace.r ; v'^* ; e'^*$,
     $s;v^*;e^* arrow.r.hook""_(i) s' ; v'^* ; e'^*$,
     $id(e^*) in.not "bp"$)) \
 
-    #curryst.proof-tree(curryst.rule(name: [#text(size: small, [db-step])],
+    #curryst.prooftree(curryst.rule(name: [#text(size: small, [db-step])],
         $brace.l "pause", "step", nothing, "s", "bp" brace.r ; v^* ; e^* arrow.r.hook""_(d,i) brace.l "pause", nothing, nothing, "s'", "bp" brace.r ; v'^* ; e'^*$,
     $s;v^*;e^* arrow.r.hook""_(i) s' ; v'^* ; e'^*$)) \
 
-    #curryst.proof-tree(curryst.rule(name: [#text(size: small, [db-dump])],
+    #curryst.prooftree(curryst.rule(name: [#text(size: small, [db-dump])],
         $brace.l "pause", "dump", nothing, "s", "bp" brace.r ; v^* ; e^* arrow.r.hook""_(d,i) brace.l "pause", nothing, "msg", "s'", "bp" brace.r ; v'^* ; e'^*$,
     $s;v^*;e^* arrow.r.hook""_(i) s' ; v'^* ; e'^*$)) \
 
 
-    #curryst.proof-tree(curryst.rule(name: [#text(size: small, [db-pause])],
+    #curryst.prooftree(curryst.rule(name: [#text(size: small, [db-pause])],
         $brace.l "rs", "pause", nothing, "s", "bp" brace.r ; v^* ; e^* arrow.r.hook""_(d,i) brace.l "pause", nothing, nothing, "s", "bp" brace.r ; v^* ; e^*$)) \
 
-    #curryst.proof-tree(curryst.rule(name: [#text(size: small, [db-pause])],
+    #curryst.prooftree(curryst.rule(name: [#text(size: small, [db-pause])],
         $brace.l "pause", "play", nothing, "s", "bp" brace.r ; v^* ; e^* arrow.r.hook""_(d,i) brace.l "play", nothing, nothing, "s", "bp" brace.r ; v^* ; e^*$)) \
 
-    #curryst.proof-tree(curryst.rule(name: [#text(size: small, [db-bp-add])],
+    #curryst.prooftree(curryst.rule(name: [#text(size: small, [db-bp-add])],
         $brace.l "rs", "break"^+ "id", nothing, "s", "bp" brace.r ; v^* ; e^* arrow.r.hook""_(d,i) brace.l "rs", nothing, nothing, "s", ("bp" union brace.l "id" brace.r) brace.r ; v^* ; e^*$)) \
 
-    #curryst.proof-tree(curryst.rule(name: [#text(size: small, [db-bp-rem])],
+    #curryst.prooftree(curryst.rule(name: [#text(size: small, [db-bp-rem])],
         $brace.l "rs", "break"^- "id", nothing, "s", "bp" brace.r ; v^* ; e^* arrow.r.hook""_(d,i) brace.l "rs", nothing, nothing, "s", ("bp" backslash brace.l "id" brace.r) brace.r ; v^* ; e^*$)) \
 
-    #curryst.proof-tree(curryst.rule(name: [#text(size: small, [db-bp-rem])],
+    #curryst.prooftree(curryst.rule(name: [#text(size: small, [db-bp-rem])],
         $brace.l "rs", "break"^- "id", nothing, "s", "bp" brace.r ; v^* ; e^* arrow.r.hook""_(d,i) brace.l "rs", nothing, nothing, "s", ("bp" backslash brace.l "id" brace.r) brace.r ; v^* ; e^*$,
     $"rs" eq.not "pause"$,
     $id(e^*) in "bp"$)) \
@@ -777,11 +795,11 @@ To formalize our debugging system, we extend the operational semantics of WebAss
 
 At the top of @fig:dbg:syntax we give an overview of our syntactic extensions to the operational semantics of WebAssembly that provide remote debugging support. In the semantics we abstract away the underlying communication primitives, we assume that there is a system in place that reads messages from a stream and places them in the inbox. A concrete implementation may allow communication over the serial port, an HTTP connection or the SPI bus. For ease of exposition all these possible communication methods are modeled through messages $m s g$.
 
-To differentiate the debugger semantics from the underlying language, we write the reduction relation as ($arrow.r.hook""_(d , i)$), where $d$ indicates the debugging semantics and $i$ is still the index for the currently executing module. But thanks to how we define the debugger semantics, the operation of a program during debugging is described by the combined reduction rules from the WebAssembly semantics and our debugger semantics.
+To differentiate the debugger semantics from the underlying language, we write the reduction relation as (#debugarrow), where $d$ indicates the debugging semantics and $i$ is still the index for the currently executing module. But thanks to how we define the debugger semantics, the operation of a program during debugging is described by the combined reduction rules from the WebAssembly semantics and our debugger semantics.
 
 The semantics of the debugger consists of a state transitioning system where each state consists of a debugger state #emph[dbg];, zero or more local values $v^(\*)$ and a focused operation $e^(\*)$. The main state of the debugger #emph[dbg] is represented as a 5-tuple that holds the running state $r s$, the last incoming message $m s g_i$ the last outgoing message $"msg"_o$, the WebAssembly store $s$ and, a set of breakpoints $b p$. The running state indicates whether the virtual machine is paused (#smallcaps[pause];) or running (#smallcaps[play];). Rules for setting $"msg"_i$ when messages are received, and for clearing $"msg"_o$ when delivering outbound messages are omitted from our semantics as these are dependent on the communication method. The reduction rules for remote debugging are shown in the lower part of @fig:dbg:syntax, we describe them below.
 
-/ vm-run: When in the #smallcaps[play] state with no incoming or outgoing messages and no applicable breakpoints, the debugger takes one small step of the small step operational semantics $arrow.r.hook""_i$. That is, a regular WebAssembly step is taken.
+/ vm-run: When in the #smallcaps[play] state with no incoming or outgoing messages and no applicable breakpoints, the debugger takes one small step of the small step operational semantics #wasmarrow. That is, a regular WebAssembly step is taken.
 
 / db-pause: When the debugger receives a $p a u s e$ message, the debugger transitions to the #smallcaps[pause] state. Note that it is allowed to transition from any previous state to the paused state. After transitioning to the paused state, the rule #smallcaps[vm-run] is no longer applicable.
 
@@ -789,7 +807,7 @@ The semantics of the debugger consists of a state transitioning system where eac
 
 / db-run: When the debugger is in the #smallcaps[pause] state, the programmer can restart execution by sending a $r u n$ message.
 
-/ db-step: When the debugger receives the $"step"$ message in the #smallcaps[pause] state, it takes one step ($arrow.r.hook""_i$). The debugger remains in the #smallcaps[pause] state.
+/ db-step: When the debugger receives the $"step"$ message in the #smallcaps[pause] state, it takes one step (#wasmarrow). The debugger remains in the #smallcaps[pause] state.
 
 / db-bp-add: Breakpoints can be added in any run state.
 
@@ -809,96 +827,107 @@ Below, we show three derived commands for stepping through the WebAssembly code 
 
 The semantics allow for more elaborate debugging operations to be build on top of those presented here. However, the previous three operations represent the most widely used debug operations, and should therefore accommodate most developers debugging needs.
 
+#let exarrow = $attach(arrow.r.hook, br: e)$
+
 === Proof of Observational Equivalence <remote:proofsketch>
 In order to proof the observational equivalence between the debugger semantics and the base language semantics, we use the same proof method as #cite(<torres19>, form: "prose");, which proves observational equivalence by a weak bisimulation argument. With this proof, we show that if an arbitrary WebAssembly program $P$ can take a step to a program $P'$, the debugging semantics allows the debugger to reach the program $P'$ from the program $P$ by one or more debugging steps. The other way around, if the debugger allows a program $P$ to transition to a program $P'$, the normal WebAssembly evaluation will also allow the program $P$ transition to the program $P'$.
 
 In the semantics we leave out the specifics of the communication, and assume the incoming messages are added to the debugging state in the correct order. For the proof, we will reason over a stream of messages instead of a single one. Thanks to the recipe we follow for the debugger semantics, the proof follows almost directly by construction.
 
-#block[
-  (Observational equivalence). Let $S$ be the WebAssembly configuration ${ s ; v^(\*) ; e^(\*) }$, for which there exists a transition ($arrow.r.hook""_i$) to another configuration $S'$ with ${ s' ; v'^(\*) ; e'^(\*) }$. Let the debugging configuration $({ r s , m s g_i , m s g_o , s , b p } ; v^(\*) ; e^(\*))$ with running state $r s$, incoming messages $m s g_i$, outgoing messages $m s g_o$, and set of breakpoints $b p$; be such that processing the stream of incoming message $M^(\*)$ takes exactly one externally visible step (#smallcaps[vm-run] or #smallcaps[db-step];) in the debugger semantic $(arrow.r.hook""_e)$, then: $ ({ s ; v^(\*) ; e^(\*) } arrow.r.hook""_i { s ' ; v '^(\*) ; e '^(\*) }) arrow.l.r.double ({ r s , m s g_i , m s g_o , s , b p } ; v^(\*) ; e^(\*) arrow.r.hook""_e { r s , m s g_i , m s g_o , s ' , b p } ; v '^(\*) ; e '^(\*)) $
+#theorem("Observational equivalence")[
+Let $S$ be the WebAssembly configuration ${ s ; v^(\*) ; e^(\*) }$, for which there exists a transition (#wasmarrow) to another configuration $S'$ with ${ s' ; v'^(\*) ; e'^(\*) }$. Let the debugging configuration $({ r s , m s g_i , m s g_o , s , b p } ; v^(\*) ; e^(\*))$ with running state $r s$, incoming messages $m s g_i$, outgoing messages $m s g_o$, and set of breakpoints $b p$; be such that processing the stream of incoming message $M^(\*)$ takes exactly one externally visible step (#smallcaps[vm-run] or #smallcaps[db-step];) in the debugger semantic (#exarrow), then:
 
+  $ ({ s ; v^(\*) ; e^(\*) } wasmarrow { s ' ; v '^(\*) ; e '^(\*) }) \
+  arrow.l.r.double \
+  ({ r s , m s g_i , m s g_o , s , b p } ; v^(\*) ; e^(\*) exarrow { r s , m s g_i , m s g_o , s ' , b p } ; v '^(\*) ; e '^(\*)) $
 ]
-The left-hand side of the double implication presents a single step in the normal evaluation ($arrow.r.hook""_i$) of a WebAssembly program, while the right-hand side presents one or more steps in the debugging semantics ($arrow.r.hook""_(d , i)^(\*)$) where only a single step is externally visible ($arrow.r.hook""_e$). We will start by sketching the proof for the first implication, that is, an evaluation step in the WebAssembly semantics implies an equivalent series of debugging steps.
+The left-hand side of the double implication presents a single step in the normal evaluation (#wasmarrow) of a WebAssembly program, while the right-hand side presents one or more steps in the debugging semantics ($debugarrow^(\*)$) where only a single step is externally visible ($exarrow$). We will start by sketching the proof for the first implication, that is, an evaluation step in the WebAssembly semantics implies an equivalent series of debugging steps.
 
+#proofsketch[
   In case the debugger is in the #smallcaps[play] state, two cases need to be considered. First, if there is no applicable breakpoint, the only applicable rule that is externally visible is the #smallcaps[vm-run] rule. Applying this rule, will transition the state $S$ to $S'$ by construction. Second, a number of internal rules of the debugger can transition the system into a #smallcaps[pause] state (e.g., #smallcaps[db-pause];, #smallcaps[db-break];). By assumption, processing the stream of messages $M^(\*)$ leads to exactly one externally visible step. None of the internally visible rules (e.g., #smallcaps[db-pause];, #smallcaps[db-bp-add];) change the underlying state $S$ of the program. This means, that whenever the externally visible step is taken, it will do so with the same underlying state $S$ as at the start of the debugging steps. The only externally visible steps, are #smallcaps[db-step] and #smallcaps[vm-run];, which take exactly the same transition as the underlying WebAssembly semantics. In case the debugger starts in the #smallcaps[pause] state, a similar argument holds.
+]
 
 Now we will provide the proof sketch for the second implication, that is a series of evaluation steps in the debugger semantics implies an equivalent evaluation step in the WebAssembly semantics.
 
+#proofsketch[
 Only the #smallcaps[vm-run] and the #smallcaps[db-step] rules change the WebAssembly configuration $S$ in the debugging configuration $D$. By construction, both rules rely directly on the underlying WebAssembly semantics for transitioning $S$ to $S'$.
+]
 
 === Safe Over-the-air Code Updates <remote:safe-dynamic-code-updates>
 Our over-the-air update system allows programmers to upload new programs and to update functions and local variables. Here, we present the system as an extension of the debugger semantics, but the over-the-air updates can also be defined on their own without the debugger as we show in @remote:live-code-updates-integrated-with-debugging. Note that the observational equivalence of the debugger semantics will no longer hold with the addition of over-the-air updates, since they allow for arbitrary code changes.
 
 @fig:red_update gives an overview of the additional reduction rules to dynamically update a WebAssembly program. In these rules the debug messages are extended with three update messages.#footnote[As with the debug semantics, rules for setting $m s g_i$ are omitted.] In order to improve the usability of the semantics, the over-the-air updates can only be executed in the paused state. Additionally, the program will remain in the paused state to allow setting new breakpoints.
 
-#figure(
-    caption: [#strong[Core debugger semantics.] Small step reduction rules ($arrow.r.hook""_(d,i)$) for the WARDuino remote debugger, as extensions to the WebAssembly semantics.],
-grid(
-    columns: (2fr, 2fr),
-    gutter: 1mm,
-// Left side
-[
-          \$\$\\begin{array}{ l l c l }
-  \\emph{(Messages)} & msg & \\Coloneqq & \\dots \\; | \\; upload \\, m^\* \\; | \\; update\_f\~id\_i\~id\_f\~code\_f \\; | \\; update\_l \\, j \\, v \\\\
-  \\emph{(Closures)} & cl & \\Coloneqq & \\{\\textsf{inst}\\ i, \\ \\textsf{idx}\\ j, \\ \\textsf{code}\\ f\\}
-  \\end{array}\$\$
-    ],
-// Right side TODO
-[
-    #let r = curryst.rule(
-  name: "callback", 
-  $s;v^*;e^* arrow.r.hook_i s';v^*; bold("callback") {e^*} (s_("evt")(0)_("payload")) (s_("cbs")(s_("evt")(0)_("topic"))) (bold("call_indirect") italic("tf")) bold("end")$
-  )
+#let debugrule(title, conclusion, ..premises, vertical-spacing: 0.3em) = [
+  #curryst.prooftree(vertical-spacing: vertical-spacing, curryst.rule(name: [#smallcaps(title)], conclusion, ..premises))]
+#let pause = $"pause"$
 
-//    {#smallcaps[pause];,upload~m^\*,,s,bp};v^\*;e^\* \_d,i {#smallcaps[pause];,,,s’,};v’^\*;e’^\*
-//
-//    {#smallcaps[pause];,update\_f~id\_i~id\_f~code\_f,,s,bp};v^\*;e^\* \_d,i {#smallcaps[pause];,,,s’,bp};v^\*;e^\*
-//
-//    {#smallcaps[pause];,update\_l~j~v’,,s,bp};v^j\_1 v v^k\_2;e^\* \_d,i {#smallcaps[pause];,,,s,bp};v^j\_1 v’ v^k\_2;e^\*
+#semantics(
+    [Extension of the debugging rules (@fig:dbg:syntax) with safe over-the-air updates.],
+    [
+    $
+        &"(Messages)"& "msg" &colon.double.eq ... bar.v "upload "m^* bar.v "update"_f " id"_i " id"_f "code"_f bar.v "update"_l j v \
+        &"(Closure)"& "cl" &colon.double.eq { "inst" i, "idx" j, "code" f} \
+    $
 
-#curryst.proof-tree(r)]
-))<fig:red_update>
+    #debugrule("upload-m", ${pause, "upload" m^*, nothing, s, "bp"} ; v^* ; e^* debugarrow {pause, nothing, nothing, s', nothing} ; v'^* ; e'^*$, $(tack.r m)^*$, ${s', v'^*, e'^*} = "bootstrap"(m^*)$)
 
-/ upload-m: An $u p l o a d$ message instructs WebAssembly to restart execution with a new set of modules $m^(\*)$. We require all these modules to be well typed, $(tack.r m)^(\*)$. The meta-function bootstrap represents WebAssembly’s initialization procedure, described in the original WebAssembly chapter @haas17. Note that this procedure replaces the entire configuration, including the WebAssembly state, locals and stack. Furthermore, upon receiving the $u p l o a d$ message the debugger state is reset and all breakpoints removed.
+    #debugrule("update-f", ${pause, "update"_f id_i id_f "code"_f, nothing, s, "bp"} ; v^* ; e^* debugarrow {pause, nothing, nothing, s', "bp"} ; v'^* ; e^*$, $s' = "update"_(f)(s, id_i, id_f, "code"_f)$)
 
-/ update-f: The message to update a function specifies the function to update and its new code ($c o d e_f$). To identify a function we must supply the ID of the instance $i d_i$ it lives in and the index it exists at $i d_f$ in that instance. The meta-function $sans("update")_f$ replaces the function in the state $s$ and validates that its type remains the same.
+    #debugrule("update-local", ${pause, "update"_l j v', nothing, s, "bp"} ; v^j_1 v v^k_2 ; e^* debugarrow {pause, nothing, nothing, s, "bp"} ; v^j_1 v' v^k_2 ; e^*$, $tack.r v : epsilon.alt arrow.r t$, $tack.r v^* : epsilon.alt arrow.r t$)
+
+],
+"fig:red_update")
+
+
+/ upload-m: An _upload_ message instructs WebAssembly to restart execution with a new set of modules $m^(\*)$. We require all these modules to be well typed, $(tack.r m)^(\*)$. The meta-function bootstrap represents WebAssembly’s initialization procedure, described in the original WebAssembly chapter @haas17. Note that this procedure replaces the entire configuration, including the WebAssembly state, locals and stack. Furthermore, upon receiving the _upload_ message the debugger state is reset and all breakpoints removed.
+
+/ update-f: The message to update a function specifies the function to update and its new code ($"code"_f$). To identify a function we must supply the ID of the instance $i d_i$ it lives in and the index it exists at $i d_f$ in that instance. The meta-function $sans("update")_f$ replaces the function in the state $s$ and validates that its type remains the same.
 
     WebAssembly’s formalization transforms every function in a closure that holds its code $f$ and the module instance it was originally defined in. When a function is imported into another module or placed in a table, its closure is copied to the other module instance. Because the closure holds the original instance, it can be executed in the right context. When it calls other functions, for example, these must be the functions from the original module rather than from the calling module. We extended closures with an extra identifier idx, which holds the index of the function in its defining module. Thanks to this, the $sans("update")_f$ can replace all closures in $s$ where the inst is $i d_i$ and the idx is $i d_f$.
 
-/ update-local: Updating a local is done with an $u p d a t e_l$ message. This message holds the index of the local to be updated and its new value. We validate that the type of the new value is the same constant type $epsilon.alt arrow.r t$ as the original value at the chosen index.
+/ update-local: Updating a local is done with an $"update"_l$ message. This message holds the index of the local to be updated and its new value. We validate that the type of the new value is the same constant type $epsilon.alt arrow.r t$ as the original value at the chosen index.
 
 Note that we only allow updates if the underlying types remain the same. While this provides safety, it can still have undesirable effects. For example when updating, in the middle of a recursive function the new base conditions might have already been exceeded. The WARDuino VM does not tackle these kinds of problems. In future work we hope to improve on this by incorporating techniques from work on dynamic software updates~@tesone18.
 
 === Callback Handling <remote:callback-handling>
 In @remote:interrupts we discussed the architecture of our callback handling system. The system follows an event-driven approach, where ordinary WebAssembly functions are registered as callbacks for a specific event. Before we can formalize how callbacks are executed by the WebAssembly runtime, we must extend the abstract syntax with the necessary concepts: events, callbacks, memory slices, and callback mappings. The top part of @fig:callback-typing shows how we extend the syntax, starting from the WebAssembly abstract syntax with the additional syntax for remote debugging.
 
-#figure(
-    caption: [#strong[Core debugger semantics.] Small step reduction rules ($arrow.r.hook_{d,i}$) for the WARDuino remote debugger, as extensions to the WebAssembly semantics.],
-grid(
-    columns: (2fr, 2fr),
-    gutter: 1mm,
-// Left side
-[
-  \$\$\\begin{array}{lrcl}
-  (store) & s & \\Coloneqq & \\{\\dots , \\textsf{status}\\,rs,\\,\\textsf{evt}\\ evt^\*,\\ \\textsf{cbs}\\ cbs\\} \\\\
-  (running\\ state) & rs & \\Coloneqq & \\textsc{play}\\,|\\,\\textsc{pause}\\,|\\,\\textsc{callback} \\\\
-  \\\\
-  (event) & evt & \\Coloneqq & \\{\\textsf{topic}\\ memslice,\\ \\textsf{payload}\\ memslice\\} \\\\
-  (memory\\ slice) & memslice & \\Coloneqq & \\{ \\textsf{start} \\, \\textit{i32}, \\textsf{length} \\, \\textit{i32} \\} \\\\
+// todo update to new callback hadnling system from multiverse paper
+#semantics(
+    [The extended WebAssembly abstract syntax (top), and the typing rules (bottom) for the WARDuino callback handling system.],
+    [
+    $
+        &"(Store)"& "s" &colon.double.eq { ... , "status" "rs", "evt" "evt"^*, "cbs" "cbs"} \
+        &"(Running state)"& "rs" &colon.double.eq "play" bar.v "pause" bar.v "callback" \ // todo refactor to running state
+        &"(Event)"& "evt" &colon.double.eq {"topic" "memslice", "payload" "memslice"} \
+        &"(Memory slice)"& "memslice" &colon.double.eq {"start" "i32", "length" "i32"} \  // todo unsigned integer
+        &"(Callback map)"& "cbs"[x arrow.r f] &colon.double.eq lambda x . "if" y = x "then" f "else" "cbs" y \
+        &"(Instructions)"& "e" &colon.double.eq ... bar.v "event.push" bar.v "callback" { e^* } space e^* "end" \
+        &                &     &bar.v "callback.set" "memslice" bar.v "callback.get" "memslice" \
+        &                &     &bar.v "callback.drop" "memslice" \
+    $
+  
+  // todo evaluation rules
 
-  \\\\
-  (callback\\ map) & cbs\[x \\rightarrow f\] & \\Coloneqq & \\lambda y.\\textsf{if}\\ y = x\\ \\textsf{then}\\ f\\ \\textsf{else}\\ cbs\\ y \\\\ \\\\
+  #grid(columns: 2, gutter: 1em,
+  debugrule("", $C tack.r "callback" { e^*_0 } e^* "end" : "tf" $, $C tack.r e^* : epsilon.alt arrow.r epsilon.alt$, $C tack.r e^*_0 : "tf"$),
 
-  (instructions) & e & \\Coloneqq & \\dots\\,|\\,\\key{event.push}\\,|\\,\\key{callback}\\{e^\*\\}\\,e^\*\\key{end}\\,|\\,\\key{callback.set}\\,\\textit{memslice}\\,| \\\\
-  & & & \\,\\key{callback.get}\\,\\textit{memslice}\\,|\\,\\key{callback.drop}\\,\\textit{memslice} \\\\
-  \\end{array}\$\$
-    ],
-// Right side TODO
-[
-    #let r = curryst.rule(
-  name: "callback", 
-  $s;v^*;e^* arrow.r.hook_i s';v^*; bold("callback") {e^*} (s_("evt")(0)_("payload")) (s_("cbs")(s_("evt")(0)_("topic"))) (bold("call_indirect") italic("tf")) bold("end")$
+  debugrule("", $C tack.r "callback.set" "memslice" : "i32" arrow.r epsilon.alt$),
+
+  debugrule("", $C tack.r "callback.get" "memslice" : epsilon.alt arrow.r "i32"$),
+
+  debugrule("", $C tack.r "callback.drop" "memslice" : epsilon.alt arrow.r epsilon.alt$),
+
+  grid.cell(colspan: 2, debugrule("", $C tack.r "callback.drop" "memslice" : "i32" times "i32" times "i32" times "i32" arrow.r epsilon.alt$)),
   )
+
+  $
+    &"(Contexts)"& C &colon.double.eq { "func" "tf"^*, "global" "tg"^*, "table" n^?, "memory" n^?, "local" t^*, "label" (t^*)^*, "return" (t^*)^? }
+  $
+
+],
+"fig:callback-typing")
 
 //                C e^\* : \
 //    C e^\*\_0 : #emph[tf] C {e^\*\_0} e^\*  : #emph[tf]
@@ -914,47 +943,44 @@ grid(
 //  ]
 //  $ (c o n t e x t s) & C & colon.double.eq & { sans("func") thin t f^(\*) , thin sans("global") thin t g^(\*) , thin sans("table") thin n^(?) , thin sans("memory") thin n^(?) , thin sans("local") thin t^(\*) , thin sans("label") thin (t^(\*))^(\*) , thin sans("return") thin (t^(\*))^(?) }\ $
 
-#curryst.proof-tree(r)]
-))<fig:callback-typing>
-
 First, we add the #smallcaps[callback] state to the running state $r s$ defined for the remote debugging extension. This state indicates that the virtual machine is executing a callback function. This state only changes the behavior of the callback handlers, which will not resolve any new events until the state changes back to #smallcaps[play];. In other words, the #smallcaps[callback] and #smallcaps[play] states are completely interchangeable in the context of the remote debugging extension.
 
 Second, we add a list of events to the global store. This list represents the event queue of the callback handler. Events must contain one topic and one payload, which are both memory slices (#emph[memslices];). A #emph[memslice] refers to an area in WebAssembly linear memory. This buffer of bytes is defined in the syntax as a tuple of numeric values, the start index and the length. So while the buffers will most likely be strings in practice, the formalization intentionally refrains from specifying anything about the memory content. This way we steer clear of trying to add strings to WebAssembly, which is not our goal. Events can be added to the event queue with the instruction. As the definition of an event in @fig:callback-typing shows, an event contains two #emph[memslices];: a topic and a payload. The instruction expects four numeric values on the stack, reflected in its type shown in the lower part of the same figure.
 
-Third, the callback mapping is added to the global store. Adding, removing and retrieving functions from the callback mapping can be done from WebAssembly with the new instructions, , and respectively. Unlike WebAssembly instructions such as we cannot use an index space to refer to callback functions, because callbacks are stored in a mapping from strings to table indices. For this reason, the instructions for adding, removing and retrieving callbacks, take a memory #emph[memslice] containing the topic string. Note that the map returns at most one function index for each topic string. We choose to limit the amount of callbacks per topic in this way, because the mapping would otherwise become too complicated for a simple low-level instruction set such as WebAssembly.#footnote[To do this, we would have needed to introduce a new type to represent lists. Additionally, our formalization would have to specify in what order and when callbacks are processed. As this could have a large performance impact, we do not formalize multiple callbacks per topic.] However, we can achieve the same result for end-users by supporting multiple callbacks at the level of WebAssembly primitives instead.
+Third, the callback mapping is added to the global store. Adding, removing and retrieving functions from the callback mapping can be done from WebAssembly with the new instructions, , and respectively. Unlike WebAssembly instructions such as we cannot use an index space to refer to callback functions, because callbacks are stored in a mapping from strings to table indices. For this reason, the instructions for adding, removing and retrieving callbacks, take a memory #emph[memslice] containing the topic string. Note that the map returns at most one function index for each topic string. We choose to limit the amount of callbacks per topic in this way, because the mapping would otherwise become too complicated for a simple low-level instruction set such as WebAssembly.#note[To do this, we would have needed to introduce a new type to represent lists. Additionally, our formalization would have to specify in what order and when callbacks are processed. As this could have a large performance impact, we do not formalize multiple callbacks per topic.] However, we can achieve the same result for end-users by supporting multiple callbacks at the level of WebAssembly primitives instead.
 
 Finally, we extend the WebAssembly instructions with a new instruction. This construct is similar to the administrative instructions from the WebAssembly standard, used to simplify reasoning over control flow~@haas17. @fig:callback-typing shows the specific syntax and typing rules for this new construct. It holds two lists of instructions. The first sequence $e_0^(\*)$, between curly braces, is the continuation of the callback. These are the instructions that will be executed once the callback has been completely resolved. The second list of instructions $e^(\*)$ is the body of the callback, which will be evaluated first. Because the callback can be called at any time, its body must leave the stack unchanged after its reduction, so execution can continue as it would have without the callback. Furthermore, because the stack can have any possible state when the callback is created, the body of the callback cannot expect any arguments from the stack. In other words, the body of the callback takes zero arguments and returns nothing (type $epsilon.alt arrow.r epsilon.alt$).
 
 With these syntactic extensions to WebAssembly, we are now able to formalize how events are processed, and callbacks executed. We list the additional small step reduction rules in @fig:callback-inst. To keep the rules readable, we will shorten #emph[memslices] by simply writing #emph[topic] or #emph[payload] instead of every numeric value. For instance, in the first rule, $s_(e v t) (0)_(t o p i c)$ is a shorter form for \$(\\key{i32.const}\\, s\_{evt}(0)\_{topic.start})\$ \$(\\key{i32.const}\\, s\_{evt}(0)\_{topic.length})\$. Similarly, we write the lookup for the table index of a callback function in the short form: $(s_(c b s) (s_(e v t) (0)_(t o p i c)))$. This expression corresponds with exactly one \$(\\key{i32.const}\\ index)\$ instruction. We describe each of the rules below.
 
-#figure()[
-    // TODO curryist
-]<fig:callback-inst>
+#semantics(
+    [Small step reduction rules for the WARDuino calback handling system.],
+    [
+  #grid(columns: 1, gutter: 1em,
+  grid.cell(colspan: 1, debugrule("callback", $s; v^*; e^* wasmarrow s'; v^*; "callback" { e^* } (s_("evt")(0)_"topic") (s_("evt")(0)_"payload") (s_("cbs")(s_("evt")(0)_"topic")) ("call_indirect" "tf") "end"$, $s_("cbs")(s_("evt")(0)_"topic") eq.not "nil"$, $s_"status" = "play"$, $s'_"status" = "callback"$, $s'_"evt" = "pop"(s_"evt")$, $"tf" = "i32" times "i32" times "i32" times "i32" arrow.r epsilon.alt$)),
 
-#block[
-  #block[
-    s;v^\*;e^\* \_i s’;v^\*; {e^\*} (s\_evt(0)\_topic) (s\_evt(0)\_ payload) (s\_cbs(s\_evt(0)\_topic)) ( #emph[tf];)
+  debugrule("step-callback", $s; v^*; "callback" {e^*_0} space e^* "end" wasmarrow s';v^*; "callback" {e^*_0 } space e'^* "end"$, $s;v^*;e^* wasmarrow s'; v*; e'*$),
 
-    s;v^\*;{e^\*\_0} e^\*  \_i s’;v^\*;{e^\*\_0} e’^\*
 
-    s;v^\*;{e^\*\_0}   \_i s’;v^\*;e\_0^\*
+  debugrule("resume", $s; v^*; "callback" {e^*_0} space epsilon.alt "end" wasmarrow s';v^*; e^*_0$, $s;v^*;e^* wasmarrow s'; v*; e'*$),
 
-    s;v^\*;e^\*\_i s’;v^\*;e^\*
+  debugrule("skip-message", $s; v^*; "callback" {e^*_0} space epsilon.alt "end" wasmarrow s';v^*; e^*_0$, $s;v^*;e^* wasmarrow s'; v*; e'*$),
 
-    s;v^\*;{e^\*}  \_i s;v^\*;
+  debugrule("callback-trap", $s; v^*; "callback" {e^*} "trap" "end" wasmarrow s';v^*; "trap"$),
 
-    s;v^\*;( j) ( topic) \_i s’;v^\*;
+  debugrule("register", $s; v^*; ("i32.const" j) ("callback.set" "topic") wasmarrow s';v^*; "trap"$, $s'_"cbs" = s_("cbs")["topic" arrow.r j]$),
 
-    s;v^\*;( topic) \_i s’;v^\*;
+  debugrule("deregister", $s;v^*; ("callback.drop" "topic") wasmarrow s';v^*; epsilon.alt$, $s'_("cbs")["topic" arrow.r "nil"]$),
 
-    s;v^\*;( j)( topic) \_i s;v^\*;
+  debugrule("register-trap", $s;v^*;("i32.const" j) ("callback.set" "topic") wasmarrow s;v^*;"trap"$, $s_("tab")(i,j)_"code" eq.not ("func" "i32" "i32" arrow.r epsilon.alt "local" t^* e^*)$),
 
-    s;v^\*;( topic) \_i s;v^\*;s\_cbs(topic)
+  debugrule("get-callback", $s;v^*; ("callback.get" "topic") wasmarrow s';v^*; s_("cbs")("topic")$),
 
-    s;v^\*;(#emph[topic];)(#emph[payload];)() \_i s’;v^\*;
+  debugrule("push-event", $s;v^*;("topic") ("payload") ("event.push") wasmarrow s';v^*; epsilon.alt$, $s'_"evt" = "push"(s_"evt", {"topic", "payload"})$),
+  )
+],
+"fig:callback-inst")
 
-  ]
-]
 / callback: The #smallcaps[callback] reduction rule shows how the WebAssembly interpreter can replace the instruction sequence $e^(\*)$ with a callback construct, whenever there are unprocessed events and no other callback is being processed. We do not allow nested callback constructs. To enforce this, we change the running state to the #smallcaps[callback] value in the #smallcaps[callback] rule and change it back to #smallcaps[play] in the #smallcaps[resume] rule. The #smallcaps[callback] construct replaces the instruction sequence with a instruction. The replaced instruction sequence, is kept by the callback construct as a continuation (between curly braces). The new stack only holds the callback construct, which contains an indirect call with the index returned by the callback mapping $s_(c b s)$. Before the indirect call and the table index, the rule adds the topic and payload of the event to the stack as arguments for that function call. This means that every callback function must have type $sans("i32") #h(0em) sans("i32") #h(0em) sans("i32") #h(0em) sans("i32") arrow.r epsilon.alt$. Because we place the arguments on the stack at the same time as the indirect call, the body of the callback as a whole still has type $epsilon.alt arrow.r epsilon.alt$, as specified in @fig:callback-typing.
 
 / step-callback: The #smallcaps[step-callback] rule describes how the code inside the body of the is executed until it is empty.
@@ -1223,9 +1249,90 @@ For example, as a Raspberry Pi has a full-fledged operating system, it is trivia
 
 ==== Espruino
 
+#figure(image("../placeholder.png"), caption: [The execution times of WARDuino and Espruino. #emph[Top Left]: absolute execution times for the benchmarks. #emph[Top Right]: sizes of the programs uploaded to the VM. #emph[Bottom Left]: execution time normalized to native C execution time. #emph[Bottom Right] execution times normalized to the WARDuino execution time.])<fig:espruino>  // todo
+
+@fig:espruino shows the results of the benchmarks for Espruino and WARDuino.
+In each graph the green (right) bars indicate the measurements for Espruino, the red (left) bars show the results for WARDuino.
+The first graph, on the top left, shows the absolute execution times of each benchmark on a log scale.
+The overhead of the WARDuino and Espruino implementations compared to execution time of a native C implementation are shown in the graphs at the bottom.
+We see that WARDuino consistently outperforms Espruino by roughly a factor of 10.
+In fact, the geometric mean of the overhead relative to WARDuino is 11.66.
+Note that the difference is even larger for the `tak` benchmark.
+This may be attributed to the extreme amount of recursion the `tak` function exhibits.
+This suspicion seems to be confirmed by the (iterative) `fib` benchmark that calculates Fibonacci numbers without recursing.
+In this benchmark the performance difference is indeed less pronounced as in the `tak` benchmark.
+
+
+In the last graph (top right) we show the byte code sizes uploaded to the instantiated virtual machines.
+We see that the WARDuino size is never larger than the JavaScript files.
+This is not surprising, as WebAssembly programs are saved in a binary format, and were optimized for size by the compiler.
+
 ==== WASM3
 
+	\caption{}
+#figure(image(height: 15em, "../placeholder.png"), caption: [The benchmark execution times of WARDuino and WASM3. #emph[Left]: absolute execution times. #emph[Right]: execution times normalized to WASM3 execution time.])<fig:wasm3>  // todo
+
+@fig:wasm3 compares the performance of WASM3 and WARDuino.
+The graph on the right side shows the overhead of the WARDuino virtual machine relative to the WASM3 runtime.
+We see that WASM3 executes the same WebAssembly program approximately forty times faster than WARDuino, to be precise, the geometric mean of WARDuino's overhead compared to WASM3 is 40.75.
+
+Although WASM3 is faster than WARDuino, the interpreter's architecture, comes with a significant drawback on memory-constrained devices.
+It trades memory space for time.
+Our \texttt{tak} benchmark cannot run on the ESP32 with WASM3 because the device runs out of memory.
+In contrast, this benchmarks runs well on WARDuino.
+We excluded the \texttt{tak} benchmark from the second graph in figure~\ref{fig:wasm3} for this reason.
+Note that the WebAssembly program implementing \texttt{tak} does run on the same device with WARDuino.
+
 ==== Comparison
+
+#let benchmarks = csv("benchmark.csv", delimiter: " ", row-type: dictionary)
+
+#let data = ()
+#for (.., name, espruino, warduino, wasm3, native) in benchmarks {
+    data.push((name,
+    calc.round(float(espruino), digits: 2),
+    calc.round(float(warduino), digits: 2),
+    calc.round(float(wasm3), digits: 3),
+    calc.round(float(native), digits: 3),
+    calc.round(float(espruino)/float(native), digits: 2),
+    calc.round(float(warduino)/float(native), digits: 2),
+    calc.round(float(wasm3)/float(native), digits: 2)))
+}
+
+
+#let linewidth = 0.5pt
+
+#let content = ([name], table.vline(stroke: linewidth), [Espruino (s)], [WARDuino (s)], [WASM3 (s)], [C (s)], $"Espruino" / C$, $"WARDuino" / C$, $"WASM3" / C$, table.hline(stroke: linewidth))
+#content.push(table.hline(stroke: linewidth))
+#for entry in data.flatten().map(entry => [#entry]) {content.push(entry)}
+#content.push(table.hline(stroke: linewidth))
+#content.push("geometric mean")
+#let means = array.range(data.first().len() - 1).map(i => {
+  let col = data.map(row => row.at(i + 1)).filter(j => not j.is-nan())
+  calc.round(calc.root(col.product(), col.len()), digits: 3)
+})
+#for mean in means { content.push(str(mean)) }
+
+#let t = [
+#set text(size: small)
+#show regex("NaN"): [---]
+#table(columns: 8, align: right, stroke: none, ..content) 
+]
+
+#figure(
+  t,
+  caption: [Left: Absolute execution times in seconds for all tests. Right: Execution time of tests normalized to the native C implementation.])<tbl:allbench>
+
+The complete benchmarks results are shown in table~\ref{tbl:allbench}.
+In the first four columns of the table, we report the time that elapses between starting and ending the execution of the microbenchmark ten times for each platform.
+On the right, we list the execution times normalized to the execution time of the native C implementation.
+Because the C implementation does not run in a managed environment, it is much faster.
+To add two numbers for example, no stack access is needed in native C.
+Since WebAssembly is a stack machine, and our implementation does not yet feature a JIT compiler, memory access is required to perform all basic operations.
+Taking the geometric mean of the normalized execution times, shows that WASM3 is 11 times slower than its native C, while WARDuino is about 428 times slower and Espruino is 4992 times slower.
+We note that clang was instructed to optimize for size.
+Setting the compiler to optimize more at the cost of binary size can have a big impact on the performance of WARDuino at the price of binary size code.
+Not optimizing for binary size reduces WARDuino's overhead compared to C to 312x.
 
 === Conformance to the WebAssembly Standard <remote:comformance-to-the-wa-standard>
 

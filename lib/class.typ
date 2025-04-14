@@ -1,4 +1,5 @@
     #import "@preview/drafting:0.2.2": set-margin-note-defaults, set-page-properties, margin-note, rule-grid
+    #import "@preview/ctheorems:1.1.3": *
 
     #let normal = 10pt
     #let small = 8pt
@@ -27,4 +28,10 @@
             ])
         }
     }
+
+#let theorem = thmbox("theorem", "Theorem", inset: 0em, base_level: 1, titlefmt: body => strong[#body.], namefmt: body => strong[(#body)], separator: h(0.6em, weak: true)).with(numbering: "1-1")
+#let proof = thmproof("proof", "Proof", inset: (left: 0em, top: 0em, right: 0em, bottom: 1.2em), titlefmt: body => strong[#body.], namefmt: body => strong[(#body)], separator: h(0.6em, weak: true))
+#let proofsketch = thmproof("proof sketch", "Proof Sketch", inset: (left: 0em, top: 0em, right: 0em, bottom: 1.2em), titlefmt: body => strong[#body.], namefmt: body => strong[(#body)], separator: h(0.6em, weak: true))
+
+
 
