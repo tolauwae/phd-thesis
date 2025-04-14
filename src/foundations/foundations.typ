@@ -1,13 +1,7 @@
-#import "../../lib/class.typ": small, note
+#import "../../lib/class.typ": small, note, theorem, proof
 #import "../../lib/util.typ": semantics
 
 #import "figures/semantics.typ": rules-stlc, nat, debugger, operation, boxed, dbgarrow, multi
-
-#import "@preview/ctheorems:1.1.3": *
-#show: thmrules.with(qed-symbol: text(size: small, $space square$))
-
-#let theorem = thmbox("theorem", "Theorem", inset: 0em, base_level: 1, titlefmt: body => strong[#body.], namefmt: body => strong[(#body)], separator: h(0.6em, weak: true)).with(numbering: "1-1")
-#let proof = thmproof("proof", "Proof", inset: (left: 0em, top: 0em, right: 0em, bottom: 1.2em), titlefmt: body => strong[#body.], namefmt: body => strong[(#body)], separator: h(0.6em, weak: true))
 
 A central concern of this dissertation is the design of debuggers, and what makes a good debugger.
 To understand and answer this question, there are currently few formal foundations to build upon.
@@ -186,16 +180,22 @@ We provide the proofs for progress and preservation for our tiny remote debugger
 The tiny remote debugger $remotedbg$ is perhaps to simple to be really considered---what we conventionally call---a remote debugger.
 The most obvious missing pieces are _pause_ and _play_ commands, and support for _breakpoints_.
 
+...
+
 == A reversible debugger for #stlc
 
 Another extension to the tiny remote debugger, is to turn it into a reversible debugger @engblom12.
 // go back to start and rerun -> we need to keep track of the number of steps
+
+...
 
 == A reflective debugger for #stlc
 
 // change variable value
 Our debuggers so far have only observed the execution of a program, without interceding in it.
 However, many debuggers support some form of _reflection_ @maes87 @papoulias13, where they change the program's execution.
+
+...
 
 == General debugger correctness
 
@@ -207,12 +207,15 @@ The correctness criteria for debuggers presented in this chapter, differ slightl
 //
 // is this not easy with a reversible debugger?
 
+...
+
 == Conclusion
 
 //The formal framework for debuggers presented in this chapter, is the basis for the formalisations at the heart of this dissertation.
-This chapter is at the heart of the formalisations in this dissertation.
+The framework proposed in this chapter, is at the heart of the formalisations in this dissertation.
 As we explore how to develop sound out-of-place and multiverse debugging techniques for constrained environments, we will test our models with the correctness criteria presented in this chapter.
-Furthermore, the spirit of the debugger semantics in this chapter closely align to the design of the debuggers we will present in the following chapters.
+Furthermore, the spirit of the debugger semantics in this chapter closely align to the design of the debuggers we will present. // in the following chapters.
+The rest of this dissertation will also mirror the structure of this chapter, by first presenting a remote debugger, and then extending it with more advanced features in the following chapters.
 
 //The rest of this dissertation is build on the correctness criteria for debuggers presented in this chapter.
 //The dissertation itself will also follow the structure of this chapter, by first presenting a simple remote debugger, and then extending it with more advanced features in the following chapters.
