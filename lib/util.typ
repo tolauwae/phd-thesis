@@ -2,15 +2,10 @@
 #import "@preview/lovelace:0.3.0": pseudocode
 #import "fonts.typ": serif, monospace, normal, small, script, tiny
 
-//#let circled(body) = {
-//circle(radius: 0.5em, stroke: 0.2mm)[
-//        #set align(center + horizon)
-//        #set text(size: 8pt)
-//        #body]
-//}
-#let circled(body) = {
-    strong([(#body)])
-}
+#let circled(body) = box(baseline: 0.24em, height: 1em, circle(stroke: 0.2mm)[
+        #set align(center + horizon)
+        #set text(size: 8pt)
+        #body])
 
 // hack line references with codly
 #let line(tag, supplement: "Line") = {
