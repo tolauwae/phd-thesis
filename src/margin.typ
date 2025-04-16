@@ -210,25 +210,48 @@
 
 // Chapters
 
+// Chapter 1
 = Introduction
 
 #quote("Edsger W. Dijkstra", theme: theme)[If debugging is the process of removing software bugs,\ then programming must be the process of putting them in.]
 
 #include "introduction/introduction.typ"
 
-
+// Chapter 2
 = Foundations for Debugging Techniques<chapter:foundations>
 
 #quote("Donald Knuth", theme: theme)[Beware of bugs in the above code;\ I have only proved it correct, not tried it.]
 
 #include "foundations/foundations.typ"
 
-
+// Chapter 3
 = A Remote Debugger for WebAssembly  // An embedded WebAssembly virtual machine
 
 #quote([#text(style: "italic", [adapted from]) George Orwell], theme: theme)[Those who abjure debugging can only do so by others debugging on their behalf.]
 
 #include "remote/remote.typ"
+
+// Chapter 4
+= Out-of-place debugging // todo make title more specific?
+
+#quote("Tony Hoare")[Some problems are better evaded than solved.]
+
+#include "oop/oop.typ"
+
+// Chapter 5
+
+= Multiverse debugging on microcontrollers
+
+#quote("Karl Popper", source: "Knowledge without Authority", theme: theme)[Our knowledge can only be finite, while our ignorance must necessarily be infinite.]
+
+// Chapter 6
+
+= Managed Testing
+
+#quote("Miyamoto Musashi", theme: theme)[If you know the way broadly, you will see it in everything.] // TODO find a better quote
+
+//#include "testing/testing.typ"
+
 // Appendices and references
 
 #[
