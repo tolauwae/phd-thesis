@@ -47,7 +47,7 @@ In hindsight, this may seem an obvious solution to the reader, but that speaks t
 The approach has been used in a number of recent works @ferrari01:debugging @torres17:principled @lauwaerts24:warduino @holter24:abstract, and is the basis for the approach we take in this dissertation.
 
 // TODO where to add?
-//A more recent work presented a new type of debugger, called an abstract debugger, that uses static analysis to allow developers to explore abstract program states rather than concrete ones @holter24.
+//A more recent work presented a new type of debugger, called an abstract debugger, that uses static analysis to allow developers to explore abstract program states rather than concrete ones @holter24:abstract.
 //The work defines operational semantics for their abstract debugger, and an operational semantics for a concrete debugger.
 //The soundness of the abstract debugger is defined in terms this concrete debugger, where every debug session in the concrete world is guaranteed to correspond to a session in the abstract world.
 //The opposite direction cannot hold since the static analysis relies on an over-approximation, which means there can always be sessions in the abstract world which are impossible in the concrete world.
@@ -67,12 +67,12 @@ An approach we will therefore use throughout this dissertation.
 == #stlc as the running example
 
 #semantics(
-    [#note([The rules for #stlc, in both @fig:stlc and @app:stlc, are taken from the definitive work, _Types and Programming Languages_ from Benjamin C. Pierce.])#strong[Pure simply typed lambda calculus #stlc.] The syntax, evaluation, and typing rules for the simply typed lambda calculus with no base types @pierce02.],
+    [#note([The rules for #stlc, in both @fig:stlc and @app:stlc, are taken from the definitive work, _Types and Programming Languages_ from Benjamin C. Pierce.])#strong[Pure simply typed lambda calculus #stlc.] The syntax, evaluation, and typing rules for the simply typed lambda calculus with no base types @pierce02:types.],
     [#rules-stlc],
     "fig:stlc") // todo. bug: counter always starts at 1
 
 In order to present our generalized correctness theorem, we need a simple yet illustrative language.
-Fortunately there is a straightforward choice, the _simply typed lambda calculus_ (#stlc), proposed by #cite(form: "prose", <church40>).
+Fortunately there is a straightforward choice, the _simply typed lambda calculus_ (#stlc), proposed by #cite(form: "prose", <church40:formulation>).
 Most readers will be familiar with the simply typed lambda calculus, but for those who are not, we provide a brief introduction.
 
 The simply typed lambda calculus, is arguably the simplest, and most well-known formal system used to study computation and programming languages.
@@ -84,7 +84,7 @@ In the simply typed version, each expression is assigned a type, and functions a
 
 == A remote debugger for #stlc
 
-We start by defining the syntax of a tiny remote debugger for #stlc with booleans and natural numbers, defined as peano numbers @peano91 @kennedy74.
+We start by defining the syntax of a tiny remote debugger for #stlc with booleans and natural numbers, defined as peano numbers @peano91:sul @kennedy74:peanos.
 The complete set of syntax, evaluation, and typing rules for booleans and natural numbers for #stlc can be found in @app:stlc.
 We start with a simple remote debugger, because the debuggers we discuss in this dissertation are each debuggers for distributed systems, and therefore remote debuggers of a kind.
 However, the easiest way to define such a debugger is to start from a local debugger, and simply add a messaging system on top of it.//---which is the way in which we will present the debugger in this section.
@@ -173,7 +173,7 @@ Both theorems are trivial to prove for our tiny remote debugger #remotedbg, howe
 To illustrate the usefulness of the correctness criteria, //and show they are by no means trivial to prove for every debugger, 
 we will discuss them for a few interesting debuggers built on our tiny remote semantic.
 
-//#note[In fact, we only noticed when going over the progress proof, that the _E-Fallback_ rule was missing in the first version of #remotedbg.]Aside from these specific correctness criteria for debuggers, it is often a good idea to also proof the typical _progress_ and _preservation_ properties @pierce02 for the debugger semantics.
+//#note[In fact, we only noticed when going over the progress proof, that the _E-Fallback_ rule was missing in the first version of #remotedbg.]Aside from these specific correctness criteria for debuggers, it is often a good idea to also proof the typical _progress_ and _preservation_ properties @pierce02:types for the debugger semantics.
 //Especially progress, generally serves as an important sanity check that the debugger is well-defined, and that there are no missing rules.
 //We provide the proofs for progress and preservation for our tiny remote debugger, and all other debuggers that follow in this chapter, in @app:progress.
 
@@ -186,7 +186,7 @@ The most obvious missing pieces are _pause_ and _play_ commands, and support for
 
 == A reversible debugger for #stlc
 
-Another extension to the tiny remote debugger, is to turn it into a reversible debugger @engblom12.
+Another extension to the tiny remote debugger, is to turn it into a reversible debugger @engblom12:review.
 // go back to start and rerun -> we need to keep track of the number of steps
 
 ...
@@ -195,7 +195,7 @@ Another extension to the tiny remote debugger, is to turn it into a reversible d
 
 // change variable value
 Our debuggers so far have only observed the execution of a program, without interceding in it.
-//However, many debuggers support some form of _reflection_ @maes87 @papoulias13, where they change the program's execution.
+//However, many debuggers support some form of _reflection_ @maes87:concepts @papoulias13:remote, where they change the program's execution.
 Yet, it is quite common for debuggers to support changing the value of variablesi @gdb @stallman88:debugging, or influence the control flow of the program @lauwaerts22:event-based-out-of-place-debugging @stallman88:debugging @alter.
 
 

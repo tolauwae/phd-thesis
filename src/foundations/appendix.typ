@@ -6,7 +6,7 @@
 
 // todo figures should not be put top in the appendix
 #semantics(
-    [#strong[Natural numbers and booleans for $lambda^arrow.r$.] The syntax, evaluation, and typing rules for the natural numbers and booleans @pierce02.],
+    [#strong[Natural numbers and booleans for $lambda^arrow.r$.] The syntax, evaluation, and typing rules for the natural numbers and booleans @pierce02:types.],
     [#nat],
     "fig:nat")
 

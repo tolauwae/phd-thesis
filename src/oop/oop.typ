@@ -13,7 +13,7 @@ Luckily, the novel out-of-place debugging technique can be used to overcome thes
 
 Out-of-place debugging is a novel debugging technique that addresses these problems.
 It combines local online and remote online debugging, reducing communication latency and overcoming the resource constraints of the remote device.
-It was originally devised to minimize debugging interference of remote debuggers for big data applications @marra18, by moving the debugging session to another device.
+It was originally devised to minimize debugging interference of remote debuggers for big data applications @marra18:out-of-place, by moving the debugging session to another device.
 The first out-of-place debugger, IDRA, was developed for the Pharo language, and allowed for debugging of live distributed big data applications.
 By moving the debugging session out of place, IDRA could debug a node in the network without effecting the live execution of the distributed software.
 The prototype showed how out-of-place debugging can reduce the debugging latency significantly in the context of large clusters.
@@ -35,7 +35,7 @@ The prototype showed how out-of-place debugging can reduce the debugging latency
 // ecoop paper introduction
 
 
-Especially for the latter category, remote debuggers are commonly used to debug various kinds of applications @hogl06 @li09, such as real-time systems @skvar-c24, containerized applications for edge computing @ozcan19, and Internet of Things applications @potsch17 @lauwaerts24a. // todo more references ?
+Especially for the latter category, remote debuggers are commonly used to debug various kinds of applications @hogl06:open @li09:research, such as real-time systems @skvar-c24:in-field-debugging, containerized applications for edge computing @ozcan19:remote, and Internet of Things applications @potsch17:advanced @lauwaerts24:warduino. // todo more references ?
 Yet, remote debuggers suffer from three severe disadvantages.
 Firstly, the debugger is run on the remote device. // todo add a general disadvantages of this (outside of microcontrollers): probe effect?
 In the context of constrained devices, this additionally limits the resources available to the debugger.
