@@ -120,15 +120,96 @@ The example is chosen as a small primer on how programmers can write traditional
 
 == The Example
 
-We define a unit test that verifies the correctness of a function for 32-bit floating point multiplication, shown in @lst:multiplication.
+We define a unit test that verifies the correctness of a function for 32-bit floating point multiplication, shown in @lst.multiplication.
 All example programs are written in AssemblyScript \cite{the-assemblyscript-project23}, one of the languages supported by Latch's current microcontroller platform.
 
 \lstinputlisting[language=TypeScript, style=GitHub, caption={
 A \texttt{mul} function that multiplies its two arguments, written in 
-AssemblyScript.}, label={lst:multiplication}]{multiplication.ts}
+AssemblyScript.}, label={lst.multiplication}]{multiplication.ts}
+
+#snippet("lst.multiplication", [A smart light AssemblyScript program for WARDuino.],
+    columns: (2fr, 2fr),
+(
+```ts
+import * from "as-warduino";
+
+const BUTTON = 25; const LED = 26;
+const SSID = "local-network";
+const PASSWORD = "network-password";
+const CLIENT_ID = "random-mqtt-client-id";
+
+function until(attempt: () => void,
+               done: () => boolean): void {
+  while (!done()) {
+    delay(1000); attempt();
+}}
+
+function callback(topic: string,
+                  payload: string): void {
+  print("Message [" + topic + "] " + payload);
+
+  // Inspect the payload of the MQTT message
+  if (payload.includes("on")) {
+    digitalWrite(LED, PinVoltage.HIGH);  // On
+  } else {
+    digitalWrite(LED, PinVoltage.LOW);   // Off
+  }
+}
+
+function toggleLED(_t: string, _p: string): void {
+    let status = digitalRead(LED);
+    // Toggle LED via MQTT
+    MQTT.publish("LED", status ? "off" : "on");
+}
+```,
+
+```ts
+export function main(): void {
+  pinMode(LED, PinMode.OUTPUT);
+  pinMode(BUTTON, PinMode.INPUT);
+
+  // Connect to Wi-Fi
+  until(() => { WiFi.connect(SSID, PASSWORD); },
+    WiFi.connected);
+  let message = "Connected to wifi with ip: ";
+  print(message.concat(WiFi.localip()));
+
+  // Connect to MQTT broker
+  MQTT.init("192.168.0.42", 1883);
+  until(() => { MQTT.connect(CLIENT_ID); },
+    MQTT.connected);
+
+  // Subscribe to MQTT topic and turn on LED
+  MQTT.subscribe("LED", callback);
+  MQTT.publish("LED", "on");
+
+  // Subscribe to button interrupt
+  interruptOn(BUTTON, InterruptMode.RISING,
+    toggleLED);
+
+  while (true) {
+    until(() => { MQTT.connect(CLIENT_ID); },
+      MQTT.connected);
+    MQTT.poll();
+    delay(500); // Sleep for 0.5 seconds
+  }
+}
+```
+))
+
+// Describe the use-case used to evaluate/showcase warduino
+#[
+#let main        = "lst.smartlamp.1:31"
+#let callback    = "lst.smartlamp.0:14"
+#let callbackEnd = "lst.smartlamp.0:24"
+#let toggle      = "lst.smartlamp.0:26"
+#let toggleEnd   = "lst.smartlamp.0:30"
+#let wifiStart   = "lst.smartlamp.1:36"
+#let wifiEnd     = "lst.smartlamp.1:39"
+#let subscribe   = "lst.smartlamp.1:47"
 
 %
-@lst:unit-test shows a simple test in Latch containing one unit test for the target program in @lst:multiplication.
+@lst:unit-test shows a simple test in Latch containing one unit test for the target program in @lst.multiplication.
 Latch's declarative test specification language is implemented as an embedded domain specific language (EDSL) in TypeScript \cite{microsoft23}.
 Test scenarios are presented in Latch as TypeScript objects that have a title, the path to the program under test, and a list of steps.
 These steps make up the test scenario, and will be performed sequentially.

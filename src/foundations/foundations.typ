@@ -11,7 +11,7 @@ Over the course of writing this dissertation, several correctness criteria for d
 == Semantics of debuggers
 
 Before we can begin to reason about the correctness of debuggers, we need to establish their formal semantics.
-Unfortunately, defining the semantics of debuggers has always received less attention than formalizations for programming languages or compilers @da-silva92.
+Unfortunately, defining the semantics of debuggers has always received less attention than formalizations for programming languages or compilers @da-silva92:correctness.
 This lack of interest, has resulted in a very sparse collection of existing semantics, which focus on very different aspects, and are defined in very different ways.
 To this day, there is no clear consensus on what constitutes correctness for debuggers, or even, which are the essential aspects for a tool to fall under the broad category of debuggers.
 
@@ -19,12 +19,14 @@ When examining recent works in debuggers, there does appear to be an emerging co
 
 === A brief history of formal debuggers
 
-To our knowledge, the earliest attempt at formally defining a debugger-like system is by #cite(form: "prose", <bahlke86>). // todo ...
+To our knowledge, the earliest attempt at formally defining a debugger-like system is by #cite(form: "prose", <bahlke86:psg>). // todo ...
 
-Another early attempt used PowerEpsilon @zhu91 @zhu92 to describe the source mapping used in a debugger as a denotational semantics for a toy language that can compile to a toy instruction set @zhu01.
+// todo should cite zhu01:formal too no?
+
+Another early attempt used PowerEpsilon @zhu91:higher-order @zhu92:program to describe the source mapping used in a debugger as a denotational semantics for a toy language that can compile to a toy instruction set @zhu01:denotational.
 While an interesting formalization, it does not say anything about the debugging operations themselves or their correctness.
 
-The work by #cite(form: "prose", <li12>) focussed on automatic debuggers.
+The work by #cite(form: "prose", <li12:formal>) focussed on automatic debuggers.
 Its formalization is based on a kernel of the C language, and defines operational semantics for tracing, and for backwards searching based on those traces.
 The work proofs that its trace and search operations terminate, but defines no general correctness criteria.
 
@@ -37,12 +39,12 @@ The work proofs that its trace and search operations terminate, but defines no g
 
 // todo go through papers of the big names: robert hirshfeld and andreas zeller
 
-// todo berstein is probably not the first
-In 1995, #cite(form: "prose", <bernstein95a>), are the first to define a debugger in terms of an underlying language semantic.
+// todo berstein is probably not the first -- also look at bernstein95:formally
+In 1995, #cite(form: "prose", <bernstein95:operational>), are the first to define a debugger in terms of an underlying language semantic.
 By defining the semantics of a debugger in terms of the underlying language, it becomes much easier to reason about the correctness of the debugger, since the correctness can now be stated in terms of the underlying language.
 In hindsight, this may seem an obvious solution to the reader, but that speaks to the fact that this is by far the best and most intuitive approach to take.
 
-The approach has been used in a number of recent works @ferrari01 @torres17 @lauwaerts24 @holter24, and is the basis for the approach we take in this dissertation.
+The approach has been used in a number of recent works @ferrari01:debugging @torres17:principled @lauwaerts24:warduino @holter24:abstract, and is the basis for the approach we take in this dissertation.
 
 // TODO where to add?
 //A more recent work presented a new type of debugger, called an abstract debugger, that uses static analysis to allow developers to explore abstract program states rather than concrete ones @holter24.
@@ -171,9 +173,9 @@ Both theorems are trivial to prove for our tiny remote debugger #remotedbg, howe
 To illustrate the usefulness of the correctness criteria, //and show they are by no means trivial to prove for every debugger, 
 we will discuss them for a few interesting debuggers built on our tiny remote semantic.
 
-#note[In fact, we only noticed when going over the progress proof, that the _E-Fallback_ rule was missing in the first version of #remotedbg.]Aside from these specific correctness criteria for debuggers, it is often a good idea to also proof the typical _progress_ and _preservation_ properties @pierce02 for the debugger semantics.
-Especially progress, generally serves as an important sanity check that the debugger is well-defined, and that there are no missing rules.
-We provide the proofs for progress and preservation for our tiny remote debugger, and all other debuggers that follow in this chapter, in @app:progress.
+//#note[In fact, we only noticed when going over the progress proof, that the _E-Fallback_ rule was missing in the first version of #remotedbg.]Aside from these specific correctness criteria for debuggers, it is often a good idea to also proof the typical _progress_ and _preservation_ properties @pierce02 for the debugger semantics.
+//Especially progress, generally serves as an important sanity check that the debugger is well-defined, and that there are no missing rules.
+//We provide the proofs for progress and preservation for our tiny remote debugger, and all other debuggers that follow in this chapter, in @app:progress.
 
 == A conventional debugger for #stlc
 
@@ -189,11 +191,14 @@ Another extension to the tiny remote debugger, is to turn it into a reversible d
 
 ...
 
-== A reflective debugger for #stlc
+== An intercession debugger for #stlc
 
 // change variable value
 Our debuggers so far have only observed the execution of a program, without interceding in it.
-However, many debuggers support some form of _reflection_ @maes87 @papoulias13, where they change the program's execution.
+//However, many debuggers support some form of _reflection_ @maes87 @papoulias13, where they change the program's execution.
+Yet, it is quite common for debuggers to support changing the value of variablesi @gdb @stallman88:debugging, or influence the control flow of the program @lauwaerts22:event-based-out-of-place-debugging @stallman88:debugging @alter.
+
+
 
 ...
 

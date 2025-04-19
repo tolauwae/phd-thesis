@@ -163,3 +163,34 @@
             )
         ])
 ]
+
+#let intercession = [
+    #show table.cell: set text(style: "italic")
+    #set table.cell(align: horizon)
+
+    #grid(columns: (5fr, 7fr), stroke: none, align: top,
+        table(columns: (1fr), align: (left), stroke: none,
+            definition(operation, "(debug commands)",
+                ($...$, "step", "inspect"),
+                ("", "single step", "inspection"), division: (1.0em, 1.5em, 4fr, 9fr)),
+        ),
+
+        grid.vline(stroke: lineWidth),
+
+        [
+            #set table(align: (x, y) => if x == 1 { right } else { center })
+            #set table(inset: (left: 0.3em))
+
+            #table(columns: (3fr, 1.2fr), stroke: none,
+                tablehead("Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $delta dbgarrow delta'$),
+                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v boxed(nothing) attach(arrow.r.long, t: "step") t' bar.v boxed("ack step")$), $t arrow.r.long t'$)), "(E-Step)",
+                prooftree(rule(rect(height: 2em, stroke: none, $v bar.v boxed(nothing) attach(arrow.r.long, t: "step") v bar.v boxed("ack" nothing)$))), "(E-Fallback)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v boxed(nothing) attach(arrow.r.long, t: "inspect") t bar.v boxed(t)$)))), "(E-Inspect)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v boxed(message) attach(arrow.r.long, t: nothing) t bar.v boxed(nothing)$)))), "(E-Read)",
+                highlight(silver, prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $boxed(operation) bar.v d dbgarrow boxed(nothing) bar.v d'$)), $d attach(arrow.r.long, t: operation) d'$))), highlight(silver, "(E-remote)"),
+            // todo: gray background for messages
+            // rect(fill: blue, width: auto, height: auto, text(top-edge: "ascender", "ack step"))
+            )
+        ])
+]
+
