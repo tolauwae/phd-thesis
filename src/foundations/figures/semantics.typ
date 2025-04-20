@@ -164,6 +164,90 @@
         ])
 ]
 
+#let executionstate = $e$
+#let breakpoints = $b$
+#let programcounter = $n$
+
+#let pause = text(style: "italic", "pause")
+#let play = text(style: "italic", "play")
+#let bpadd = $"bp"^+ space n$
+#let bpremove = $"bp"^- space n$
+
+#let conventionalsyntax = [
+    #show table.cell: set text(style: "italic")
+    #set table.cell(align: horizon)
+
+    #grid(columns: (5fr, 5fr), stroke: none, align: top,
+        table(columns: (1fr), align: (left), stroke: none,
+            tablehead("Syntax"),
+            definition(local, "(local debugger)",
+                ($t bar.v programcounter, executionstate, breakpoints , boxed(message)$,),
+                ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
+
+            definition(executionstate, "(execution state)",
+                ("paused", "play"),
+                ("paused state", "unpaused state"), division: (1.0em, 1.5em, 4fr, 9fr)),
+
+            definition(breakpoints, "(breakpoints)",
+                ($nothing$, $n, b$),
+                ("empty", "list of numerics"), division: (1.0em, 1.5em, 4fr, 9fr)),
+
+        ),
+
+        table(columns: (1fr), align: (left), stroke: none,
+            tablehead(""),
+            definition("m", "(output)",
+                ($...$, [hit n],),
+                ("", "breakpoint hit"), division: (1.0em, 1.5em, 4fr, 9fr)),
+
+            definition(operation, "(debug commands)",
+                ($...$, play, pause, bpadd, bpremove),
+                ("", "unpause", "pause", "add breakpoint", "remove breakpoint"), division: (1.0em, 1.5em, 4fr, 9fr)),
+        ),
+
+        table(columns: (1fr), align: (left), stroke: none,
+            tablehead([Numericals from $lambda^arrow.r$]),
+
+            definition("n", "(numeric values)",
+                    ("0", "succ n"),
+                    ("constant zero", "succ"), division: (1em, 1.5em, 3fr, 5fr)),
+
+        ),
+  )]
+
+#let conventionalevaluation = [
+    #show table.cell: set text(style: "italic")
+    #set table.cell(align: horizon)
+
+            #set table(align: (x, y) => if x == 1 { right } else { center })
+            #set table(inset: (left: 0.3em))
+
+            #table(columns: (3fr, 1.2fr), stroke: none,
+                tablehead("Local Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.6em), $d attach(arrow.r.long, t: operation) d'$),
+
+                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v programcounter, executionstate, breakpoints, boxed(nothing) attach(arrow.r.long, t: "step") t' bar.v "succ" programcounter, executionstate, breakpoints, boxed("ack step")$), $executionstate = "paused"$, $t arrow.r.long t'$)), "(E-Step)",
+
+                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v programcounter, executionstate, breakpoints, boxed(nothing) attach(arrow.r.long, t: "step") t bar.v programcounter, executionstate, breakpoints, boxed("ack" nothing)$), $e eq.not "paused"$)), "(E-Fallback2)",
+
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v programcounter, executionstate, breakpoints, boxed(nothing) attach(arrow.r.long, t: "pause") t bar.v programcounter, "paused", breakpoints, boxed(nothing)$)))), "(E-Pause)",
+
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v programcounter, executionstate, breakpoints, boxed(nothing) attach(arrow.r.long, t: "play") t bar.v programcounter, "play", breakpoints, boxed(nothing)$)))), "(E-Play)",
+
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v programcounter', executionstate, breakpoints, boxed(nothing) attach(arrow.r.long, t: bpadd) t bar.v programcounter', executionstate, breakpoints', boxed(nothing)$)), $breakpoints' = n, breakpoints$)), "(E-BreakpointAdd)",
+
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v programcounter', executionstate, breakpoints, boxed(nothing) attach(arrow.r.long, t: bpremove) t bar.v programcounter', executionstate, breakpoints', boxed(nothing)$)), $breakpoints' = breakpoints without n$)), "(E-BreakpointRemove)",
+
+                tablehead("Global Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $delta dbgarrow delta'$),
+
+                prooftree(rule(rect(height: 2em, stroke: none, $boxed(nothing) bar.v t bar.v programcounter, executionstate, breakpoints, boxed(nothing) dbgarrow boxed(nothing) bar.v t' bar.v "succ" programcounter, executionstate, breakpoints, boxed(nothing)$), $executionstate = "play"$, $t arrow.r.long t'$, $n in.not b$)), "(E-Run)",
+
+                prooftree(rule(rect(height: 2em, stroke: none, $boxed(c) bar.v t bar.v programcounter, "play", breakpoints, boxed(nothing) dbgarrow boxed(c) bar.v t bar.v programcounter, "paused", breakpoints, boxed("hit" n)$), $programcounter in breakpoints$)), "(E-BreakpointHit)",
+            // todo: gray background for messages
+            // rect(fill: blue, width: auto, height: auto, text(top-edge: "ascender", "ack step"))
+            )
+        
+]
+
 #let intercession = [
     #show table.cell: set text(style: "italic")
     #set table.cell(align: horizon)

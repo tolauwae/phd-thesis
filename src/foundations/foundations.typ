@@ -1,7 +1,7 @@
 #import "../../lib/class.typ": small, note, theorem, proof
 #import "../../lib/util.typ": semantics
 
-#import "figures/semantics.typ": rules-stlc, nat, debugger, operation, boxed, dbgarrow, multi
+#import "figures/semantics.typ": *
 
 A central concern of this dissertation is the design of debuggers, and what makes a good debugger.
 To understand and answer this question, there are currently few formal foundations to build upon.
@@ -82,7 +82,7 @@ Function application is used to apply a function to another, while abstraction b
 // todo say something about abstraction being a value
 In the simply typed version, each expression is assigned a type, and functions are given types that describe the kinds of inputs they accept and outputs they produce.
 
-== A remote debugger for #stlc
+== A tiny remote debugger for #stlc
 
 We start by defining the syntax of a tiny remote debugger for #stlc with booleans and natural numbers, defined as peano numbers @peano91:sul @kennedy74:peanos.
 The complete set of syntax, evaluation, and typing rules for booleans and natural numbers for #stlc can be found in @app:stlc.
@@ -177,17 +177,66 @@ we will discuss them for a few interesting debuggers built on our tiny remote se
 //Especially progress, generally serves as an important sanity check that the debugger is well-defined, and that there are no missing rules.
 //We provide the proofs for progress and preservation for our tiny remote debugger, and all other debuggers that follow in this chapter, in @app:progress.
 
-== A conventional debugger for #stlc
+== A conventional debugger for #stlc<sec:conventional>
 
-The tiny remote debugger $remotedbg$ is perhaps to simple to be really considered---what we conventionally call---a remote debugger.
-The most obvious missing pieces are _pause_ and _play_ commands, and support for _breakpoints_.
+The tiny remote debugger $remotedbg$ is perhaps to simple to be really considered---what we conventionally call---a live remote debugger.
+The most obvious missing pieces are #pause and #play commands, and support for _breakpoints_.
+The semantics so far consider the program to be paused at all times, and the debugger only moves forward when the user issues a _step_ command.
 
-...
+#semantics(
+    [*Syntax rules of a conventional live debugger for #remotedbg.* The syntax rules for #pause, #play, and _breakpoints_ for the #remotedbg debugger semantics. Changes to existing rules are highlighted.],
+    [#conventionalsyntax],
+    "fig:stlc.conventional.syntax")
+
+To support the pausing of the program's evaluation, as well as breakpoints, we extend the syntax of the tiny remote debugger with the rules shown in @fig:stlc.conventional.syntax.
+The local debugger configuration is extended with a _program counter_, a plain numerical value as defined by the syntax of #stlc, an _execution state_ that can either be _paused_ or _play_, and a set of _breakpoints_.
+
+#semantics(
+    [*Evaluation of conventional live debugger operations for #remotedbg.* The evaluation rules for #pause, #play, and _breakpoints_ for the #remotedbg debugger semantics. Changes to existing rules are highlighted.],
+    [#conventionalevaluation],
+    "fig:stlc.conventional.evaluation")
+
+Using these three new fields $(n, e, b)$, we can define the new evaluation rules for the conventional debugger.
+@fig:stlc.conventional.evaluation shows the new evaluation rules added to or replacing the existing rules. The full set of rules for the conventional debugger are shown in @app:debuggers.
+
+Now, we can easily let the debugger stop at any point in the reduction of the #stlc program by adding a rule for normal unpaused execution (_E-Run_) and by adding two rules to change the execution state to either _paused_ or _play_.
+For breakpoint support we need to keep track of a program counter, which for the #stlc can simply be a numerical value that counts the number of reductions.
+To increase the counter correctly, we only need to change the _E-Step_ and _E-Run_ rules to increment the counter by one for every reduction in the #stlc.
+Lastly, we need to add two new rules to add and remove breakpoints from the set of breakpoints in the debugger configuration, and an extra fallback rule to handle the case where the debugger is not paused, but a step command is received.
+
+All other rules from the tiny remote debugger remain unchanged, apart from the additional fields in the configuration.
+The exact values of these fields are immaterial for those remaining rules.
+
+/ E-Step: The _E-Step_ rule now only applies when the debugger is in the paused state.
+
+/ E-Fallback2: We add a second fallback rule, for when a step command is received, but the debugger is not paused. The execution state is irrelevant in the other fallback rule.
+
+/ E-Pause: The _E-Pause_ rule changes the execution state to _paused_.
+
+/ E-Play: The _E-Play_ rule changes the execution state to _play_.
+
+/ E-BreakpointAdd: The _E-BreakpointAdd_ rule adds the breakpoint $n$ from the $("bp"^+ space n)$ command to the set of breakpoints in the debugger configuration.
+
+/ E-BreakpointRemove: The _E-BreakpointRemove_ rule removes the breakpoint $n$---specified by the $("bp"^- space n)$ command---from the set of breakpoints in the debugger configuration.
+
+/ E-Run: When the execution state is _play_, and there are currently no commands in the message box of the remote debugger, nor is the current program counter $n$ an element of the breakpoints set $b$, then the debugger will take a single step in the underlying language semantics $t arrow.r.long t'$. Through this rule the debugger will continue normal execution until it reaches a breakpoint, or the program is paused, or the program is cannot be reduced anymore.
+
+/ E-BreakpointHit: When the execution state is _play_, and the program counter $n$ is part of the breakpoint set $b$, the debugger pauses the program by changing the execution state to _paused_. Finally, it outputs an alert of the breakpoint hit containing the current program counter.
+
+=== Correctness criteria for the #remotedbg debugger
+
+// todo
 
 == A reversible debugger for #stlc
 
-Another extension to the tiny remote debugger, is to turn it into a reversible debugger @engblom12:review.
+Another interesting extension to the tiny remote debugger, is to turn it into a reversible debugger @engblom12:review.
+We start from the conventional debugger semantics in @sec:conventional, and add a _backwards step_ command.
+
+A common approach to implementing a reversible debugger is to periodically store snapshots of the program state.
+Execution can be replayed from the last snapshot, allowing the debugger to seemingly run backwards.
+Since the 
 // go back to start and rerun -> we need to keep track of the number of steps
+
 
 ...
 
@@ -195,12 +244,22 @@ Another extension to the tiny remote debugger, is to turn it into a reversible d
 
 // change variable value
 Our debuggers so far have only observed the execution of a program, without interceding in it.
+Even our reversible debugger, does not intercede in the control flow of the program, it only replays a previously observed execution.
 //However, many debuggers support some form of _reflection_ @maes87:concepts @papoulias13:remote, where they change the program's execution.
-Yet, it is quite common for debuggers to support changing the value of variablesi @gdb @stallman88:debugging, or influence the control flow of the program @lauwaerts22:event-based-out-of-place-debugging @stallman88:debugging @alter.
+Yet, it is quite common for debuggers to support changing the value of variables @stallman88:debugging, or influence the control flow of the program @lauwaerts22:event-based-out-of-place-debugging @stallman88:debugging @alter.
 
+Intercession debuggers are an interesting case to study in terms of our correctness criteria.
+Since, we expect the debugger to observe the same semantics as the program, we need to be careful when changing the program state.
+It is very easy when changing even just a simple variable to break debugger correctness.
+Luckily we can illustrate this with even a simple language like #stlc.
 
+#semantics(
+    [*Intercession debugger semantics extending #remotedbg.*],
+    [#intercession],
+    "fig:stlc.intercession")
 
-...
+@fig:stlc.intercession shows our intercession debugger semantics.
+
 
 == General debugger correctness
 
