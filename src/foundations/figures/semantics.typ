@@ -7,7 +7,7 @@
 #let headHeight = 1.3em
 #let tablehead(text) = align(left, rect(height: headHeight, stroke: none, text))
 
-#let highlight(fill, content) = rect(fill: fill, stroke: none, outset: 0mm, inset: (left: 1mm, top: 2mm, bottom: 2mm , right: 1mm), content)
+#let highlight(fill, content, inset: (left: 1mm, top: 2mm, bottom: 2mm , right: 1mm)) = rect(fill: fill, stroke: none, outset: 0mm, inset: inset, content)
 
 #let definition = (name, addendum, rules, types, division: (1fr, 1.5em, 6fr, 9fr)) => [
     #let lines = range(rules.len()).map(_ => "").zip(range(rules.len()).map(_ => ""), rules, types).flatten()
@@ -24,7 +24,7 @@
 
 // Definitions
 
-#let local = "d"
+#let internal = "d"
 #let remote = $delta$
 #let message = $m$
 #let operation = "c" // $kappa.alt$
@@ -128,7 +128,7 @@
     #grid(columns: (5fr, 7fr), stroke: none, align: top,
         table(columns: (1fr), align: (left), stroke: none,
             tablehead("Syntax"),
-            definition(local, "(local debugger)",
+            definition(internal, "(internal debugger)",
                 ($t bar.v boxed(message)$,),
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
 
@@ -180,8 +180,8 @@
     #grid(columns: (5fr, 5fr), stroke: none, align: top,
         table(columns: (1fr), align: (left), stroke: none,
             tablehead("Syntax"),
-            definition(local, "(local debugger)",
-                ($t bar.v programcounter, executionstate, breakpoints , boxed(message)$,),
+            definition(internal, "(internal debugger)",
+                ($t bar.v highlight(#silver, #[#programcounter, #executionstate, #breakpoints]), boxed(message)$,),
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
 
             definition(executionstate, "(execution state)",
@@ -194,6 +194,8 @@
 
         ),
 
+        //grid.vline(stroke: lineWidth),
+
         table(columns: (1fr), align: (left), stroke: none,
             tablehead(""),
             definition("m", "(output)",
@@ -204,6 +206,8 @@
                 ($...$, play, pause, bpadd, bpremove),
                 ("", "unpause", "pause", "add breakpoint", "remove breakpoint"), division: (1.0em, 1.5em, 4fr, 9fr)),
         ),
+
+        grid.hline(stroke: lineWidth),
 
         table(columns: (1fr), align: (left), stroke: none,
             tablehead([Numericals from $lambda^arrow.r$]),
@@ -223,7 +227,7 @@
             #set table(inset: (left: 0.3em))
 
             #table(columns: (3fr, 1.2fr), stroke: none,
-                tablehead("Local Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.6em), $d attach(arrow.r.long, t: operation) d'$),
+                tablehead("Internal Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.6em), $d attach(arrow.r.long, t: operation) d'$),
 
                 prooftree(rule(rect(height: 2em, stroke: none, $t bar.v programcounter, executionstate, breakpoints, boxed(nothing) attach(arrow.r.long, t: "step") t' bar.v "succ" programcounter, executionstate, breakpoints, boxed("ack step")$), $executionstate = "paused"$, $t arrow.r.long t'$)), "(E-Step)",
 
@@ -246,6 +250,56 @@
             // rect(fill: blue, width: auto, height: auto, text(top-edge: "ascender", "ack step"))
             )
         
+]
+
+#let snapshots = $s$
+#let backwards = $"step"^arrow.l$
+
+#let reversible = [
+    #show table.cell: set text(style: "italic")
+    #set table.cell(align: horizon)
+
+    #let inset = 1mm
+
+    #grid(columns: (5fr, 7fr), stroke: none, align: top,
+        table(columns: (1fr), align: (left), stroke: none,
+            tablehead("Syntax"),
+            definition(internal, "(internal debugger)",
+                ($t bar.v programcounter, executionstate, breakpoints, highlight(#silver, #snapshots, inset: #inset), boxed(message)$,),
+                ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
+
+            definition(operation, "(debug commands)",
+                ($...$, highlight(silver, backwards)),
+                ("", highlight(silver, "backwards step")), division: (1.0em, 1.5em, 4fr, 9fr)),
+        ),
+
+        table(columns: (1fr), align: (left), stroke: none,
+            definition(snapshots, "(snapshots)",
+                ($(0, t)$, $(n, t), s$,),
+                ("start snapshot", "list of snapshots"), division: (1.0em, 1.5em, 4fr, 9fr)),
+        ),
+
+        grid.hline(stroke: lineWidth),
+
+        grid.cell(colspan: 2, [
+            #set table(align: (x, y) => if x == 1 { right } else { center })
+            #set table(inset: (left: 0.3em))
+
+            #table(columns: (3fr, 1.2fr), stroke: none,
+                tablehead("Internal Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.6em), $d attach(arrow.r.long, t: operation) d'$),
+
+                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v "succ" programcounter, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t'' bar.v programcounter, executionstate, breakpoints, snapshots, boxed(#[ack #backwards])$), $snapshots = (0, t')$, $executionstate = "paused"$, $t' attach(arrow.r.long, tr: n) t''$,)), "(E-BackwardStep0)",
+
+                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v "succ" programcounter, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t'' bar.v programcounter, executionstate, breakpoints, snapshots, boxed(#[ack #backwards])$), $n eq.not n'$, $snapshots = ((n', t'), snapshots')$, $executionstate = "paused"$, $t' attach(arrow.r.long, tr: n-n') t''$,)), "(E-BackwardStep1)",
+
+                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v "succ" programcounter, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t' bar.v programcounter, executionstate, breakpoints, snapshots', boxed(#[ack #backwards])$), $snapshots = ((n, t'), snapshots')$, $executionstate = "paused"$,)), "(E-BackwardStep2)",
+
+                        prooftree(rule(rect(height: 2em, stroke: none, $t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t bar.v programcounter, executionstate, breakpoints, snapshots, boxed("ack" nothing)$), $e eq.not "paused"$)), "(E-BackwardFallback1)",
+
+                        prooftree(rule(rect(height: 2em, stroke: none, $t bar.v 0, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t bar.v 0, executionstate, breakpoints, snapshots, boxed("ack" nothing)$), $snapshots = (0, t)$)), "(E-BackwardFallback2)",
+            )
+        ])
+    )
 ]
 
 #let intercession = [

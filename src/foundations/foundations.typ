@@ -232,13 +232,35 @@ The exact values of these fields are immaterial for those remaining rules.
 Another interesting extension to the tiny remote debugger, is to turn it into a reversible debugger @engblom12:review.
 We start from the conventional debugger semantics in @sec:conventional, and add a _backwards step_ command.
 
-A common approach to implementing a reversible debugger is to periodically store snapshots of the program state.
-Execution can be replayed from the last snapshot, allowing the debugger to seemingly run backwards.
-Since the 
+#semantics(
+    [*Syntax and evaluation rules of a reversible debugger for #remotedbg.* .],
+    [#reversible],
+    "fig:stlc.reversible")
+
+A common approach to implementing a reversible debugger is to periodically store snapshots of the program state, and reconstruct the execution from the last snapshot @engblom12:review @klimushenkova17:improving.
+Formalising this approach requires only few extensions to the semantics of the conventional debugger.
+We list the new syntax and evaluation rules for the reversible debugger in @fig:stlc.reversible.
 // go back to start and rerun -> we need to keep track of the number of steps
 
+We extend the syntax of the debugger with a list of snapshots, which are tuples of program counters and terms.
+The commands are extended with a _backwards step_ command, which takes a single step backwards in the program.
+To handle this command we need five internal rules, specifically, the _E-BackwardStep0_, _E-BackwardStep2_, and _E-BackwardStep2_ rules, along with two fallback rules.
 
-...
+/ E-BackwardStep0: The _E-BackwardStep0_ rule applies when the program counter is not zero, but only the start snapshot is present in the snapshot list. In this case the program reduces $n$ times starting from the initial configuration, to arrive exactly one reductions before the current term $t$.
+
+/ E-BackwardStep1: The _E-BackwardStep1_ rule applies reduces the program counter by one, and reduces the term $t'$ from the last snapshot exactly $n-n'$ times, to the term $t''$.
+
+/ E-BackwardStep2: The _E-BackwardStep2_ rule applies when the program counter is exactly one higher than the program counter of the last snapshot. In this case, the debugger only restores the snapshot and removes it from the snapshot list.
+
+/ E-BackwardFallback1: The _E-BackwardFallback1_ rule applies when the execution state is not paused. Analogous to the forward step, the debugger will not step back if the program is not paused, and simply send an empty acknowledgement to indicate that nothing has changed.
+
+/ E-BackwardFallback2: The _E-BackwardFallback2_ rule applies when the program counter is zero, in this case, the only sensible option is to also return an empty acknowledgement, since the program cannot step back any further.
+
+To summarize, when the reversible debugger is at a term $t$ with program counter $"succ" n$, then to step back once, it will restore the last snapshot and take exactly $n-n'$ steps where $n'$ is the program counter of the snapshot.
+
+=== Correctness criteria for the #remotedbg debugger
+
+// todo
 
 == An intercession debugger for #stlc
 
