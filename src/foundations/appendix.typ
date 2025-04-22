@@ -1,6 +1,6 @@
 
 #import "../../lib/util.typ": semantics
-#import "figures/semantics.typ": nat
+#import "figures/semantics.typ": nat, bindings
 
 = Simply typed lambda calculus extensions<app:stlc>
 
@@ -9,6 +9,11 @@
     [#strong[Natural numbers and booleans for $lambda^arrow.r$.] The syntax, evaluation, and typing rules for the natural numbers and booleans @pierce02:types.],
     [#nat],
     "fig:nat")
+
+#semantics(
+    [#strong[Let bindings for $lambda^arrow.r$.] The syntax, evaluation, and typing rules for let bindings @pierce02:types.],
+    [#bindings],
+    "fig:bindings")
 
 = Full syntax and evaluation rules for the debugger <app:debuggers>
 

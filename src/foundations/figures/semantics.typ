@@ -28,7 +28,7 @@
 #let remote = $delta$
 #let message = $m$
 #let operation = "c" // $kappa.alt$
-#let boxed(it) = $[ it ]$
+#let boxed(it) = $[| it |]$
 #let dbgarrow = $attach(arrow.r.long, br: text(size: small, DD))$ // $harpoon.rt$
 #let multi(step) = $attach(step, tr: "*")$ // $harpoon.rt$
 
@@ -78,10 +78,9 @@
     #show table.cell: set text(style: "italic")
     #set table.cell(align: horizon)
 
-
     #grid(columns: (5fr, 7fr), stroke: none, align: top,
             table(columns: (1fr), align: (left), stroke: none,
-                tablehead("Syntax"),
+                tablehead("New syntactic forms"),
                 definition("t", "(terms)",
                     ("...", "true", "false", "if t then t else t", "0", "succ t", "iszero t"),
                     ("", "constant true", "constant false", "conditional", "constant zero", "succ", "iszero"), division: (1em, 1.5em, 1fr, 1fr)),
@@ -108,15 +107,23 @@
 
                 #let ifelse(t1, t2, t3) = [if #t1 then #t2 else #t3]
 
-                #table(columns: (3fr, 1fr), stroke: none,
-                    tablehead("Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.3em, bottom: 0.3em), $t arrow.r.long t'$),
+                #table(columns: (3.0fr, 1fr), stroke: none,
+                    tablehead("New evaluation rules"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.3em, bottom: 0.3em), $t arrow.r.long t'$),
 
                     prooftree(rule($"if true then " t_1 " else " t_2 arrow.r.long t_1$)), "(E-IfTrue)", // 
                     prooftree(rule($"if false then " t_1 " else " t_2 arrow.r.long t_2$)), "(E-IfFalse)",
                     prooftree(vertical-spacing: 0.5em, rule(align(center, $"if " t_1 " then " t_2 " else " t_3 \ arrow.r.long "if " t'_1 " then " t_2 " else " t_3$), $t_1 arrow.r.long t'_1$)), "(E-If)",
 
-                    tablehead("Typing"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.3em, bottom: 0.3em), $Gamma tack.r t : T$),
+                    tablehead("New typing rules"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.3em, bottom: 0.3em), $Gamma tack.r t : T$),
 
+                    prooftree(rule($Gamma tack.r "true": "Bool"$)), "(T-True)",
+                    prooftree(rule($Gamma tack.r "false": "Bool"$)), "(T-False)",
+                    prooftree(rule($Gamma tack.r "if " t_1 " then " t_2 " else " t_3 : "T"$, $Gamma tack.r t_1 : "Bool"$, $Gamma tack.r t_2 : T$, $Gamma tack.r t_3 : T$)), "(T-If)",
+
+                    prooftree(rule($Gamma tack.r "0": "Nat"$)), "(T-Zero)",
+                    prooftree(rule($Gamma tack.r "succ " t_1 : "Nat"$, $Gamma tack.r t_1 : "Nat"$)), "(T-Succ)",
+                    prooftree(rule($Gamma tack.r "pred" t_1 : "Nat"$, $Gamma tack.r t_1 : "Nat"$)), "(T-Pred)",
+                    prooftree(rule($Gamma tack.r "iszero " t_1 : "Bool"$, $Gamma tack.r t_1 : "Nat"$)), "(T-IsZero)",
                 )
             ])
 ]
@@ -179,7 +186,7 @@
 
     #grid(columns: (5fr, 5fr), stroke: none, align: top,
         table(columns: (1fr), align: (left), stroke: none,
-            tablehead("Syntax"),
+            tablehead("New syntactic forms"),
             definition(internal, "(internal debugger)",
                 ($t bar.v highlight(#silver, #[#programcounter, #executionstate, #breakpoints]), boxed(message)$,),
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
@@ -263,7 +270,7 @@
 
     #grid(columns: (5fr, 7fr), stroke: none, align: top,
         table(columns: (1fr), align: (left), stroke: none,
-            tablehead("Syntax"),
+            tablehead("New syntactic forms"),
             definition(internal, "(internal debugger)",
                 ($t bar.v programcounter, executionstate, breakpoints, highlight(#silver, #snapshots, inset: #inset), boxed(message)$,),
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
@@ -294,23 +301,58 @@
 
                 prooftree(rule(rect(height: 2em, stroke: none, $t bar.v "succ" programcounter, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t' bar.v programcounter, executionstate, breakpoints, snapshots', boxed(#[ack #backwards])$), $snapshots = ((n, t'), snapshots')$, $executionstate = "paused"$,)), "(E-BackwardStep2)",
 
-                        prooftree(rule(rect(height: 2em, stroke: none, $t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t bar.v programcounter, executionstate, breakpoints, snapshots, boxed("ack" nothing)$), $e eq.not "paused"$)), "(E-BackwardFallback1)",
+                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t bar.v programcounter, executionstate, breakpoints, snapshots, boxed("ack" nothing)$), $e eq.not "paused"$)), "(E-BackwardFallback1)",
 
-                        prooftree(rule(rect(height: 2em, stroke: none, $t bar.v 0, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t bar.v 0, executionstate, breakpoints, snapshots, boxed("ack" nothing)$), $snapshots = (0, t)$)), "(E-BackwardFallback2)",
+                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v 0, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t bar.v 0, executionstate, breakpoints, snapshots, boxed("ack" nothing)$), $snapshots = (0, t)$)), "(E-BackwardFallback2)",
             )
         ])
     )
 ]
 
+#let bindings = [  // Let bindings for stlc
+    #show table.cell: set text(style: "italic")
+    #set table.cell(align: horizon)
+
+
+    #grid(columns: (5fr, 7fr), stroke: none, align: top,
+            table(columns: (1fr), align: (left), stroke: none,
+                tablehead("New syntactic forms"),
+            ),
+
+            grid.vline(stroke: lineWidth),
+
+            [
+                #set table(align: (x, y) => if x == 1 { right } else { center })
+                #set table(inset: (left: 0.3em))
+                #show math.equation: set text(style: "italic")
+
+                #let ifelse(t1, t2, t3) = [if #t1 then #t2 else #t3]
+
+                #table(columns: (3fr, 1fr), stroke: none,
+                    tablehead("New evaluation rules"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.3em, bottom: 0.3em), $t arrow.r.long t'$),
+
+                    prooftree(rule($"if true then " t_1 " else " t_2 arrow.r.long t_1$)), "(E-IfTrue)", // 
+                    prooftree(rule($"if false then " t_1 " else " t_2 arrow.r.long t_2$)), "(E-IfFalse)",
+                    prooftree(vertical-spacing: 0.5em, rule(align(center, $"if " t_1 " then " t_2 " else " t_3 \ arrow.r.long "if " t'_1 " then " t_2 " else " t_3$), $t_1 arrow.r.long t'_1$)), "(E-If)",
+
+                    tablehead("Typing"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.3em, bottom: 0.3em), $Gamma tack.r t : T$),
+
+                )
+            ])
+]
+
+#let subst = $"subst" t_1 t_2$
+
 #let intercession = [
     #show table.cell: set text(style: "italic")
     #set table.cell(align: horizon)
 
-    #grid(columns: (5fr, 7fr), stroke: none, align: top,
-        table(columns: (1fr), align: (left), stroke: none,
+    #grid(columns: (1fr, 2fr), align: (left), stroke: none,
+            table(columns: (1fr), align: (left), stroke: none,
+                tablehead("New syntactic forms"),
             definition(operation, "(debug commands)",
-                ($...$, "step", "inspect"),
-                ("", "single step", "inspection"), division: (1.0em, 1.5em, 4fr, 9fr)),
+                ($...$, subst),
+                ("", "substitute"), division: (1.0em, 1.5em, 4fr, 9fr)),
         ),
 
         grid.vline(stroke: lineWidth),
@@ -319,15 +361,9 @@
             #set table(align: (x, y) => if x == 1 { right } else { center })
             #set table(inset: (left: 0.3em))
 
-            #table(columns: (3fr, 1.2fr), stroke: none,
-                tablehead("Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $delta dbgarrow delta'$),
-                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v boxed(nothing) attach(arrow.r.long, t: "step") t' bar.v boxed("ack step")$), $t arrow.r.long t'$)), "(E-Step)",
-                prooftree(rule(rect(height: 2em, stroke: none, $v bar.v boxed(nothing) attach(arrow.r.long, t: "step") v bar.v boxed("ack" nothing)$))), "(E-Fallback)",
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v boxed(nothing) attach(arrow.r.long, t: "inspect") t bar.v boxed(t)$)))), "(E-Inspect)",
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v boxed(message) attach(arrow.r.long, t: nothing) t bar.v boxed(nothing)$)))), "(E-Read)",
-                highlight(silver, prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $boxed(operation) bar.v d dbgarrow boxed(nothing) bar.v d'$)), $d attach(arrow.r.long, t: operation) d'$))), highlight(silver, "(E-remote)"),
-            // todo: gray background for messages
-            // rect(fill: blue, width: auto, height: auto, text(top-edge: "ascender", "ack step"))
+            #table(columns: (4fr, 1.1fr), stroke: none,
+                tablehead("Internal Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.6em), $d attach(arrow.r.long, t: operation) d'$),
+                prooftree(rule(grid(columns: 1, align: alignment.center, $t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(nothing)$, rect(height: 2em, stroke: none, $attach(arrow.r.long, t: subst) [t_1 arrow.r.bar t_2] space t bar.v programcounter, executionstate, breakpoints, snapshots, boxed("ack" subst)$)), $Gamma tack.r t_2 : T'$, $Gamma, t_1 : T'  tack.r t : T$)), "(E-Subst)", // todo should t_1 be a value?
             )
         ])
 ]

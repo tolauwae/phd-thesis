@@ -264,7 +264,6 @@ To summarize, when the reversible debugger is at a term $t$ with program counter
 
 == An intercession debugger for #stlc
 
-// change variable value
 Our debuggers so far have only observed the execution of a program, without interceding in it.
 Even our reversible debugger, does not intercede in the control flow of the program, it only replays a previously observed execution.
 //However, many debuggers support some form of _reflection_ @maes87:concepts @papoulias13:remote, where they change the program's execution.
@@ -273,7 +272,7 @@ Yet, it is quite common for debuggers to support changing the value of variables
 Intercession debuggers are an interesting case to study in terms of our correctness criteria.
 Since, we expect the debugger to observe the same semantics as the program, we need to be careful when changing the program state.
 It is very easy when changing even just a simple variable to break debugger correctness.
-Luckily we can illustrate this with even a simple language like #stlc.
+Luckily, we can illustrate this in the #stlc by allowing the debugger to substitute terms at runtime.#note[This is similar to substitutions through let bindings @pierce02:types.]
 
 #semantics(
     [*Intercession debugger semantics extending #remotedbg.*],
