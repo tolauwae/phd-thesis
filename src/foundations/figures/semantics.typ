@@ -304,6 +304,12 @@
                 prooftree(rule(rect(height: 2em, stroke: none, $t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t bar.v programcounter, executionstate, breakpoints, snapshots, boxed("ack" nothing)$), $e eq.not "paused"$)), "(E-BackwardFallback1)",
 
                 prooftree(rule(rect(height: 2em, stroke: none, $t bar.v 0, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t bar.v 0, executionstate, breakpoints, snapshots, boxed("ack" nothing)$), $snapshots = (0, t)$)), "(E-BackwardFallback2)",
+
+                tablehead("Global Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $delta dbgarrow delta'$),
+
+                prooftree(rule(rect(height: 2em, stroke: none, $boxed(nothing) bar.v t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(nothing) dbgarrow boxed(nothing) bar.v t' bar.v "succ" programcounter, executionstate, breakpoints, snapshots', boxed(nothing)$), $executionstate = "play"$, $t arrow.r.long t'$, $snapshots' = ( ("succ" n, t'), snapshots )$, $n in.not b$, $("succ" n) space % space theta = 0$)), highlight(silver, "(E-Run1)"),
+
+                prooftree(rule(rect(height: 2em, stroke: none, $boxed(nothing) bar.v t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(nothing) dbgarrow boxed(nothing) bar.v t' bar.v "succ" programcounter, executionstate, breakpoints, snapshots, boxed(nothing)$), $executionstate = "play"$, $t arrow.r.long t'$, $n in.not b$, $("succ" n) space % space theta eq.not 0$)), highlight(silver, "(E-Run2)"),
             )
         ])
     )

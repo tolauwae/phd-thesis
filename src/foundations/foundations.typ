@@ -256,7 +256,14 @@ To handle this command we need five internal rules, specifically, the _E-Backwar
 
 / E-BackwardFallback2: The _E-BackwardFallback2_ rule applies when the program counter is zero, in this case, the only sensible option is to also return an empty acknowledgement, since the program cannot step back any further.
 
-To summarize, when the reversible debugger is at a term $t$ with program counter $"succ" n$, then to step back once, it will restore the last snapshot and take exactly $n-n'$ steps where $n'$ is the program counter of the snapshot.
+Given these internal evaluation rules, we only need to specify in the global evaluation rules how and when snapshots are created.
+Several strategies can be used to determine when to create new snapshots, for simplicity we will let the debugger create a snapshot every few steps by replacing the _E-Run_ rule by the following two rules.
+
+/ E-Run1: We change the _E-Run_ rule to add a new snapshot to the list #snapshots whenever the program counter is a multiple of $theta$, which we consider a static configuration of the debugger#note[The value of $theta$ could be changed through some meta-rules for the debugger.].
+
+/ E-Run2: In case the program counter is not a multiple of $theta$, the _E-Run2_ rule is the same as the original _E-Run_ rule.
+
+To summarize the reversible semantics, when the reversible debugger is at a term $t$ with program counter $"succ" n$, then to step back once, it will restore the last snapshot and take exactly $n-n'$ steps where $n'$ is the program counter of the snapshot.
 
 === Correctness criteria for the #remotedbg debugger
 
