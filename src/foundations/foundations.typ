@@ -1,4 +1,4 @@
-#import "../../lib/class.typ": small, note, theorem, proof, example
+#import "../../lib/class.typ": small, note, theorem, proof, example, lemma
 #import "../../lib/util.typ": semantics
 
 #import "figures/semantics.typ": *
@@ -327,7 +327,7 @@ Therefore the problem is not that our debugger is incorrect, but that the correc
 The solution here is rather intuitive---we consider the point where a program is updated by the debugger, as the start of a new debugger session.
 We explore this idea in the following section, where we redefine debugger soundness and completeness for intercession debuggers.
 
-=== Updating correctness criteria for intercession debuggers
+=== Updating the correctness criteria for intercession debuggers
 
 Informally, the correctness of debuggers depends on their faithful observation of a program's behaviour.
 Intercession debuggers are a common type of debugger that shows this criteria is far from trivial.
@@ -338,32 +338,45 @@ Secondly, as a general rule for intercession debuggers that change the program i
 Our previous correctness criteria already cover the former rule, but the criteria are too strict for the latter class of intercession debuggers.
 We will adapt the soundness and completeness theorems to fit our second principle for debuggers that can change a program.
 
+Until now, the debugger soundness theorem mirrored the _progress_ theorem for programming languages @pierce02:types, however, since we now introduce program updates, we also need to think about _preservation_ @pierce02:types.
+For the debugger, this means that any changes to the program code must keep the program well-typed.
+
+#lemma("Preservation")[
+  A debugger semantic is said to be _preserving_ if the following holds:
+  $ forall delta, delta' . delta #dbgarrow delta' and t in delta "is well-typed" arrow.double.r.long t' in delta' "is well-typed" $
+]<preserving>
+
+#let substarrow = box(height: 0.4em, $attach(arrow.r.long, t: subst)$)
+
+#proof([Preservation for the intercession debugger])[
+  The proof proceeds by case analysis on the rules of the debugger.
+  Only the #substarrow rule is interesting, since it is the only rule that changes the program code. However, since the rule replaces $t_1$ in the well-typed program $t$ with a term of the same type $t_2$, the case is also trivially true.
+]
+
+As reader may have noticed, this lemma is very general and can be applied the previously defined debugger semantics as well---and probably most other semantics for that matter.
+However, since the previous semantics in this chapter do not change the program code, they are trivially preserving.
+That said, for other intercession debuggers the preservation property is a crucial criterion for correctness.
+
+Now we define debugger soundness, as the preservation of the program's well-typedness, and the existence of a path in the underlying language semantics starting from an arbitrary configuration $delta$---rather than the starting configuration.
+
 #theorem("Debugger soundness")[
-  Let $delta_"start"$ be the initial configuration of the debugger for some program $t$. Then:
-  $ forall space delta space . space ( delta_"start" multi(dbgarrow) delta ) arrow.r.double.long ( t multi(arrow.r.long) t_delta ) $
+  A debugger semantic is said to be _sound_ if it is _preserving_ and the following holds:
+  $ forall delta, delta' . delta attach(dbgarrow, tr:*) delta' and subst in.not ( attach(dbgarrow, tr:*) ) and t "is well-typed" arrow.double.r.long t attach(arrow.r.long, tr:*) t' , $ where $t in delta$ and $t' in delta'$.
 ]
 #proof[
-  The proof proceeds by induction on the number of steps taken in the debugger.
-  Since _E-Step_ is the only rule that changes the term $t$ in the debugger configuration, and _E-Step_ uses the local step ($arrow.r.long$); there is necessarily a path $t multi(arrow.r.long) t_delta$ in the underlying language semantics.
 ]
 
-Debugger completeness is the dual of soundness, but in the opposite direction.
-Completeness demands that any path in the underlying semantics can be observed in the debugger.
-
-#theorem("Debugger completeness")[
-  Let $t$ be a #stlc program, and $delta_"start"$ the start configuration of a debug session for this program. Then:
-  $ forall space t' space . space ( t multi(arrow.r.long) t' ) arrow.r.double.long exists space delta space . space (delta = boxed(operation) bar.v t' bar.v boxed(m)) and ( delta_"start" multi(dbgarrow) delta ) $
-]
-#proof[
-  Given any path $t multi(arrow.r.long) t'$ in #stlc, we can construct a sequence of debug commands $multi(operation)$ to be the exact number of _step_ commands corresponding to the path in #stlc. Then the debug session starting in $delta_"start"$ with the commands $multi(operation)$ will take the exact same path by construction (see rule _E-Remote_ and _E-Step_), resulting in a configuration ($boxed(nothing) bar.v t' bar.v boxed(nothing)$).
-]
+Unlike soundness, debugger completeness is not broken because of intercession.
+After all, there is no reason that any intercession commands should take place during the debugging session we construct in the proof.
+Therefore---analogous to the previous extensions to the semantics---the addition of the _E-Subst_ rule makes no difference, and the same proof for completeness holds.
 
 == Discussion: general debugger correctness
 
-Formally defining a general correctness criterion for all types of debuggers is not possible given the wide variety of debuggers and the vagueness around the definition of debuggers.
-Therefore, it should not surprise anyone that the correctness criteria presented in this chapter depend on the debugger semantics themselves.
-Especially, the criteria for the intercession debugger depends in a crucial way on the type of intercession the debugger supports.
-This becomes even more unavoidable given that we define the debugger semantics in terms of the underlying semantics.
+//As this chapter shows,
+Given the wide variety of debuggers and the vagueness around what constitutes as a debugger, it is not possible to formally define a general correctness criterion that is the same for all types of debuggers.
+Therefore, it should not surprise anyone that the correctness criteria presented in this chapter depend on, and are different for, each of the debugger semantics.
+Especially, the criteria for the intercession debugger depend in a crucial way on the type of intercession the debugger supports.
+//This becomes even more unavoidable given that we define the debugger semantics in terms of the underlying semantics.
 
 However, the _soundness_ and _completeness_ criteria presented in this chapter do present the same general principle, which is that the debugger should observe the same semantics as the program being debugged.
 In the case of the intercession debuggers these criteria need to be adapted on a case by case basis, depending on the type of intercessions supported, but their general principles still hold.
@@ -372,11 +385,11 @@ The extensive discussion of the different debugger semantics for the #stlc in th
 The same criteria will be used throughout this dissertation, as we explore how to develop sound out-of-place and multiverse debugging techniques for constrained environments. //, we will test our models with the correctness criteria presented in this chapter.
 These debuggers bridge a wide spectrum of debugger types, and intercede in the program's execution in intricate ways.
 They present semantics that are much more complex than the simple semantics we presented in this chapter.
-This will illustrate further that the correctness criteria presented in this chapter are indeed the useful properties for any type of debugger.
+This will illustrate further that the correctness criteria presented in this chapter are indeed useful properties for any type of debugger.
 
 Furthermore, the spirit of the debugger semantics in this chapter closely aligns to the design of the debuggers we will present. // in the following chapters.
-For instance our multiverse debugger presented in @chap:multiverse contains similar semantics to our reversible debugger for exploring the possible execution paths of non-deterministic programs.
-The rest of this dissertation will also mirror the structure of this chapter, by first presenting a remote debugger, and then extending it with more advanced features in the following chapters.
+For instance, our multiverse debugger presented in @chap:multiverse contains similar semantics to our reversible debugger for exploring the possible execution paths of non-deterministic programs.
+The rest of this dissertation will also mirror the structure of this chapter, by first presenting a remote debugger for WebAssembly on microcontrollers, and then extending it with more advanced features in the following chapters.
 // == Debuggers that break correctness
 
 // todo do we need a section where we discuss debuggers which do not satisfy this criterion? + its implications / harmful effects
