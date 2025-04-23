@@ -1,4 +1,4 @@
-#import "../../lib/class.typ": small, note, theorem, proof
+#import "../../lib/class.typ": small, note, theorem, proof, example
 #import "../../lib/util.typ": semantics
 
 #import "figures/semantics.typ": *
@@ -259,9 +259,9 @@ To handle this command we need five internal rules, specifically, the _E-Backwar
 Given these internal evaluation rules, we only need to specify in the global evaluation rules how and when snapshots are created.
 Several strategies can be used to determine when to create new snapshots, for simplicity we will let the debugger create a snapshot every few steps by replacing the _E-Run_ rule by the following two rules.
 
-/ E-Run1: We change the _E-Run_ rule to add a new snapshot to the list #snapshots whenever the program counter is a multiple of $theta$, which we consider a static configuration of the debugger#note[The value of $theta$ could be changed through some meta-rules for the debugger.].
+/ E-Run1: We change the _E-Run_ rule to add a new snapshot to the list #snapshots whenever the program counter is a multiple of #interval, which we consider a static configuration of the debugger#note[The value of #interval could be changed through some meta-rules for the debugger.].
 
-/ E-Run2: In case the program counter is not a multiple of $theta$, the _E-Run2_ rule is the same as the original _E-Run_ rule.
+/ E-Run2: In case the program counter is not a multiple of #interval, the _E-Run2_ rule is the same as the original _E-Run_ rule.
 
 To summarize the reversible semantics, when the reversible debugger is at a term $t$ with program counter $"succ" n$, then to step back once, it will restore the last snapshot and take exactly $n-n'$ steps where $n'$ is the program counter of the snapshot.
 
@@ -279,35 +279,113 @@ Yet, it is quite common for debuggers to support changing the value of variables
 Intercession debuggers are an interesting case to study in terms of our correctness criteria.
 Since, we expect the debugger to observe the same semantics as the program, we need to be careful when changing the program state.
 It is very easy when changing even just a simple variable to break debugger correctness.
-Luckily, we can illustrate this in the #stlc by allowing the debugger to substitute terms at runtime.#note[This is similar to substitutions through let bindings @pierce02:types.]
+Luckily, we can illustrate this in the #stlc by allowing the debugger to substitute terms at runtime.
 
 #semantics(
     [*Intercession debugger semantics extending #remotedbg.*],
     [#intercession],
     "fig:stlc.intercession")
 
-@fig:stlc.intercession shows our intercession debugger semantics.
+#note[The substitution debug command is similar to substitutions through let bindings in #stlc @pierce02:types.]@fig:stlc.intercession shows our intercession debugger semantics, as again an extension on the previous debugger semantics---shown in @fig:stlc.reversible.
+We add a new debug command #subst to the debugger, which allows the user to substitute the current term $t_1$ with a new term $t_2$ of the same type.
 
+=== Intercession breaks straightforward correctness //criteria for the #remotedbg debugger
 
-== General debugger correctness
+Unfortunately, the intercession debugger is not sound by the definition of the previous debuggers.
+The previous soundness criteria are defined in terms of the entire debugging sessions, starting from the beginning of the program.
+This criterion can never be satisfied for all debugging session of an intercession debugger that can arbitrarily update the program code.
+We can illustrate this by the following example (@example), where we use the _substitution_ command to change the program at runtime.
 
-The correctness criteria for debuggers presented in this chapter, differ slightly in notation, but they all follow the general principle of _soundness_ and _completeness_.
+#figure([#example([
+  The following shows a sequence of steps in the intercession debugger. Intercession commands are shown in bold. // Steps taken in the underlying semantics are shown in black, while debugger steps are shown in an italic red font.
 
+  #let debug(content) = {
+    set text(weight: "bold")
+    math.bold(content)
+  }
+  #align(center, prooftree(vertical-spacing: 0.55em,
+    rule(label: "E-isZero", "true : Bool", 
+//      rule( $"isZero" 0 : "Bool"$,
+        rule(label: "E-AppAbs", $[x arrow.r.bar 0] "isZero" x : "Bool"$,
+//          rule($(lambda x : "Nat" . "isZero" x) space 0 : "Bool"$,
+            rule(label: debug("E-Subst"), debug($["succ" 0 arrow.r.bar 0] space (lambda x : "Nat" . "isZero" x) space "succ" 0 : "Bool"$),
+//              rule($(lambda x : "Nat" . "isZero" x) space "succ" 0 : "Bool"$,
+                rule(label: "E-AppAbs", $(lambda x : "Nat" . "isZero" x) space ([y arrow.r.bar 0] space ("succ" y)) : "Bool"$,
+                  $(lambda x : "Nat" . "isZero" x) space (lambda y : "Nat" . "succ" y) space 0 : "Bool"$))))))
+//  )))
+
+])<example>])
+
+In @example, the debugger changes all occurrences of _succ 0_ in the program to simply _0_ in the middle of the debugging session.
+Through this intervention, the program results in true, while the original code can clearly only be false.
+To our correctness criteria, this means we designed an incorrect debugger.
+However, there are many reasons for designing a debugger that can update the program during a debugging session, allowing developers to patch code as they debug it.
+Moreover, there is nothing in the function of the debugger that would lead us to believe---on the face of it---that the debugger is incorrect.
+After all, the new program is still well typed, and the debugger observes the correct behaviour of the updated program.
+Therefore the problem is not that our debugger is incorrect, but that the correctness criteria are too strict.
+
+The solution here is rather intuitive---we consider the point where a program is updated by the debugger, as the start of a new debugger session.
+We explore this idea in the following section, where we redefine debugger soundness and completeness for intercession debuggers.
+
+=== Updating correctness criteria for intercession debuggers
+
+Informally, the correctness of debuggers depends on their faithful observation of a program's behaviour.
+Intercession debuggers are a common type of debugger that shows this criteria is far from trivial.
+There are two major ways in which debuggers typically intercede with a program's execution, and correspondingly, two general principles those intercessions must follow.
+
+Firstly, intercession debuggers that change the behaviour of a program---often my changing control flow or throwing exceptions #cite(<alter>)---in order to be correct, may only introduce behaviour that could be observed in the underlying semantics.
+Secondly, as a general rule for intercession debuggers that change the program itself, the debugger must faithfully observe the new program from the moment the code was updated, and the updated program must remain well-typed.
+Our previous correctness criteria already cover the former rule, but the criteria are too strict for the latter class of intercession debuggers.
+We will adapt the soundness and completeness theorems to fit our second principle for debuggers that can change a program.
+
+#theorem("Debugger soundness")[
+  Let $delta_"start"$ be the initial configuration of the debugger for some program $t$. Then:
+  $ forall space delta space . space ( delta_"start" multi(dbgarrow) delta ) arrow.r.double.long ( t multi(arrow.r.long) t_delta ) $
+]
+#proof[
+  The proof proceeds by induction on the number of steps taken in the debugger.
+  Since _E-Step_ is the only rule that changes the term $t$ in the debugger configuration, and _E-Step_ uses the local step ($arrow.r.long$); there is necessarily a path $t multi(arrow.r.long) t_delta$ in the underlying language semantics.
+]
+
+Debugger completeness is the dual of soundness, but in the opposite direction.
+Completeness demands that any path in the underlying semantics can be observed in the debugger.
+
+#theorem("Debugger completeness")[
+  Let $t$ be a #stlc program, and $delta_"start"$ the start configuration of a debug session for this program. Then:
+  $ forall space t' space . space ( t multi(arrow.r.long) t' ) arrow.r.double.long exists space delta space . space (delta = boxed(operation) bar.v t' bar.v boxed(m)) and ( delta_"start" multi(dbgarrow) delta ) $
+]
+#proof[
+  Given any path $t multi(arrow.r.long) t'$ in #stlc, we can construct a sequence of debug commands $multi(operation)$ to be the exact number of _step_ commands corresponding to the path in #stlc. Then the debug session starting in $delta_"start"$ with the commands $multi(operation)$ will take the exact same path by construction (see rule _E-Remote_ and _E-Step_), resulting in a configuration ($boxed(nothing) bar.v t' bar.v boxed(nothing)$).
+]
+
+== Discussion: general debugger correctness
+
+Formally defining a general correctness criterion for all types of debuggers is not possible given the wide variety of debuggers and the vagueness around the definition of debuggers.
+Therefore, it should not surprise anyone that the correctness criteria presented in this chapter depend on the debugger semantics themselves.
+Especially, the criteria for the intercession debugger depends in a crucial way on the type of intercession the debugger supports.
+This becomes even more unavoidable given that we define the debugger semantics in terms of the underlying semantics.
+
+However, the _soundness_ and _completeness_ criteria presented in this chapter do present the same general principle, which is that the debugger should observe the same semantics as the program being debugged.
+In the case of the intercession debuggers these criteria need to be adapted on a case by case basis, depending on the type of intercessions supported, but their general principles still hold.
+
+The extensive discussion of the different debugger semantics for the #stlc in this chapter serve to show the general applicability of debugger soundness and completeness, and support our claim that these are the most essential correctness properties for any type of debugger.
+The same criteria will be used throughout this dissertation, as we explore how to develop sound out-of-place and multiverse debugging techniques for constrained environments. //, we will test our models with the correctness criteria presented in this chapter.
+These debuggers bridge a wide spectrum of debugger types, and intercede in the program's execution in intricate ways.
+They present semantics that are much more complex than the simple semantics we presented in this chapter.
+This will illustrate further that the correctness criteria presented in this chapter are indeed the useful properties for any type of debugger.
+
+Furthermore, the spirit of the debugger semantics in this chapter closely aligns to the design of the debuggers we will present. // in the following chapters.
+For instance our multiverse debugger presented in @chap:multiverse contains similar semantics to our reversible debugger for exploring the possible execution paths of non-deterministic programs.
+The rest of this dissertation will also mirror the structure of this chapter, by first presenting a remote debugger, and then extending it with more advanced features in the following chapters.
 // == Debuggers that break correctness
 
 // todo do we need a section where we discuss debuggers which do not satisfy this criterion? + its implications / harmful effects
 //
 // is this not easy with a reversible debugger?
 
-...
-
-== Conclusion
+//== Conclusion
 
 //The formal framework for debuggers presented in this chapter, is the basis for the formalisations at the heart of this dissertation.
-The framework proposed in this chapter, is at the heart of the formalisations in this dissertation.
-As we explore how to develop sound out-of-place and multiverse debugging techniques for constrained environments, we will test our models with the correctness criteria presented in this chapter.
-Furthermore, the spirit of the debugger semantics in this chapter closely align to the design of the debuggers we will present. // in the following chapters.
-The rest of this dissertation will also mirror the structure of this chapter, by first presenting a remote debugger, and then extending it with more advanced features in the following chapters.
 
 //The rest of this dissertation is build on the correctness criteria for debuggers presented in this chapter.
 //The dissertation itself will also follow the structure of this chapter, by first presenting a simple remote debugger, and then extending it with more advanced features in the following chapters.

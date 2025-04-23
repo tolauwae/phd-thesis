@@ -234,7 +234,7 @@
             #set table(inset: (left: 0.3em))
 
             #table(columns: (3fr, 1.2fr), stroke: none,
-                tablehead("Internal Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.6em), $d attach(arrow.r.long, t: operation) d'$),
+                tablehead("Internal Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.4em), $d attach(arrow.r.long, t: operation) d'$),
 
                 prooftree(rule(rect(height: 2em, stroke: none, $t bar.v programcounter, executionstate, breakpoints, boxed(nothing) attach(arrow.r.long, t: "step") t' bar.v "succ" programcounter, executionstate, breakpoints, boxed("ack step")$), $executionstate = "paused"$, $t arrow.r.long t'$)), "(E-Step)",
 
@@ -261,6 +261,7 @@
 
 #let snapshots = $s$
 #let backwards = $"step"^arrow.l$
+#let interval = $theta$
 
 #let reversible = [
     #show table.cell: set text(style: "italic")
@@ -268,7 +269,7 @@
 
     #let inset = 1mm
 
-    #grid(columns: (5fr, 7fr), stroke: none, align: top,
+    #grid(columns: (1fr, 1fr), stroke: none, align: top,
         table(columns: (1fr), align: (left), stroke: none,
             tablehead("New syntactic forms"),
             definition(internal, "(internal debugger)",
@@ -293,7 +294,7 @@
             #set table(inset: (left: 0.3em))
 
             #table(columns: (3fr, 1.2fr), stroke: none,
-                tablehead("Internal Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.6em), $d attach(arrow.r.long, t: operation) d'$),
+                tablehead("Internal Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.4em), $d attach(arrow.r.long, t: operation) d'$),
 
                 prooftree(rule(rect(height: 2em, stroke: none, $t bar.v "succ" programcounter, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t'' bar.v programcounter, executionstate, breakpoints, snapshots, boxed(#[ack #backwards])$), $snapshots = (0, t')$, $executionstate = "paused"$, $t' attach(arrow.r.long, tr: n) t''$,)), "(E-BackwardStep0)",
 
@@ -307,9 +308,9 @@
 
                 tablehead("Global Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $delta dbgarrow delta'$),
 
-                prooftree(rule(rect(height: 2em, stroke: none, $boxed(nothing) bar.v t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(nothing) dbgarrow boxed(nothing) bar.v t' bar.v "succ" programcounter, executionstate, breakpoints, snapshots', boxed(nothing)$), $executionstate = "play"$, $t arrow.r.long t'$, $snapshots' = ( ("succ" n, t'), snapshots )$, $n in.not b$, $("succ" n) space % space theta = 0$)), highlight(silver, "(E-Run1)"),
+                prooftree(rule(rect(height: 2em, stroke: none, $boxed(nothing) bar.v t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(nothing) dbgarrow boxed(nothing) bar.v t' bar.v "succ" programcounter, executionstate, breakpoints, snapshots', boxed(nothing)$), $executionstate = "play"$, $t arrow.r.long t'$, $snapshots' = ( ("succ" n, t'), snapshots )$, $n in.not b$, $("succ" n) space % space interval = 0$)), highlight(silver, "(E-Run1)"),
 
-                prooftree(rule(rect(height: 2em, stroke: none, $boxed(nothing) bar.v t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(nothing) dbgarrow boxed(nothing) bar.v t' bar.v "succ" programcounter, executionstate, breakpoints, snapshots, boxed(nothing)$), $executionstate = "play"$, $t arrow.r.long t'$, $n in.not b$, $("succ" n) space % space theta eq.not 0$)), highlight(silver, "(E-Run2)"),
+                prooftree(rule(rect(height: 2em, stroke: none, $boxed(nothing) bar.v t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(nothing) dbgarrow boxed(nothing) bar.v t' bar.v "succ" programcounter, executionstate, breakpoints, snapshots, boxed(nothing)$), $executionstate = "play"$, $t arrow.r.long t'$, $n in.not b$, $("succ" n) space % space interval eq.not 0$)), highlight(silver, "(E-Run2)"),
             )
         ])
     )
@@ -368,7 +369,7 @@
             #set table(inset: (left: 0.3em))
 
             #table(columns: (4fr, 1.1fr), stroke: none,
-                tablehead("Internal Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.6em), $d attach(arrow.r.long, t: operation) d'$),
+                tablehead("Internal Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.4em), $d attach(arrow.r.long, t: operation) d'$),
                 prooftree(rule(grid(columns: 1, align: alignment.center, $t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(nothing)$, rect(height: 2em, stroke: none, $attach(arrow.r.long, t: subst) [t_1 arrow.r.bar t_2] space t bar.v programcounter, executionstate, breakpoints, snapshots, boxed("ack" subst)$)), $Gamma tack.r t_2 : T'$, $Gamma, t_1 : T'  tack.r t : T$)), "(E-Subst)", // todo should t_1 be a value?
             )
         ])
