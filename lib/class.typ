@@ -30,8 +30,8 @@
     }
 
 #let theorem = thmbox("theorem", "Theorem", inset: 0em, base_level: 1, titlefmt: body => strong[#body.], namefmt: body => strong[(#body)], separator: h(0.6em, weak: true)).with(numbering: "1-1")
+#let lemma = thmbox("lemma", "Lemma", inset: 0em, base_level: 1, titlefmt: body => strong[#body.], namefmt: body => strong[(#body)], separator: h(0.6em, weak: true)).with(numbering: "1-1")
 #let proof = thmproof("proof", "Proof", inset: (left: 0em, top: 0em, right: 0em, bottom: 1.2em), titlefmt: body => strong[#body.], namefmt: body => strong[(#body)], separator: h(0.6em, weak: true))
 #let proofsketch = thmproof("proof sketch", "Proof Sketch", inset: (left: 0em, top: 0em, right: 0em, bottom: 1.2em), titlefmt: body => strong[#body.], namefmt: body => strong[(#body)], separator: h(0.6em, weak: true))
 
-
-
+#let example = thmbox("example", "Example", inset: 0em, base_level: 1, titlefmt: body => strong[#body.], namefmt: body => strong[(#body)], separator: h(0.6em, weak: true)).with(numbering: "1-1")
