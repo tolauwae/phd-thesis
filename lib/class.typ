@@ -1,7 +1,7 @@
     #import "@preview/drafting:0.2.2": set-margin-note-defaults, set-page-properties, margin-note, rule-grid
     #import "@preview/ctheorems:1.1.3": *
 
-    #let normal = 10pt
+    #let normal = 9pt
     #let small = 8pt
 
 

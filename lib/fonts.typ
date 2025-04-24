@@ -6,8 +6,8 @@
 #let mass = 400
 
 // text sizes
-#let normal = 8pt
-#let small = 6pt
+#let normal = 9pt
+#let small = 8pt
 #let script = 6pt
 #let tiny = 4pt
 
