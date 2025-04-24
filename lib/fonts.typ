@@ -1,8 +1,7 @@
-#let serif = ("Libertinus Serif", "Libertinus Math")  // "Noto Serif CJK SC", "Noto Sans Math", "JetBrainsMonoNL NFM", 
-#let sans = ("Libertinus Sans")
-#let monospace = ("CommitMono", "Libertinus Mono")
-
-#let fonts = ("Libertinus Serif", "Libertinus Sans", "CommitMono")
+#let serif = ("STIX Two Text", "Libertinus Serif")  // "Noto Serif CJK SC", "Noto Sans Math", "JetBrainsMonoNL NFM", 
+#let sans = ("Source Sans 3", "Libertinus Sans")
+#let mathfont = ("STIX Two Math")
+#let monospace = ("Source Code Pro")
 
 #let mass = 400
 

@@ -2,6 +2,7 @@
 #import "@preview/codly:1.3.0": *
 #import "../lib/book.typ": is-page-empty, quote
 #import "../lib/class.typ": s, t, e, f, note-padding, note-gutter, note, small, normal
+#import "../lib/fonts.typ": serif, sans, mathfont, monospace
 
 #import "@preview/ctheorems:1.1.3": *
 #show: thmrules.with(qed-symbol: text(size: small, $space square$))
@@ -11,11 +12,6 @@
 #let title =  maintitle + ": " + subtitle
 
 #let theme = "modern" // "classic" "standard" "modern"
-
-#let serif = ("STIX Two Text", "Libertinus Serif")  // "Noto Serif CJK SC", "Noto Sans Math", "JetBrainsMonoNL NFM", 
-#let sans = ("Source Sans 3", "Libertinus Sans")
-#let mathfont = ("STIX Two Math")
-#let mono = ("Source Code Pro")
 
 //#show: book.with(
 //    title: title,
@@ -27,7 +23,7 @@
     //#let outside-margin = 37.76mm // this breaks it somehow in combination with justification
 
     // paragraph styling
-    #set par(justify: true)  // should come before page setup (or it breaks margin notes)
+    #set par(justify: true, leading: 0.55em)  // should come before page setup (or it breaks margin notes)
 
     // setup page
 
@@ -240,7 +236,7 @@
 
 // Chapter 5
 
-= Multiverse debugging on microcontrollers
+= Multiverse debugging on microcontrollers<chap:multiverse>
 
 #quote("Karl Popper", source: "Knowledge without Authority", theme: theme)[Our knowledge can only be finite, while our ignorance must necessarily be infinite.]
 
