@@ -7,7 +7,7 @@
 #let headHeight = 1.3em
 #let tablehead(text) = align(left, rect(height: headHeight, stroke: none, text))
 
-#let highlight(fill, content, inset: (left: 1mm, top: 2mm, bottom: 2mm , right: 1mm)) = rect(fill: fill, stroke: none, outset: 0mm, inset: inset, content)
+#let highlight(fill, content, inset: (left: 1mm, top: 2mm, bottom: 2mm , right: 1mm), outset: 0mm) = rect(fill: fill, stroke: none, outset: outset, inset: inset, content)
 
 #let definition = (name, addendum, rules, types, division: (1fr, 1.5em, 6fr, 9fr)) => [
     #let lines = range(rules.len()).map(_ => "").zip(range(rules.len()).map(_ => ""), rules, types).flatten()
@@ -209,7 +209,7 @@
                 ($...$, [hit n],),
                 ("", "breakpoint hit"), division: (1.0em, 1.5em, 4fr, 9fr)),
 
-            definition(operation, "(debug commands)",
+            definition(operation, highlight(silver, "(debug commands)"),
                 ($...$, play, pause, bpadd, bpremove),
                 ("", "unpause", "pause", "add breakpoint", "remove breakpoint"), division: (1.0em, 1.5em, 4fr, 9fr)),
         ),
@@ -233,10 +233,15 @@
             #set table(align: (x, y) => if x == 1 { right } else { center })
             #set table(inset: (left: 0.3em))
 
+            #let neb = $programcounter, executionstate, breakpoints,$
+            #let incremented = $"succ" programcounter, executionstate, breakpoints,$
+            #let inset = (left: 1mm, top: 0mm, bottom: 0mm , right: 1mm)
+            #let outset = (top: 0.7mm, bottom: 1.0mm)
+
             #table(columns: (3fr, 1.2fr), stroke: none,
                 tablehead("Internal Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.4em), $d attach(arrow.r.long, t: operation) d'$),
 
-                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v programcounter, executionstate, breakpoints, boxed(nothing) attach(arrow.r.long, t: "step") t' bar.v "succ" programcounter, executionstate, breakpoints, boxed("ack step")$), $executionstate = "paused"$, $t arrow.r.long t'$)), "(E-Step)",
+                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v highlight(#silver, #neb, inset: #inset, outset: #outset) boxed(nothing) attach(arrow.r.long, t: "step") t' bar.v highlight(#silver, #incremented, inset: #inset, outset: #outset) boxed("ack step")$), highlight(silver, $executionstate = "paused"$), $t arrow.r.long t'$)), highlight(silver, "(E-Step)"),
 
                 prooftree(rule(rect(height: 2em, stroke: none, $t bar.v programcounter, executionstate, breakpoints, boxed(nothing) attach(arrow.r.long, t: "step") t bar.v programcounter, executionstate, breakpoints, boxed("ack" nothing)$), $e eq.not "paused"$)), "(E-Fallback2)",
 
@@ -251,6 +256,8 @@
                 tablehead("Global Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $delta dbgarrow delta'$),
 
                 prooftree(rule(rect(height: 2em, stroke: none, $boxed(nothing) bar.v t bar.v programcounter, executionstate, breakpoints, boxed(nothing) dbgarrow boxed(nothing) bar.v t' bar.v "succ" programcounter, executionstate, breakpoints, boxed(nothing)$), $executionstate = "play"$, $t arrow.r.long t'$, $n in.not b$)), "(E-Run)",
+
+// todo add E-Remote and add n not in b
 
                 prooftree(rule(rect(height: 2em, stroke: none, $boxed(c) bar.v t bar.v programcounter, "play", breakpoints, boxed(nothing) dbgarrow boxed(c) bar.v t bar.v programcounter, "paused", breakpoints, boxed("hit" n)$), $programcounter in breakpoints$)), "(E-BreakpointHit)",
             // todo: gray background for messages
@@ -357,7 +364,7 @@
     #grid(columns: (1fr, 2fr), align: (left), stroke: none,
             table(columns: (1fr), align: (left), stroke: none,
                 tablehead("New syntactic forms"),
-            definition(operation, "(debug commands)",
+            definition(operation, "(commands)",
                 ($...$, subst),
                 ("", "substitute"), division: (1.0em, 1.5em, 4fr, 9fr)),
         ),
