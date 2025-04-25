@@ -7,7 +7,15 @@ Luckily, the novel out-of-place debugging technique can be used to overcome thes
 == Introduction
 
 // todo motivation for out-of-place debugging on microcontrollers
+During the writing of this dissertation we explored two new aspects for out-of-place debugging, which are essential for microcontrollers.
+Initially, we explored how to support event-driven applications, which are common in microcontrollers.
+This lead to an early publication at MPLR 2022 @lauwaerts22:event-based-out-of-place-debugging.
+Subsequently, we explored how to support stateful actions on non-transferable resources, such as memory-mapped I/O devices.
+As part of this work, we developed the first formal model for out-of-place debugging, and proved its soundness and completeness.
+While microcontrollers remained the initial motivation, with the formal aspect tacking the foreground, the work is much more general in scope than just embedded systems.
 
+However, our work builds on the preceeding out-of-place debugging works, which deserve a proper introduction.
+Therefore, we first provide an overview of how out-of-place debugging works, and discuss how our contributions relate to previous work.
 
 === The origin of out-of-place debugging
 
@@ -66,6 +74,24 @@ Asynchronous resources send their changes to the internal state to the debugging
 
 In order for this synchronization to work, our solution identifies the specific requirements non-transferable resources and their operations must satisfy.
 We demonstrate that meeting these requirements is not very restrictive and show how real-world examples can be implemented using our approach.
-We further provide proofs that this approach is sound and complete, and show a prototype built on top of an existing out-of-place debugger for WebAssembly~\cite{lauwaerts22}.
+We further provide proofs that this approach is sound and complete, and show a prototype built on top of an existing out-of-place debugger for WebAssembly cite{lauwaerts22}.
 // todo we built on the existing warduino prototype, since WebAssembly provides a good basis for our formalization + we believe microcontrollers and iot apps is one of the most promosing domains for oop
+
+== Background: Out-of-place debugging
+
+Before delving into the details of our contributions, we first provide an overview of how out-of-place debugging works, and discuss the general out-of-place debugger architecture.
+Out-of-place debugging provides the debugging experience of a remote debugger, while running most of the code on a local device, thereby reducing debugging latency and interference.
+It allows for debugging live applications, as the debugging session is isolated from the live execution of the program.
+Additionally, by running the debugging session out-of-place, the debugger can have access to more computational power and memory, or other resources, enabling more complex debugging techniques.
+We will illustrate the various concepts involved using our prototype implementation build on top of the WARDuino~\cite{lauwaerts24a} virtual machine. 
+// todo 
+
+=== Example: A Blinking LED
+
+=== Debugging with Out-of-place debugging
+
+A developer can use an out-of-place debugger to debug the example application locally on their own machine, while still maintaining the effects on the remote microcontroller, in this case the LED can still turn on or off.
+Often microcontrollers do not have enough memory to run an additional debugger alongside the application.
+By using out-of-place debugging, this is no longer necessary.
+The microcontroller only needs to run a minimal stub to receive a handful of debugging instructions to instrument the runtime.
 
