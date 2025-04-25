@@ -6,38 +6,53 @@
 
 A central concern of this dissertation is the design of debuggers, and what makes a good debugger.
 To understand and answer this question, there are currently few formal foundations to build upon.
-Important to any formal foundation, is the question of what constitutes correctness.
+Any such foundation must answer the fundamental question of what constitutes correctness for debuggers.
 Over the course of writing this dissertation, several correctness criteria for debuggers emerged, the essence of which we distill in this chapter into a general definition of correctness for debuggers.
 
 == Semantics of debuggers
 
 Before we can begin to reason about the correctness of debuggers, we need to establish their formal semantics.
 Unfortunately, defining the semantics of debuggers has always received less attention than formalizations for programming languages or compilers @da-silva92:correctness.
-This lack of interest, has resulted in a very sparse collection of existing semantics, which focus on very different aspects, and are defined in very different ways.
+This lack of interest, has resulted in quite a sparse collection of existing semantics, which focus on very different aspects, and are defined in very different ways.
 To this day, there is no clear consensus on what constitutes correctness for debuggers, or even, which are the essential aspects for a tool to fall under the broad category of debuggers.
 
-When examining recent works in debuggers, there does appear to be an emerging consensus on how to define the semantics of debuggers, where the operations of the debugger are defined in terms of an underlying language semantics.
+//When examining recent works in debuggers, there does appear to be an emerging consensus on how to define the semantics of debuggers, where the operations of the debugger are defined in terms of an underlying language semantics.
 
 === A brief history of formal debuggers
 
 To our knowledge, the earliest attempt at formally defining a debugger-like system is by #cite(form: "prose", <bahlke86:psg>). // todo ...
-The paper presents the _Programming System Generator_, which is an early programming tool that generates an interpreter from the denotational semantics of a programming language.
-It supports interactive evaluation and the ability to inspect or redefine code on the fly, which is somewhat debugger-like in spirit.
+The paper presents the _Programming System Generator_, which is a programming tool that generates an interpreter from the denotational semantics of a programming language.
+It supports interactive evaluation with the ability to inspect or redefine code, which is somewhat debugger-like in spirit.
 
 // possibly: 
 // + Ehud Y Shapiro Algorithmic Program Debugging ACM Distinguished Dissertations The MIT Press
 // + A P Tolmach and A W Appel Debugging Standard ML without reverse engineering
 
-However, the earliest work we are aware of, that formally describes a tool we would today recognize as a debugger, is the PhD thesis by #cite(form: "prose", <da-silva92:correctness>).
+However, the earliest work we are aware of---that formally describes a tool we would today recognize as a debugger---is the PhD thesis by #cite(form: "prose", <da-silva92:correctness>).
+It defines debuggers as any tool that can dynamically give some information of the intermediate states of program evaluation, on the request of the user. A definition not unlike the one we use in this dissertation.
+The thesis presents a way of formalizing debuggers using structural operational semantics, but the formalism does not separate the language semantics from the debugger semantics.
+
+//The thesis by #cite(form: "prose", <da-silva92:correctness>) is also the first attempt at defining correctness for debuggers, and does so by proving the equivalence between debuggers.
+
+In 1995, #cite(form: "prose", <bernstein95:operational>) improved on this approach by explicitly separating the language and debugger operations in their formalisation, allowing them to define the debugger semantics in terms of the language semantics.
+To our knowledge they are the first to use this approach.
 
 Another early attempt used PowerEpsilon @zhu91:higher-order @zhu92:program to describe the source mapping used in a debugger as a denotational semantics for a toy language that can compile to a toy instruction set @zhu01:formal.
 While an interesting formalization, it does not say anything about the debugging operations themselves or their correctness.
 
-// todo should cite zhu01:formal too no?
-
-The work by #cite(form: "prose", <li12:formal>) focussed on automatic debuggers.
+A more recent work by #cite(form: "prose", <li12:formal>) focussed on automatic debuggers.
 Its formalization is based on a kernel of the C language, and defines operational semantics for tracing, and for backwards searching based on those traces.
 The work proofs that its trace and search operations terminate, but defines no general correctness criteria.
+
+However, most works after 2000 have largely used the approach first presented by #cite(form: "prose", <bernstein95:operational>), such as a number of recent works @ferrari01:debugging @torres17:principled @lauwaerts24:warduino @holter24:abstract that inspired and informed this dissertation.
+While there are still large differences in the way debuggers are formalised in recent works, it is clear that defining their semantics in terms of the underlying language is now accepted as the canonical approach.
+
+By defining the operational semantics of a debugger in terms of the underlying language, it becomes much easier to reason about the correctness of the debugger, since the correctness can be stated in terms of the underlying language.
+In hindsight, this may seem an obvious solution to the reader, but that speaks to the fact that this is by far the best and most intuitive approach to take.
+As we are highly interested in the possible correctness criteria of debuggers in this dissertation, we will use this approach throughout.
+
+Simply using the underlying language in an operational semantics---as an approach---still leaves a lot of flexibility in how to define the semantics of the debugger.
+Therefore, we will present this thesis' approach in more detail in this chapter, as we simultaneously discuss our general correctness criteria. // developed during the writing of this dissertation.
 
 // todo add some other approaches
 
@@ -49,11 +64,6 @@ The work proofs that its trace and search operations terminate, but defines no g
 // todo go through papers of the big names: robert hirshfeld and andreas zeller
 
 // todo berstein is probably not the first -- also look at bernstein95:formally
-In 1995, #cite(form: "prose", <bernstein95:operational>), are the first to define a debugger in terms of an underlying language semantic.
-By defining the semantics of a debugger in terms of the underlying language, it becomes much easier to reason about the correctness of the debugger, since the correctness can now be stated in terms of the underlying language.
-In hindsight, this may seem an obvious solution to the reader, but that speaks to the fact that this is by far the best and most intuitive approach to take.
-
-The approach has been used in a number of recent works @ferrari01:debugging @torres17:principled @lauwaerts24:warduino @holter24:abstract, and is the basis for the approach we take in this dissertation.
 
 // TODO where to add?
 //A more recent work presented a new type of debugger, called an abstract debugger, that uses static analysis to allow developers to explore abstract program states rather than concrete ones @holter24:abstract.
@@ -62,14 +72,11 @@ The approach has been used in a number of recent works @ferrari01:debugging @tor
 //The opposite direction cannot hold since the static analysis relies on an over-approximation, which means there can always be sessions in the abstract world which are impossible in the concrete world.
 //This is in stark contrast with the soundness theorem in our work, which states that any path in the debugging semantics can be observed in the underlying language semantics.
 
-
-While there are still large differences in the way debuggers are formalised in recent works, it is clear that defining their semantics in terms of the underlying language is now accepted as the canonical approach.
-An approach we will therefore use throughout this dissertation.
-
 === Four debuggers, four semantics
 
 Given the wide variety of debuggers, we will present our formal framework---for debugger semantics and their correctness---by discussing four different debuggers with each their own semantics.
-Yet, the semantics will follow the same general design---presenting the overall formal framework we use in this dissertation.
+Importantly, the semantics follow the same general design---presenting the overall formal framework we use in this dissertation.
+#note[While heavy in formal aspects, this chapter serves as a---hopefully somewhat gentle---introduction into the formal foundations of this dissertation.]
 
 #let remotedbg = $lambda^ast.basic_DD$
 #let conventionaldbg = $lambda^arrow.r_DD$
@@ -77,6 +84,7 @@ Yet, the semantics will follow the same general design---presenting the overall 
 #let intercessiondbg = $lambda^arrow.zigzag_DD$
 
 Looking slightly ahead, we will define the following four debuggers, which always build on top of the previous one:
+
 #{
 set text(size: small) //, font: sans)
 show table.cell.where(y: 0): set text(weight: "bold") //, font: sans)
@@ -90,7 +98,6 @@ align(center, table(columns: (auto, 60mm), align: (x, y) => if x == 0 {horizon +
 ))
 }
 
-#note[While heavy in formal aspects, this chapter serves as a gentle introduction into the formal foundations of this dissertation.]
 The four debuggers allow us to introduce different aspects of our formal framework step by step.
 The semantics in this chapter, are blueprints for the more complex semantics we discuss later in this dissertation.
 They also serve to illustrate the general correctness criteria we define for debuggers.
@@ -123,11 +130,6 @@ The complete set of syntax, evaluation, and typing rules for booleans and natura
 Because the debuggers we discuss in this dissertation are each debuggers for distributed systems, and therefore remote debuggers of a kind, we start with a simple remote debugger.
 However, the easiest way to define such a debugger is to start from a local debugger, and simply add a messaging system on top of it.//---which is the way in which we will present the debugger in this section.
 
-#semantics(
-    [*Remote debugger semantics #remotedbg.* The syntax and evaluation rules for a simple remote debugger ($dbgarrow$) for the simply typed lambda calculus #stlc with natural numbers and booleans, defined over the internal operations (#oparrow).],
-    [#debugger],
-    "fig:stlc.debugger")
-
 The rules for our tiny remote debugger are shown in @fig:stlc.debugger#sym.dash.em#[these] rules define the operation of the debugger backend.
 Typically, a debugger will also have a frontend for users to interact with the debugger, but this is beyond the scope of the semantics.
 The rules therefore only model the interface between the backend and the frontend as a simple messaging system.
@@ -136,6 +138,11 @@ The evaluation rules in @fig:stlc.debugger are split into two sets, the internal
 The rules specific to the remote debugger are highlighted in the figure, without them, the remaining rules define a tiny local debugger.
 
 === The syntax rules of the #remotedbg debugger
+
+#semantics(
+    [*Remote debugger semantics #remotedbg.* The syntax and evaluation rules for a simple remote debugger ($dbgarrow$) for the simply typed lambda calculus #stlc with natural numbers and booleans, defined over the internal operations (#oparrow).],
+    [#debugger],
+    "fig:stlc.debugger")
 
 #note[Internal in this context refers to the place where the program is running.]
 The steps of the remote debugger #dbgarrow are defined over a configuration $boxed(operation) bar.v t bar.v boxed(message)$, where we have respectively, the state of the remote debugger, the current program state, and the state of the internal debugger.
