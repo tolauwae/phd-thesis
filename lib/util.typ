@@ -32,18 +32,18 @@
 }
 
 #let code(offset: 0, body) = {
+    set text(font: monospace, weight: "regular")
     codly(zebra-fill: none, offset: offset, display-name: false, radius: 0pt, fill: none, stroke: none, number-align: right + top, reference-sep: "", breakable: true,
-        number-format: (n) => text(size: tiny, font: monospace, weight: 500)[#str(n)])
+        number-format: (n) => text(size: script)[#str(n)])
     body
 }
 
 #let snippet(tag, caption, columns: 1, offset: 0, continuous: true, content) = {
     show figure: set block(breakable: true)
 
-    show raw: set text(size: script, font: monospace)
-
     set figure(placement: none)
     [
+
         #let cursor = 0
         #let snippets = ()
         #for (index, el) in content.enumerate() {
