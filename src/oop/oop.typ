@@ -1,3 +1,5 @@
+#import "../../lib/util.typ": line, range, code, snippet, algorithm, semantics
+#import "./figures/cetz/led.typ": ledcetz
 
 Today, remote debuggers---like the one presented in the previous chapter---are used to debug processes in a wide variety of contexts, from large clusters to small resource constrained devices.
 In this dissertation, we focus on the latter category, and while remote debuggers are commonly used to debug microcontrollers, they are severe disadvantages.
@@ -29,10 +31,23 @@ The prototype showed how out-of-place debugging can reduce the debugging latency
 === Out-of-place debugging for microcontrollers
 
 // 1. why on microncotrollers: motivation for edward
+In the context of embedded applications, out-of-place debugging has great potential for improving the debugging experience offered by remote debuggers.
+This is due to the techninque being ideally suited for tackling the three main drawbacks of remote debuggers.
+Firstly, the debugger is run on the remote device.
+In the context of constrained devices, this additionally limits the resources available to the debugger.
+Secondly, the communication channel can be slow, and can introduce latency in the debugging process.
+Thirdly, the delays introduced by the remote communication can exasperate the debugging interference.
+
+// todo ...
 
 // 2. aknowledge WOOD as the predecessor of this work
 // however the work presented here is vastly different, and more general in scope.
 // in part of the focus in WOOD is debugging of live applications, something we do not consider here. The two works really have a very different philosophy.
+An initial investigation by #cite(form: "prose", <rojas21:wood>) looked at out-of-place debugging as a solution for live debugging of _in-production_ embedded applications.
+The work paved the way for using out-of-place debugging on microcontrollers, and while its topic is very interesting, there are many questions around the idea of debugging in production.
+In-production debugging is rarely seen in practice, and considered by many to be bad practice.
+Furthermore, out-of-place debugging can provide numerous other benefits to debuggers for microncotrollers.
+In  this dissertation, we will therefore not concern ourselves with this problem, and present how we adapted---and extended---out-of-place debugging, presented in a context of traditional development stage debugging of microncotrollers.
 
 === Out-of-place debugging for event-driven applications
 
@@ -86,7 +101,45 @@ Additionally, by running the debugging session out-of-place, the debugger can ha
 We will illustrate the various concepts involved using our prototype implementation build on top of the WARDuino~\cite{lauwaerts24a} virtual machine. 
 // todo 
 
+#[
 === Example: A Blinking LED
+
+#figure(
+  grid(columns: (1.0fr, 1.3fr),
+    ledcetz,
+    snippet("oop:lst.example", [], headless: true,
+    (```ts
+import {pinMode, PinMode,
+  Voltage, digitalWrite, delay}
+  from "warduino/assembly";
+
+export function main(): void {
+  const led: u32 = 26;
+  const pause: u32 = 1000;
+
+  pinMode(led, PinMode.OUTPUT);
+
+  while (true) {
+    digitalWrite(led, Voltage.HIGH);
+    delay(pause);
+    digitalWrite(led, Voltage.LOW);
+    delay(pause);
+  }
+}
+```,)),
+  ),
+  caption: [Typical blinking LED program for microcontrollers, illustrating non-transferable resources in out-of-place debugging. _Left:_ A schematic of the microcontroller. _Right:_ The AssemblyScript code for the program.],
+//  kind: "image",
+//  supplement: [Figure],
+)<oop:app:example>
+
+@oop:app:example shows the typical blinking LED example for microcontrollers in AssemblyScript.
+The application uses the WARDuino actions, imported on the first line of the program.
+After the correct mode for the LED's pin has been set, the program will turn it on and off in an infinite loop with a small delay.
+The right side of the figure shows a schematic showing the setup of the microcontroller.
+The AssemblyScript program is compiled to WebAssembly and run on the microcontroller using a WebAssembly runtime.
+The runtime provides a series of functions to access the non-transferable resources of the microcontroller, such as the LED, buttons, and sensors---we call these functions _actions_.
+]
 
 === Debugging with Out-of-place debugging
 
@@ -94,4 +147,9 @@ A developer can use an out-of-place debugger to debug the example application lo
 Often microcontrollers do not have enough memory to run an additional debugger alongside the application.
 By using out-of-place debugging, this is no longer necessary.
 The microcontroller only needs to run a minimal stub to receive a handful of debugging instructions to instrument the runtime.
+
+#figure(
+  image("../placeholder.png", height: 30%),
+  caption: [Schematic showing the concept of out-of-place debugging with all the involved components.]
+)<oop:fig:oop-definition>
 
