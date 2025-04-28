@@ -38,10 +38,11 @@
     body
 }
 
-#let snippet(tag, caption, columns: 1, offset: 0, continuous: true, content) = {
+#let snippet(tag, caption, columns: 1, offset: 0, continuous: true, headless: false, content) = {
     show figure: set block(breakable: true)
 
     set figure(placement: none)
+
     [
 
         #let cursor = 0
@@ -54,7 +55,16 @@
             }
         }
 
-        #figure(caption: caption, supplement: [Listing], kind: "code", placement: top)[
+        #if (headless) [
+            #figure(supplement: [Listing], kind: "code", placement: top)[
+            #grid(
+                columns: columns,
+                column-gutter: 0.5mm,
+                inset: (x: 0pt, y: 2mm),
+                ..snippets)
+            ]#label(tag)
+        ] else [
+          #figure(caption: caption, supplement: [Listing], kind: "code", placement: top)[
             #grid(
                 columns: columns,
                 column-gutter: 0.5mm,
@@ -62,7 +72,8 @@
                 grid.hline(stroke: 0.5pt),
                 ..snippets,
                 grid.hline(stroke: 0.5pt))
-        ]#label(tag)
+          ]#label(tag)
+        ]
     ]
 }
 
@@ -111,4 +122,12 @@
 //  caption: [Selected rules.],
 //    // todo more space between figure and caption. captions number bold
 //) <rules>
+
+#let lineWidth = 0.4pt
+#let headHeight = 1.3em
+
+#let tablehead(content) = align(left, rect(height: headHeight, stroke: none, text(style: "italic", content)))
+
+#let highlight(fill, content, inset: (left: 1mm, top: 2mm, bottom: 2mm , right: 1mm), outset: 0mm) = rect(fill: fill, stroke: none, outset: outset, inset: inset, content)
+
 

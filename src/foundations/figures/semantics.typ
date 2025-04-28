@@ -1,13 +1,7 @@
-#import "../../../lib/util.typ": semantics
+#import "../../../lib/util.typ": semantics, lineWidth, headHeight, tablehead, highlight
 #import "../../../lib/class.typ": small, note
 
 #import "@preview/curryst:0.5.0": rule, prooftree
-
-#let lineWidth = 0.4pt
-#let headHeight = 1.3em
-#let tablehead(text) = align(left, rect(height: headHeight, stroke: none, text))
-
-#let highlight(fill, content, inset: (left: 1mm, top: 2mm, bottom: 2mm , right: 1mm), outset: 0mm) = rect(fill: fill, stroke: none, outset: outset, inset: inset, content)
 
 #let definition = (name, addendum, rules, types, division: (1fr, 1.5em, 6fr, 9fr)) => [
     #let lines = range(rules.len()).map(_ => "").zip(range(rules.len()).map(_ => ""), rules, types).flatten()

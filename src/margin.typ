@@ -11,6 +11,8 @@
 #let subtitle = [Finding software faults in constrained environments with sound out-of-place and multiverse debugging techniques]
 #let title =  maintitle + ": " + subtitle
 
+#set document(title: maintitle)
+
 #let theme = "modern" // "classic" "standard" "modern"
 
 //#show: book.with(
@@ -92,6 +94,17 @@
         }
         [#metadata(none) <chapter-start>]
     }
+
+    #show ref.where(
+      form: "normal"
+    ): set ref(supplement: it => {
+      if it.func() == heading {
+        "Chapter"
+      } else {
+        it.supplement
+      }
+    })
+
 
     // section titles
     #set heading(numbering: "1.1")
