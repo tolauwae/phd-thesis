@@ -278,7 +278,7 @@ We will apply the same _soundness_ and _completeness_ criteria to the convention
 ]
 
 The proof for completeness is identical to the proof given for the tiny remote debugger, since we do not need to introduce any breakpoints in the debugging session. The rules _E-Remote_ and _E-Step_ can still faithfully re-execute the path $t multi(arrow.r.long) t'$.
-
+,
 == #reversibledbg: A reversible debugger for #stlc
 
 Another interesting extension to the tiny remote debugger, is to turn it into a reversible debugger @engblom12:review.

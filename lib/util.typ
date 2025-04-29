@@ -97,6 +97,8 @@
     ]
 }
 
+#let boxed(it) = $[| it |]$
+
 #let semantics(caption, content, tag) = {
     [
         #set text(8pt)

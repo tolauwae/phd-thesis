@@ -1,4 +1,4 @@
-#import "../../../lib/util.typ": semantics, lineWidth, headHeight, tablehead, highlight
+#import "../../../lib/util.typ": semantics, lineWidth, headHeight, tablehead, highlight, boxed
 #import "../../../lib/class.typ": small, note
 
 #import "@preview/curryst:0.5.0": rule, prooftree
@@ -22,7 +22,6 @@
 #let remote = $delta$
 #let message = $m$
 #let operation = "c" // $kappa.alt$
-#let boxed(it) = $[| it |]$
 #let dbgarrow = $attach(arrow.r.long, br: text(size: small, DD))$ // $harpoon.rt$
 #let multi(step) = $attach(step, tr: "*")$ // $harpoon.rt$
 
