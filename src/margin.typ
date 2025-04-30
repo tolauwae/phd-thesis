@@ -98,7 +98,7 @@
     #show ref.where(
       form: "normal"
     ): set ref(supplement: it => {
-      if it.func() == heading {
+      if (it.func() == heading) and it.level == 1 {
         "Chapter"
       } else {
         it.supplement
