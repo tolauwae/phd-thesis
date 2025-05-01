@@ -12,12 +12,12 @@
 // reduction rules
 #import "@preview/curryst:0.5.0"
 
-Investigating future debugging techniques for microcontrollers within our new formal framework, requires an easy way to instrumentation the program execution, and ideally prototype new debuggers quickly.
+Developing and investigating novel debugging techniques for microcontrollers within our new formal framework, requires an easy way to instrument the program execution, and ideally prototype new debuggers quickly.
 The best way to achieve this is unarguably, to use a virtual machine that can run on the microcontrollers.
 Luckily, earlier work at Ghent University, developed just such a virtual machine, called WARDuino---which was the first-ever WebAssembly virtual machine for microcontrollers @gurdeep19:warduino.
 
 However, the original work was limited to a proof of concept, and many of the promises of the new WebAssembly-based approach to programming microcontrollers were not fully realised---such as, programming in high-level languages, highly portable code, the ability to easily handle asynchronous events, and by extension support for asynchronous I/O actions.
-In this chapter we present a more complete version of WARDuino, developed as part of this dissertation.
+In this chapter, we present a more complete version of WARDuino, developed as part of this dissertation.
 We will discuss the full range of features and benefits of the new approach to programming microcontrollers proposed by WARDuino.
 
 Three features of WARDuino, and in particular their formalisation, will be crucial for developing our advanced out-of-place and multiverse debugging techniques, in the later chapters of this dissertation.
@@ -1312,7 +1312,7 @@ Note that the WebAssembly program implementing \texttt{tak} does run on the same
 #content.push(table.hline(stroke: linewidth))
 #for entry in data.flatten().map(entry => [#entry]) {content.push(entry)}
 #content.push(table.hline(stroke: linewidth))
-#content.push("geometric mean")
+#content.push("mean")
 #let means = array.range(data.first().len() - 1).map(i => {
   let col = data.map(row => row.at(i + 1)).filter(j => not j.is-nan())
   calc.round(calc.root(col.product(), col.len()), digits: 3)
@@ -1327,7 +1327,7 @@ Note that the WebAssembly program implementing \texttt{tak} does run on the same
 
 #figure(
   t,
-  caption: [Left: Absolute execution times in seconds for all tests. Right: Execution time of tests normalized to the native C implementation.])<tbl:allbench>
+  caption: [Left: Absolute execution times in seconds for all tests. Right: Execution time of tests normalized to the native C implementation. The means shown in the table are geometric means.])<tbl:allbench>
 
 The complete benchmarks results are shown in table~\ref{tbl:allbench}.
 In the first four columns of the table, we report the time that elapses between starting and ending the execution of the microbenchmark ten times for each platform.

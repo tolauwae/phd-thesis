@@ -1,10 +1,12 @@
 #import "../../lib/util.typ": code, snippet, algorithm, semantics, lineWidth, headHeight, tablehead, highlight, boxed
 #import "../../lib/class.typ": note, theorem, proofsketch, proof, example, lemma
+#import "../../lib/fonts.typ": sans, script
 
 #import "./figures/cetz/led.typ": ledcetz
+#import "./figures/semantics.typ": *
 
 #import "@preview/curryst:0.5.0": rule, prooftree
-
+#import "@preview/cetz:0.3.4"
 
 Today, remote debuggers---like the one presented in the previous chapter---are commonly used to debug microcontrollers, however, there are severe disadvantages.
 Luckily, a novel technique, called out-of-place debugging, can be adopted to overcome these disadvantages.
@@ -60,9 +62,9 @@ Thirdly, the delays introduced by the remote communication can exasperate the de
 // in part of the focus in WOOD is debugging of live applications, something we do not consider here. The two works really have a very different philosophy.
 An initial investigation by #cite(form: "prose", <rojas21:wood>) looked at out-of-place debugging as a solution for live debugging of _in-production_ embedded applications.
 The work paved the way for using out-of-place debugging on microcontrollers, and while its topic is very interesting, there are many questions around the idea of debugging in production.
-In-production debugging is rarely seen in practice, and considered by many to be undesirable.
-Furthermore, out-of-place debugging can provide numerous other benefits to debuggers for microncotrollers.
-In  this dissertation, we will therefore not concern ourselves with this problem, and present how we adapted---and extended---out-of-place debugging, presented in a context of traditional development stage debugging of microncotrollers.
+In-production debugging is rarely seen in practice, and considered by some to be undesirable.
+Regardless, out-of-place debugging can provide numerous other benefits to debuggers for microncotrollers.
+In  this dissertation, we will therefore not concern ourselves with the problem of in-production debugging, and instead present how we adapted---and extended---out-of-place debugging to work for microncotrollers during the traditional development stage.
 
 === The gaps in out-of-place debugging
 
@@ -140,8 +142,8 @@ By using out-of-place debugging, this is no longer necessary.
 The microcontroller only needs to run a minimal stub to receive a handful of debugging instructions to instrument the runtime.
 
 @oop:fig:oop-definition shows the components involved in out-of-place debugging, the developer's local _client_ on the left, while the right side shows the remote _server_.
-#note[We refer to the microcontrollers as the _server_, despite their small size, because the local debugger _requests_ information from the remote device, and the remote device _serves_ the requests.]
-The remote client is the device where the software is intended to run.
+#note[Despite their small size, we refer to the microcontrollers as the _server_, because they _serve_ the _requests_ for information from the local debugger .]
+The remote server is the device where the software is intended to run.
 In the case of the blinking light application, this would be the microcontroller that controls the LED.
 Uniquely in out-of-place debugging, the entire debugging session---consisting of the runtime and the program being debugged---lives on the client.
 
@@ -155,7 +157,7 @@ We differentiate between two types of non-transferable resources---based on the 
 Synchronous resources, are those accessed by the program synchronously, such as the LED in the example.
 Asynchronous non-transferable resources on the other hand can produce data at any point in the program, such as hardware interrupts for buttons or motion detectors.
 
-To maintain the benefits of remote debugging, the client does not simulate the non-transferable resource.
+To maintain the benefits of remote debugging, the client does not simulate the non-transferable resources.
 Instead, the server maintains a small stub which instruments its runtime, and can receive debug instructions from the debugger backend (client).
 Specifically, the stub supports direct access to synchronous non-transferable resources through remote function calls.
 For asynchronous non-transferable resources, the stub (server) can send messages to the client through the same connection.
@@ -175,6 +177,7 @@ This is even more problematic when part of the program's execution is asynchrono
 To further clarify the problem of state desynchronization, we look at a use case of out-of-place debugging on an Internet of Things application for microcontrollers.
 
 === Example: asynchronous logging of a sensor
+
 Consider the previous LED example, in an Internet of Things setting we would like to control the LED through some communication protocol such as MQTT.
 @oop:app:problem shows how this can be done in AssemblyScript code.
 The example is written for the WARDuino virtual machine, a WebAssembly runtime for microcontrollers.
@@ -206,13 +209,13 @@ This prevents microcontrollers from having to poll the state of the pin constant
 
 // ecoop paper introduction
 
-Unfortunately in out-of-place debugging, since the entire debugging session is moved to the local machine, the scheduling of the callbacks happens on the local server, while subscribing callbacks on MQTT topics, and receiving the messages happens on the client.
-This presents two types of state desynchronization from the perspective of the server, _synchronous_ and _asynchronous_.
+Unfortunately in out-of-place debugging, since the entire debugging session is moved to the local machine, the scheduling of the callbacks happens on the local client, while subscribing callbacks on MQTT topics, and receiving the messages happens on the server.
+This presents two types of state desynchronization from the perspective of the client, _synchronous_ and _asynchronous_.
 
 ==== State Desynchronization between two Devices
 
-Synchronous state desynchronization can occur whenever the server instructs the client to execute a piece of code.
-This code can potentially change the memory state on the client leading to state desynchronization.
+Harmful synchronous state desynchronization can occur whenever the client instructs the server to execute a piece of code.
+This code can potentially change the memory state on the server leading to state desynchronization.
 This is especially problematic when these state changes are needed for the program to continue running.
 In such cases, the server will use outdated values from memory instead of the updated values from the client.
 
@@ -222,8 +225,8 @@ These changes are caused by asynchronous events which can occur at any time in t
 
 The example in @oop:app:problem, illustrates both synchronous and asynchronous state desynchronization.
 First, the MQTT.subscribe function, illustrates synchronous state desynchronization.
-It modifies the internal state of the runtime on the client by storing the callback to be triggered upon receiving the "SENSOR" messages, which the subsequent out-of-place code depends on.
-Second, whenever an MQTT message is received, this message is stored in memory (on the client) and should be executed as soon as the currently executing instruction is finished. // todo does not need to be immediate due to the partial ordering REMOVE ?
+It modifies the internal state of the runtime on the server by storing the callback to be triggered upon receiving the "SENSOR" messages, which the subsequent out-of-place code depends on.
+Second, whenever an MQTT message is received, this message is stored in memory (on the server) and should be executed as soon as the currently executing instruction is finished. // todo does not need to be immediate due to the partial ordering REMOVE ?
 
 
 
@@ -342,8 +345,8 @@ This requirement does exclude certain complex operations, where changes to the s
 However, we believe that for most of such operations the implicit state can be made explicit by passing it to the stateful operation as an argument.
 
 Without the second requirement, the debugger cannot know which of the received events can be (safely) handled next.
-In this paper, we focus solely on the order in which they are processed.
-Other considerations around the exact timing of the events are important for real-time systems, but are impossible to handle in a debugger context where execution can be paused for arbitrary periods.
+In this chapter, we focus solely on the order in which they are processed.
+Other considerations around the exact timing of the events are important for real-time systems, but are impossible to handle in an online debugger context where execution can be paused for arbitrary periods.
 //In the related work section, we discuss some interesting work on this topic.
 Although these requirements impose some limitations on the types of stateful operations we can support, we believe that a broad range of stateful operations align with these assumptions.
 
@@ -383,25 +386,9 @@ Although these requirements impose some limitations on the types of stateful ope
 
 === WebAssembly Semantics with Embedded Actions
 
-#let cl = $"cl"$
-#let transfer = $"transfer"$
-#let call = $"call"$
-#let code = $"code"$
-
-#let wasmarrow = $attach(arrow.r.hook, br: i)$
-
 #semantics(
     [The configuration for WebAssembly with embedded actions, supporting transfer and syncing of state based on the semantics of the original paper @haas17:bringing.],
-    [
-    $
-
-        &"(WebAssembly program state)"& K & colon.double.eq \{ s, v^*, e^* \} \
-        &"(Action table)"& A              & colon.double.eq a^* \
-        &"(Action)"& a                    & colon.double.eq \{code cl, transfer t, transfer^(-1) space r\} \
-        &"(Backward transfer)"& t         & colon.double.eq v^* times s arrow.r s', "where" s' subset.eq s \
-        &"(Forward transfer)"& r          & colon.double.eq s arrow.r s', "where" s' subset.eq s \
-    $
-],
+    wasm,
 "oop:fig:prim-def")
 
 WebAssembly is a portable, low-level binary code format built for secure and efficient execution across different platforms.
@@ -411,25 +398,9 @@ To remove platform-specific dependencies, WebAssembly deliberately omits externa
 We have extended WebAssembly with a set of non-transferable actions which are clearly separated from regular code execution. 
 This design choice enables us to have a clear and easy division between transferable and non-transferable code.
 
-#let multi(step) = $attach(step, tr: "*")$ // $harpoon.rt$
-
-#let func = $"func"$
-
 #semantics(
     [The semantics of actions, and invoking instructions in WebAssembly.],
-    [
-            #table(columns: (2.0fr, 1fr), stroke: none, gutter: 1.0em,
-                tablehead("WebAssembly evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.4em), $\{ s, v^*, e^* \} wasmarrow \{ s', v'^*, e'^* \}$),
-            table.cell(colspan: 2, table(columns: (1fr, 1fr), stroke: none,
-                prooftree(rule($\{ s, v^*, L^k [e^*] \} wasmarrow \{ s', v'^*, L^k [e'^*] \}$, $\{ s, v^*, e^* \} wasmarrow \{ s', v'^*, e'^* \}$, name: smallcaps("Label"))),
-                prooftree(rule($\{ s, v^*, L^k [e^*] \} wasmarrow \{ s', v'^*, L^k [e'^*] \}$, $\{ s, v^*, e^* \} wasmarrow \{ s', v'^*, e'^* \}$, name: smallcaps("Local"))),
-            )),
-            table.hline(stroke: lineWidth),
-            table.cell(colspan: 2,
-                prooftree(rule($\{s, v^*, call j\} wasmarrow \{s,v^*, v\}$, $s_(func)(i,j) eq.not cl$, $A(j) = a$, $\{s, v^*, call a_(code) \} multi(wasmarrow) \{s', v'^*, v\}$, name: smallcaps("Action"))),
-            ),
-            )
-    ],
+    invokeconfig,
 "oop:fig:invoking")
 
 We build on the semantics of WebAssembly as defined by #cite(form: "prose", <haas17:bringing>).
@@ -437,8 +408,9 @@ We build on the semantics of WebAssembly as defined by #cite(form: "prose", <haa
 The WebAssembly program state is defined as a configuration $K$, with global store $s$, local values $v^*$, and the current stack of instructions $e^*$.
 The #emph[global] action table $A$ contains all actions, each action $a$ is a named pair of a closure $cl$ and a transfer functions $t$ and $r$.
 The closure consists of the code which performs the action over the non-transferable resource. 
- The transfer function $t$, returns the state $s'$ needed to perform the action, given the arguments $v^*$ and the current state $s$ of the server. 
- The transfer function $r$, produces the state $s'$ that has been altered by execution the action given the state $s$ after executing the action on the client. 
+#note[We use the terms _forward_ and _backward_ transfer to refer to the direction of the state changes, similar to program slicing.]
+ The backward transfer function $t$, returns the state $s'$ needed to perform the action, given the arguments $v^*$ and the current state $s$ of the server. 
+ The forward transfer function $r$, produces the state $s'$ that has been altered by execution the action given the state $s$ after executing the action on the client. 
  We refer to elements of named tuples, such as the transfer function as $a_(transfer)$.
 
 The execution of a WebAssembly program is defined by a small-step reduction relation over the configuration $\{s;v^*;e^*\}$, denoted as #wasmarrow, where  $i$ refers to the index of the currently executing module as shown in figure @oop:fig:invoking. The WebAssembly semantics makes use of administrative operators to deal with control constructs, for example $call i$ denotes a call to a function with index $i$ . To mark the extend of an active control struct, expressions are wrapped into labels. 
@@ -457,47 +429,11 @@ In the next section we give an overview of the semantics of actions during debug
 
 === Configuration of the Stateful Out-of-place Debugger
 
-#let bp = $"bp"$
-#let es = $"es"$
-#let msg = $"msg"$
-#let Cbs = $"Cbs"$
-#let evt = $"evt"$
-#let invoked(payload) = [$"invoked"angle.l payload angle.r$]
-#let invoke(payload) = [$"invoke"angle.l payload angle.r$]
-#let sync(payload) = [$"sync"angle.l payload angle.r$]
-#let invoking = $"invoking"$
-#let halted = $"halted"$
-#let running = $"running"$
-
-#let brackets = (l: $($, r: $)$)
-#let separator = $space ; space$
-
-#let im = $m_"in"$
-
 #semantics(
   [
     The syntax rules for a stateful out-of-place debugger, on top of the WebAssembly semantics shown in @oop:fig:prim-def. The rules are split into three groups, the global rules, the client rules, and the server rules. Elements in the server configuration are overlined whenever they need to be differentiated from the client configuration.
   ],
-  table(columns: (1fr), stroke: none,
-    tablehead("Global syntax rules"),
-    $
-    &"(Global configuration)"& D & colon.double.eq brackets.l C | S brackets.r  \
-    $,
-    tablehead("Client syntax rules"),
-    $
-    &"(Client configuration)"& C & colon.double.eq es, boxed(im) separator K separator boxed(m)\
-    &"(Execution state)"& es & colon.double.eq running ∣ halted ∣ invoked(es) \
-    &"(Debug commands)"& m & colon.double.eq "play" ∣ "pause" ∣ "step" \
-    &"(Internal messages)"& im & colon.double.eq nothing | sync(s comma v) \
-  // todo add breakpoints
-    $,
-        tablehead("Server syntax rules"),
-    $
-    &"(Server configuration)"& S & colon.double.eq overline(es), boxed(overline(im)) separator K \
-    &"(Execution state)"& overline(es) & colon.double.eq running ∣ halted ∣ invoking a \
-    &"(Internal messages)"& overline(im) & colon.double.eq nothing | invoke(s comma e^ast) \
-    $
-  ),
+  configuration,
   "oop:fig:debugger-def"
 )
 // todo add breakpoints
@@ -542,93 +478,11 @@ In our implementation we also have an outgoing message box used to communicate a
 
 // todo add inspect rule + breakpoint rules in appendix
 
-#let dbgarrow = $attach(arrow.r.hook, br: d comma i)$
-#let update = $"update"$
-
 #semantics(
   [
     The semantics of remote action invocation in out-of-place debugging.
   ],
-  [
-    #table(columns: (2.0fr, 1fr), stroke: none, gutter: 1.0em,
-      tablehead("Client evaluation rules"), "",
-      table.cell(colspan: 2, table(columns: (1fr), stroke: none,
-        prooftree(rule(
-          $
-          brackets.l halted, boxed(nothing) separator K separator boxed("step") bar.v C brackets.r
-          dbgarrow
-          brackets.l halted, boxed(nothing) separator K' separator boxed(nothing) bar.v C brackets.r
-          $,
-          $not ( K = \{s; v^*; L^k [call i]\} ∧ a = A(i) )$,
-          $K wasmarrow K'$,
-          name: "step-client"
-        )),
-        prooftree(rule(
-          $
-          brackets.l #smallcaps("play"), bp , (halted, boxed(nothing) separator K separator boxed("play") ) bar.v C brackets.r 
-          dbgarrow
-          brackets.l (running, nothing, K ) bar.v C brackets.r
-          $,
-          name: "play"
-        )),
-        prooftree(rule(
-          $
-          brackets.l #smallcaps("pause"), bp , (running, nothing, K ) bar.v C brackets.r 
-          dbgarrow
-          brackets.l (halted, nothing, K ) bar.v C brackets.r
-          $,
-          name: "pause"
-        )),
-        prooftree(rule(
-          $
-          brackets.l running, nothing, K bar.v C brackets.r 
-          dbgarrow
-          brackets.l running, nothing, K' bar.v C brackets.r
-          $,
-          $
-          not ( K = \{s; v^*; L^k [call i]\} ∧ a = A(i) )$, 
-          $K wasmarrow K'
-          $,
-          name: "run-client"
-        )),
-        prooftree(rule(
-          $
-          brackets.l halted, boxed(nothing) separator K separator boxed("step") bar.v halted, boxed(nothing) separator K^c brackets.r 
-          dbgarrow \
-          brackets.l invoked(halted), boxed(nothing), K separator boxed(nothing) bar.v halted, boxed(invoke(s' comma v^n call i)) separator K^c brackets.r
-          $,
-          $K = \{s; v^*; L^k [v^n call i]\}$, 
-          $a = A(i)$,
-          $a_{transfer}(v^n, s) = s'$,
-          name: "step-invoke"
-        )),
-        prooftree(rule(
-          $
-          brackets.l halted, boxed(nothing) separator K separator boxed("step") bar.v halted, boxed(nothing) separator K^c brackets.r 
-          dbgarrow \
-          brackets.l invoked(running), boxed(nothing), K separator boxed(nothing) bar.v halted, boxed(invoke(s' comma v^n call i)) separator K^c brackets.r
-          $,
-          $K = \{s; v^*; L^k [v^n call i]\}$, 
-          $a = A(i)$,
-          $a_{transfer}(v^n, s) = s'$,
-          name: "run-invoke"
-        )),
-              prooftree(rule(
-          $
-          brackets.l invoked(es), boxed(sync(Δ, ) separator K boxed(m) bar.v C brackets.r \
-          dbgarrow
-          brackets.l es, boxed(nothing) separator K' bar.v C brackets.r
-          $,
-          $
-          K = {s; v^*; L^k [v^n call cl]}$,
-          $update(s, Δ) = s'$,
-          $K' = {s'; v^*; L^k[v]}
-          $,
-          name: "sync"
-        )),
-      )),
-    )
-  ],
+  stepping,
   "oop:sem:stepping"
 )
 
@@ -643,80 +497,40 @@ Below, we outline the step and run rules.
 
 / play: Whenever the halted server receives a _play_ message, it will move the server to the _running_ state. 
 
-/ pause: Whenever the running server receives a _pause_ message,  it will move the server to the _halted_ state. 
+/ pause: Whenever the running server receives a _pause_ message,  it will move the server separator to the _halted_ state. 
 
 / run-client: Similarly, when the server can take a (local) step in the underlying semantics, and is in the _running_ state, the server takes a step through the underlying semantics.
 
 These rules allow the debugger to execute a WebAssembly program that does not contain any actions.
-When during the execution of the program an action is encountered execution needs to be transferred to the client.
-For fullness, @oop:sem:stepping already contains the rule for handling the forward transfer of state by the client---as it is received by the server after a remote action call.
+When during the execution of the program an action is encountered execution needs to be transferred to the server.
+For fullness, @oop:sem:stepping already contains the rule for handling the forward transfer of state by the client---as it is received from the server after a remote action call.
 
 //Important for the synchronization of state during invocation, are the functions, $a_{transfer}$,   $a_{transfer^{-1}}$, and $_update_$.
 //The _diff_ function returns the difference between two WebAssembly stores $s$ and $s'$, which allows the changes to the WebAssembly state to be transferred back to the server after invoking a action.
 //The _update_ function updates the store $s$ with the difference $\Delta$. % , its results is equal to $\Delta$ after $s$.
 
 
-    / step-invoke: When during stepping, the next instruction is a call to an action, the execution is transferred to the client device.
-    The transfer function $a_{transfer}$ calculates the state $s'$ required to execute the action on the client. 
-        This state is passed to the server through the #smallcaps("invoke") message, along with the arguments of the call $v^n$, and the function id  $i$ to call at the client.
-	Note that the server's execution state transitions to $invoked(halted)$. 
-	Before executing code on the client, we must remember that the execution was $halted$ to restore it after the call. 
-	This is crucial because execution on the client can be triggered both while the server is halted and while it is running.
+    / step-invoke: #[When during stepping, the next instruction is a call to an action, the execution is transferred to the server device.
+      The transfer function $a_transfer$ calculates the state $s'$ required to execute the action on the client. 
+      This state is passed to the server through the _invoke_ message, along with the arguments of the call $v^n$, and the function id $i$ to call.
 
-    / run-invoke:
-      When the server is in the running state and the next instruction is a call to an action, the execution is transferred to the client device.
-      This rule is entirely analogous to the step-client rule, with that difference that the server will transition to the  $invoked(running)$ state. 
+	  Note that the client's execution state transitions to $invoked(halted)$. 
+	  Before executing code on the server, we must remember that the execution was $halted$ to restore it after the call. 
+	  This is crucial because execution on the server can be triggered both while the client is halted and while it is running.]
+
+    / run-invoke: When the client is in the running state and the next instruction is a call to an action, the execution is transferred to the server device.
+      This rule is entirely analogous to the step-invoke rule, with that difference that the server will transition to the  $invoked(running)$ state. 
       This is important to be able to restore the $running$ state after the call. 
 
-    / sync: The synchronization rule updates the state of the server, with the difference received from the client after an invocation.
-        This is identical to the update in the #smallcaps("invoke-start") rule. Finally, the execution state of the server is restored to $es$. 
+    / sync: The synchronization rule updates the state of the client, with the difference received from the server after an invocation.
+      This is identical to the update in the _invoke-start_ rule. Finally, the execution state of the client is restored to $es$. 
 
 // todo internal message might not be empty, right?
 #semantics(
   [
     The semantics of out-of-place execution, i.e., on the server, in stateful out-of-place debugging.
   ],
-  [
-    #table(columns: (2.0fr, 1fr), stroke: none, gutter: 1.0em,
-      tablehead("Server evaluation rules"), "",
-      table.cell(colspan: 2, table(columns: (1fr), stroke: none,
-        prooftree(rule(
-          $
-          brackets.l Q, bp , (es, nothing, K )_S bar.v (halted, (#smallcaps("invoke") \{ s', v^n call i \}), \{s; ε; ε\})_C brackets.r \
-          dbgarrow
-          brackets.l Q, bp , (es, nothing, K )_S bar.v (invoking a, nothing, \{s''; ε; v^n call i\})_C brackets.r
-          $,
-          $
-          s'' = update(s, s')
-          $,
-          name: smallcaps("invoke-start")
-        )),
-        prooftree(rule(
-          $
-          brackets.l Q, bp , S bar.v (invoking a, nothing, K)_C brackets.r \
-          dbgarrow
-          brackets.l Q, bp , S bar.v (invoking a, nothing, K')_C brackets.r
-          $,
-          $
-          K wasmarrow K'
-          $,
-          name: smallcaps("invoke-run")
-        )),
-        prooftree(rule(
-          $
-          brackets.l Q, bp , (es, nothing, K )_S bar.v (invoking a, nothing, K')_C brackets.r
-          dbgarrow \
-          brackets.l Q, bp , (es, #smallcaps("sync") \{Δ, v\}, K )_S bar.v (halted, nothing, \{s; ε; ε\})_C brackets.r
-          $,
-          $
-          Δ = a_{transfer^{-1}}(s)$,
-          $K' = \{s; ε; v\}
-          $,
-          name: smallcaps("invoke-end")
-        )),
-      )),
-    )
-  ],
+  invoking,
   "oop:sem:invoking"
 )
 
@@ -739,19 +553,8 @@ The process is split into three steps, corresponding to four evaluation rules, f
 
 The semantics so far, allow for the out-of-place debugger to handle programs with synchronous operations that are both stateless and stateful.
 However, in microcontroller systems, actions can be triggered asynchronously by elements such as sensors, hardware interrupts, and asynchronous communication protocols like MQTT.
-Pure WebAssembly does not have support for callbacks, therefore, we extend the WebAssembly semantics with a lightweight callback handling system as proposed by #cite(form: "prose", <lauwaerts24:warduino>). While our semantics largely follow their approach, we made minor adjustments to better align with our stateful out-of-place debugger. Our  contribution lies in extending this semantics to support stateful out-of-place debugging, as shown in~\cref{oop:debugAsynchronous}.
+Pure WebAssembly does not have support for callbacks, therefore, we extend the WebAssembly semantics with a lightweight callback handling system as proposed by #cite(form: "prose", <lauwaerts24:warduino>). While our semantics largely follow their approach, we made minor adjustments to better align with our stateful out-of-place debugger. Our  contribution lies in extending this semantics to support stateful out-of-place debugging, as shown in @oop:debugAsynchronous.
 // todo reword to: we use the system from warduino (which we use for our prototype) but make a few small adjustments to fit better with our semantics.
-
-#let callbacks = $"callbacks"$
-#let callback = $"callback"$
-#let events = $"events"$
-#let topic = $"topic"$
-#let memslice = $"memslice"$
-#let payload = $"payload"$
-#let start = $"start"$
-#let length = $"length"$
-
-#let i32 = $"i32"$
 
 #semantics(
   [
@@ -774,90 +577,29 @@ Pure WebAssembly does not have support for callbacks, therefore, we extend the W
   [
     The reduction rules describing the event and callback handling in our concurrent callback system for asynchronous events in WebAssembly, based on the lightweight callback system of the WARDuino virtual machine @lauwaerts24:warduino.
   ],
-  [
-    #table(columns: (1.0fr, 1.0fr), stroke: none, gutter: 1.0em,
-      tablehead("Evaluation rules"), "",
-      table.cell(colspan: 2, 
-        prooftree(rule(
-          $
-          {s; v^*; (callback."drop" topic)} dbgarrow {s'; v^*; epsilon}
-          $,
-          $
-          s_{callbacks}[topic arrow.r.bar #smallcaps("nil")] = s'_{callbacks}
-          $,
-          name: smallcaps("deregister")
-        ))),
-      table.cell(colspan: 2, 
-        prooftree(rule(
-          $
-          {s; v^*; (i32."const" j)(callback."set" topic)} dbgarrow {s'; v^*; epsilon}
-          $,
-          $
-          s_{callbacks}[topic arrow.r.bar j] = s'_{callbacks}
-          $,
-          name: smallcaps("register")
-        ))),
-        prooftree(rule(
-          $
-          {s; v^*; e^*} dbgarrow {s'; v^*; e^*}
-          $,
-          $
-          xi = s_{events}(0)$,$
-          s'_{events} = "remove"(s_{events}, 0)$,$
-          s_{callbacks}(xi_{topic}) = #smallcaps("nil")
-          $,
-          name: smallcaps("drop")
-        )),
-        prooftree(rule(
-          $
-          \{s; v^*; e^*\} dbgarrow {s'; v^*; "Clb"[e'^*] e^*}
-          $,
-        $
-          xi = s_{events}(0)$,$
-          s'_{events} = "remove"(s_{events}, 0)$,$
-          e'^* = "construct"\_call(s, xi)
-          $,
-          name: smallcaps("interrupt")
-        )),
-        prooftree(rule(
-          $
-          {s; v^*; e^*} dbgarrow {s'; v'^*; e'^*}
-          $,
-          $
-          {s; v^*; "Clb"[e^*]} dbgarrow {s'; v'^*; "Clb"[e'^*]}
-          $,
-          name: smallcaps("callback")
-        )),
-        prooftree(rule(
-          $
-          \{s; v^*; "Clb"[epsilon]\} dbgarrow \{s; v^*; epsilon\}
-          $,
-          name: smallcaps("resume")
-        )),
-      )
-  ],
+  [],
   "oop:sem:callbacks"
 )
 
 The required extension to support asynchronous events are shown in @oop:sem:callbackconfig and @oop:sem:callbacks.
 Note that in this section we focus on explaining these extensions separately from our debugging semantics. 
 
-\Cref{sem:callbackconfig} shows how the store $s$ is extended with a callback table $Cbs$, which maps event topics to WebAssembly function indices $i$.
+@oop:sem:callbackconfig shows how the store $s$ is extended with a callback table $Cbs$, which maps event topics to WebAssembly function indices $i$.
 The event system captures asynchronous events, such as hardware interrupts, and reifies them into a universal event queue.
-We further extend the global store $s$ with an event queue $evt*$.
+We further extend the global store $s$ with an event queue $evt^ast$.
 All asynchronous events $evt$ are captured in the event queue, similar to the debugging message queue shown before. 
-Each event has a topic stored as a slice of WebAssembly memory, we keep track of these slices by their \textsf{start} address and \textsf{length}.
+Each event has a topic stored as a slice of WebAssembly memory, we keep track of these slices by their _start_ address and _length_.
 The topic of an event corresponds to the unique identifier of a category of events, to which callbacks can subscribe.
 Additional data of the event can be stored as a second slice of memory, which we refer to as the event's payload.
 
 //For microcontrollers, this means that all hardware interrupts are captured by the WebAssembly runtime, and their effects on the internal state are deferred until their corresponding callback is invoked.
-\Cref{sem:callbacks} shows the reduction rules describing the event and callback handling, we discuss each of the rules in detail below.
+@oop:sem:callbacks shows the reduction rules describing the event and callback handling, we discuss each of the rules in detail below.
 
     / register: The register rule adds a new callback to the callback map, which maps a topic to a WebAssembly function index.
-        The \textbf{callback.set} instruction takes an immediate memory slice, which corresponds to the topic string.
+        The _callback.set_ instruction takes an immediate memory slice, which corresponds to the topic string.
         The instruction updates the callback map for the topic with a function index $j$, which it takes from the stack.
-        %This allows the WebAssembly runtime to invoke the function when the corresponding event is triggered.
-    / deregister: Callback functions can be removed from the callback map, with the \textbf{callback.drop} instruction, which simply takes a memory slice immediate, and removes the entry for the topic corresponding to the memory slice.
+        //This allows the WebAssembly runtime to invoke the function when the corresponding event is triggered.
+    / deregister: Callback functions can be removed from the callback map, with the _callback.drop_ instruction, which simply takes a memory slice immediate, and removes the entry for the topic corresponding to the memory slice.
     / drop: Whenever the event queue is not empty, the first event is taken from the queue, and its topic is looked up in the callback map.
         If no callback is registered for the topic, the event is simply dropped by this rule.
     / interrupt: Whenever a popped event does correspond to a registered callback, its topic and payload are placed on the stack as arguments for the callback function.
@@ -871,21 +613,21 @@ Additional data of the event can be stored as a second slice of memory, which we
 // todo important to note is that the rules are still deterministic, eventhough the system might not be. Given the queue of debug and event messages, the whole reduction is deterministic. THIS IS IMPORTANT FOR THE PROOFS
 Whenever an event arrives in the event queue, the WebAssembly runtime will interrupt the current execution, and invoke the callback function associated with the event topic.
 Such callbacks cannot have a return type, to ensure that callbacks do not break a well-typed WebAssembly program.
-However, callbacks can update other internal state, such as global variables, or linear memory. % todo double check if this does not break our solution
+However, callbacks can update other internal state, such as global variables, or linear memory. // todo double check if this does not break our solution
 Asynchronous events and callbacks introduce non-determinism into the WebAssembly languages, which can seriously complicate debugging of programs.
-However, simplifying debugging of non-deterministic bugs is beyond the scope of this paper, and is an orthogonal problem to that of state desynchronization in out-of-place debugging. % todo show in proofs that this does not change things
-In fact, some recent work on debugging non-deterministic programs in WebAssembly uses some resource-heavy program analysis, which can benefit from out-of-place debugging to reduce overhead, and support resource-constraint microcontrollers. % todo cite demo and master thesis maarten
+However, simplifying debugging of non-deterministic bugs is beyond the scope of this paper, and is an orthogonal problem to that of state desynchronization in out-of-place debugging. // todo show in proofs that this does not change things
+In fact, some recent work on debugging non-deterministic programs in WebAssembly uses some resource-heavy program analysis, which can benefit from out-of-place debugging to reduce overhead, and support resource-constraint microcontrollers. // todo cite demo and master thesis maarten
 
 === Debugging Asynchronous Non-transferable Resources<oop:debugAsynchronous>
 
 The callback system and the asynchronous non-transferable resources it enables, present a second challenge for handling state desynchronization in out-of-place debugging.
-Identical to the other parts of the program's runtime, we wish to have the callback system run on the server.
-Unfortunately, events are generated on the side of the client.
+Identical to the other parts of the program's runtime, we wish to have the callback system run on the client.
+Unfortunately, events are generated on the side of the server.
 Building on the semantics we discussed so far, we show how out-of-place debuggers can deal with these kind of asynchronous state changes in the following sections.
 
 ==== An Example of Asynchronous Resources
 
-To illustrate the challenges introduced by asynchronous resources to stateful out-of-place debugging, we take another detailed look at our running MQTT example (\cref{app:problem}).
+To illustrate the challenges introduced by asynchronous resources to stateful out-of-place debugging, we take another detailed look at our running MQTT example (@oop:app:problem).
 Developers familiar with the MQTT subscribe operation, would expect it to send a message to the MQTT broker, indicating that the client is interested in a specific topic.
 From that moment on, the broker will forward messages of that topic to the client, where they will be handled by a callback function.
 To implement this action in our system, we expect it to send the appropriate message to the MQTT broker, and register a callback function for those MQTT message in the runtimes callback handling system.
@@ -896,102 +638,44 @@ This is a clear example of asynchronous desynchronization, which needs to be han
 
 ==== The Callback System in Out-of-place Debugging
 
-Our callback system adds two instructions to WebAssembly, which can change the callback map in the global store, #smallcaps("deregister") and #smallcaps("register").
-As our example with MQTT subscribe illustrates, actions can use the instructions to change the map on the client.
-It is crucial to have these changes reflected on the server, since it has sole control of the callback system.
-However, these changes are still synchronous, so can be dealt with through the invocation rules already presented in \cref{oop:invocation}.
+We revisit the semantics of stateful out-of-place debugging entirely, since the current semantics have no way of dealing with events produced by non-transferable resources.
+We will define a new semantics $attach(dbgarrow, tr: alpha)$ that encapsulates the previous syntax and evaluation rules, but adds support for synchronization and control of event-driven non-transferable resources.
 
-It is important to note, that the same synchronization is not necessary when the callback map is updated on the server.
-When invoking an action, the invocation rules technically allow the callback map to be updated on the client through $a_{transfer}$.
-However, updating the mapping on the client before such a call will never occur.
-Synchronization in that direction is not necessary, since the control over the program's execution, and by extension the callback system, lies entirely with the server.
-Simply put, since the client cannot start a new callback execution, the exact state of its callback mapping is irrelevant, and no action will ever need it to be updated before its execution.
+Our callback system adds two instructions to WebAssembly, which can change the callback map in the global store, #smallcaps("deregister") and #smallcaps("register").
+As our example with MQTT subscribe illustrates, actions can use the instructions to change the map on the server.
+It is crucial to have these changes reflected on the client, since it has sole control of the callback system.
+However, these changes are still synchronous, so can be dealt with through the invocation rules already presented in @oop:invocation.
+
+It is important to note, that this synchronization is only necessary from server to client, since control over the callback system lies entirely with the latter.
+This means, that the server is not able to start a new WebAssembly callback execution autonomously, and therefore does not its callback map synchronized with any local changes on the client side.
 
 // todo i should add an example where a action causes new events to be generated, and another function subscribes the callback, to illustrate that these thigns are independent from each other
 // todo because xtof found this confusing. Also this is not a problem right?
 
 The events are another matter, these are generated asynchronously, and so need to be synchronized asynchronously as well.
-In contrast to the callback mapping, events will only be synchronized from client to server.
+However, in this case too, synchronization is only necessary from server to client.
 
 
 ==== Controlling the dispatching of Asynchronous Events
 
 While it is important for microcontroller applications to interrupt a program's execution to handle asynchronous events, during debugging this is extremely distracting and confusing.
 Debugging relies on giving the developer control over the program's execution, but asynchronous code takes away this control.
-Furthermore, there are many non-deterministic bugs that depend on a certain order of events, or only appear when events are processed at certain points in the program.
+Furthermore, there are many non-deterministic bugs that depend on a certain order of events, or only appear when events are processed at certain points in the program @li23:empirical-study.
 We therefore want full control over the impact that asynchronous events have on the control flow of the program.
-
-#let dbg = $"dbg"$
 
 #semantics(
   [
-    The semantics of push-based asynchronous non-transferable resources in out-of-place debugging $attach(#dbgarrow, tr: alpha)$, which extends the relation $dbgarrow$, and provides control over the non-determinism to the developer.
+    The semantics of push-based asynchronous non-transferable resources in out-of-place debugging $attach(#dbgarrow, tr: alpha)$, which encapsulates the relation $dbgarrow$, and provides control over the non-determinism of events to the developer.
   ],
-  [
-    #table(columns: (1fr, 1fr), stroke: none, gutter: 1.0em,
-      tablehead("Asynchronous Event Semantics"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.4em), prooftree(rule(
-          $dbg dbgarrow dbg'$, $(wasmarrow) eq.not "interrupt"$, name: ""))),
-        table.cell(colspan: 2, prooftree(rule(
-          $
-          brackets.l ("trigger" j), bp , (halted, nothing, K )_S bar.v C brackets.r dbgarrow brackets.l nothing, bp , (halted, ("trigger" j), K )_S bar.v C brackets.r
-          $,
-          "",
-          name: "pass-trigger"
-        ))),
-        table.cell(colspan: 2, prooftree(rule(
-          $
-          brackets.l Q, bp , (halted, ("trigger" j), {s; v^*; e^*} )_S bar.v C brackets.r dbgarrow brackets.l Q, bp , (halted, nothing, K' )_S bar.v C brackets.r
-          $,
-          $
-          xi = s_events(j)$,$
-          s'_events = "remove"(s_events, j)$,$
-          e'^* = "construct"\_call(s, xi)$,$
-          K' = {s', v^*, "Clb"[e'^*] e^*}
-          $,
-          name: "trigger"
-        ))),
-        table.cell(colspan: 2, prooftree(rule(
-          $
-          brackets.l Q, bp , (halted, ("trigger" j), \{s; v^*; e^*\} )_S bar.v C brackets.r dbgarrow \
-              brackets.l "error"_"out", bp , (halted, nothing, {s; v^*; e^*} )_S bar.v C brackets.r
-          $,
-          $
-          "length"(s_events) ≤ j or exists evt space . space evt lt s_{events}(j)
-          $,
-          name: "trigger-invalid"
-        ))),
-        table.cell(colspan: 2, prooftree(rule(
-          $
-          brackets.l Q, bp , (es, nothing, K )_S bar.v (es, nothing, K')_C brackets.r dbgarrow brackets.l nothing, bp , (es, "sync" Delta, K )_S bar.v (es', nothing, K'')_C brackets.r
-          $,
-          $
-          K'_events ≠ nothing$, $
-          K''_events = nothing$, $
-          Delta = { events K'_events, "memory" memslice^* }
-          $,
-          name: "transfer-events"
-        ))),
-        table.cell(colspan: 2, prooftree(rule(
-          $
-          brackets.l Q, bp , (es, #smallcaps("sync"){Delta, v}, K )_S bar.v C brackets.r dbgarrow brackets.l Q, bp , (es, nothing, K' )_S bar.v C brackets.r
-          $,
-          $
-          K = \{s; v^*; e^*\}$,$
-          update(s, Delta) = s'$,$
-          K' = \{s'; v^*; e^*\}
-          $,
-          name: "sync-events"
-        ))),
-    )
-  ],
+  events,
   "oop:sem:events"
 )
 
 
-\Cref{sem:events} shows the extended semantics of the out-of-place debugger for handling and controlling asynchronous events, defined as the relation ($attach(#dbgarrow, tr: alpha)$) which extends (#dbgarrow).
-To provide developers with control over the event and callback system, the out-of-place debugger disables the automatic dispatching of events, as shown at the top of \cref{sem:events}.
-Specifically, the debugger will never take the #smallcaps("interrupt") step.
-Instead it provides a new debug message #smallcaps("trigger"), which takes the index of a event in the queue to be dispatched.
+@oop:sem:events shows the extended semantics of the out-of-place debugger for handling and controlling asynchronous events, defined as the relation ($attach(#dbgarrow, tr: alpha)$) which extends (#dbgarrow).
+To provide developers with control over the event and callback system, the out-of-place debugger disables the automatic dispatching of events, as shown at the top of @oop:sem:events.
+Specifically, the debugger will never take the _interrupt_ step.
+Instead it provides a new debug message _trigger_, which takes the index of a event in the queue to be dispatched.
 However, some events cannot occur before other events, the most straightforward case is where one MQTT message is the consequence of another.
 In such cases, reordering the events may result in execution paths that are impossible without the interference of the debugger.
 To prevent the debugger from causing such impossible scenario's, the semantics assumes there is a partial order relation $<$ for the events in the queue.
@@ -1000,8 +684,7 @@ The #smallcaps("transfer-events") rule describes how the client sends events to 
 Since the event queue is an extension of the WebAssembly state, the same synchronization and updating mechanism is used as before.
 We provide a summary of each rule below.
 
-/ pass-trigger: The debugger passes all trigger messages to the server.
-/ trigger: When the server receives a trigger message for event at index $j$, it pops the event from the event queue, and identical to the #smallcaps("interrupt") rule in \cref{sem:callbacks}, it calls the corresponding callback function.
+/ trigger: When the client receives a trigger message for event at index $j$, it pops the event from the event queue, and identical to the _interrupt_ rule in @oop:sem:callbacks, it calls the corresponding callback function.
 / trigger-invalid: If the index of the event in the trigger message is out of bounds, or the event is invalid, because there are still undispatched events that are smaller under the partial order relation, the server will return an error message.
 / transfer-events: This rule shows how all events arriving on the client are forwarded to the server through the same synchronization message we used before.
     The message includes the events in the queue, and slices of memory containing the events' topic and payload.
@@ -1014,15 +697,15 @@ We provide a summary of each rule below.
 
 
 Given the presented formalization of out-of-place debugging, we can now proof several interesting properties showing the soundness of the approach.
-Before we give a proof of general correctness for our debugger, we first proof a lemma showing that invoking a non-transferable resource from the server does not change the observable behavior of the program, compared to its normal execution on the client.
-Specifically, we proof that given the execution of an action in the non-debugger semantics, there must exist a path in the debugger semantics that moves the server from the same starting state to the same end state. 
+Before we give the proofs of general correctness for our debugger, we first proof two lemmas showing that invoking a non-transferable resource from the server does not change the observable behavior of the program, compared to its normal execution on the client.
 
+Specifically, we proof that given the execution of an action in the non-debugger semantics, there must exist a path in the debugger semantics that moves the client from the same starting state to the same end state. 
 
 #lemma("Invoking completeness")[
-    Let the next instruction in $K$ be a call to an action $a$, and $K'$ the result of that action ($K #wasmarrow K'$). Then the invoking in the debugger semantics is non-interfering, when for every debugging configuration $dbg$ with $K$ in $S$, the following holds:
+    The remote invoking of an action in the debugger semantics is _complete_, when for every debugging configuration $dbg$ with $K$ in $S$ and , where the next instruction in $K$ is a call to an action $a$, and $K'$ the result of that action ($K #wasmarrow K'$), the following holds:
     $ exists dbg' . dbg attach(dbgarrow, tr: alpha comma *) dbg' and (K' in S "of" dbg') $
 ]<theorem:invoking>
-#proof[
+#proof($bold("Invoking completeness for" attach(dbgarrow, tr: alpha comma ast))$)[
 //    Given $K arrow.r.hook/g_i K'$, we can clearly construct a path in the debugging semantics by following the invocation rules from \cref{sem:events}.
 //    Since we know that the next step in $arrow.r.hook/g_i$ for $K$ is #smallcaps("action"), we also know that for any debugging with the running state can use the #smallcaps("run-client") rule.
 //    After this, it follows that the #smallcaps("invoke-start") and #smallcaps("invoke-run") rules can be applied successively, and we know that the latter will use $arrow.r.hook/g_i$ to perform the same action, and step to a state $K''$.
@@ -1035,13 +718,14 @@ Specifically, we proof that given the execution of an action in the non-debugger
 This lemma shows that the state synchronization between the server and the client is correct when invoking an action.
 It is therefore crucial to proving the correctness of the debugger.
 The lemma in the other direction is likewise important.
+The invoking of actions is sound when for any action invocation that takes $dbg$ to $dbg'$, there is also a path in the underlying language semantics that takes program state $K$ to $K'$, respectively the program states in $S$ for $dbg$ and $dbg'$.
 
 #lemma("Invoking soundness")[
-    Let the next instruction in $K$ be a call to an action $a$, and $K'$ the result of that action ($K #wasmarrow K'$). Then the invoking in the debugger semantics is non-interfering, when for every debugging configuration $dbg$ with $K$ in $S$, the following holds:
-    $ exists dbg' . dbg attach(dbgarrow, tr: alpha comma *) dbg' and (K' in S "of" dbg') $
+    The remote invoking of an action in the debugger semantics is _sound_, when the following holds:
+    $ forall dbg, dbg' : (call a) "in" dbg and dbg attach(dbgarrow, tr: alpha comma ast) dbg' and boxed(sync(s comma v)) in S' "of" dbg' \ arrow.double.r.long K wasmarrow K' ", where" K in S "of" dbg and K' in S' $
 ]<theorem:invoking>
 #proof[
-  // todo ...
+  // todo ... induction
 ]
 
 // todo add paragraph
@@ -1118,50 +802,42 @@ $ forall K' : K multi(wasmarrow) K' arrow.double.r.long dbg_start attach(dbgarro
 
 // todo show vs code plugin
 We have implemented the stateful out-of-place debugger formalized above in a prototype debugger, called #emph[Edgar].
-The #emph[Edgar] debugger is built on top of the WARDuino runtime~\cite{lauwaerts24a}, a WebAssembly runtime for microcontrollers.
+The #emph[Edgar] debugger is built on top of the WARDuino runtime @lauwaerts24:warduino, a WebAssembly runtime for microcontrollers.
 The implementation leverages the existing stateless implementation of the WARDuino runtime, and extends it with the necessary infrastructure for state synchronization.
 This involved extending the existing communication protocol with the necessary messages for state synchronization, and refactoring the communication infrastructure of the runtime to handle the new messages.
-Additionally, we created a new high-level interface for defining actions which integrates the state synchronization interface described in \cref{oop:semantics}.
+Additionally, we created a new high-level interface for defining actions which integrates the state synchronization interface described in @oop:semantics.
 The stateful debugger can be used in VS Code to debug AssemblyScript programs running on an instance of the WARDuino runtime, thanks to a dedicated extension to the VS Code IDE.
 
 //Edgar extends the EDWARD debugger's communication protocol with the necessary messages for state synchronization, as described by the formal semantics.
 
-// TODO
-//\begin{figure}
-//    \begin{minipage}[t]{.48\textwidth}
-//        \begin{lstlisting}[language=C++, style=CStyle,escapechar=']
-//void subscribe_internal(Module *m,
-//    uint32_t topic_param,
-//    uint32_t topic_length,
-//    uint32_t fidx) {
-//  const char *topic =
-//    parse(m, topic_length, topic_param);
-//
-//  mqttClient.subscribe(topic);
-//
-//  Callback c = Callback(m, topic, fidx);
-//  CallbackHandler::add_callback(c);}
-//\end{lstlisting}
-//    \end{minipage}
-//    \hfill
-//    \begin{minipage}[t]{.48\textwidth}
-//        \begin{lstlisting}[language=C++, style=CStyle,escapechar=',firstnumber=12]
-//def_action(subscribe, threeToNoneU32) {
-//  uint32_t topic = arg2.uint32;
-//  uint32_t length = arg1.uint32;
-//  uint32_t fidx = arg0.uint32;
-//
-//  subscribe_internal(
-//    m, topic, length, fidx);
-//
-//  pop_args(3);
-//  return true;
-//}
-//\end{lstlisting}
-//    \end{minipage}
-//    \caption{The implementation of the MQTT #emph[subscribe] action in the WARDuino runtime, without stateful out-of-place support.}
-//    \label[listing]{fig:action}
-//\end{figure}
+#snippet("oop:action",
+    columns: 2,
+    [The implementation of the MQTT #emph[subscribe] action in the WARDuino runtime, without stateful out-of-place support.],
+    (```cpp
+void subscribe_internal(Module *m,
+    uint32_t topic_param,
+    uint32_t topic_length,
+    uint32_t fidx) {
+  const char *topic =
+    parse(m, topic_length, topic_param);
+
+  mqttClient.subscribe(topic);
+
+  Callback c = Callback(m, topic, fidx);
+  CallbackHandler::add_callback(c);}
+```, ```cpp
+def_action(subscribe, threeToNoneU32) {
+  uint32_t topic = arg2.uint32;
+  uint32_t length = arg1.uint32;
+  uint32_t fidx = arg0.uint32;
+
+  subscribe_internal(
+    m, topic, length, fidx);
+
+  pop_args(3);
+  return true;
+}
+```,))
 
 === Example: the MQTT Subscribe Action
 //== Stateful Actions for Non-transferable Resources
@@ -1172,7 +848,7 @@ Actions are implemented directly in the WARDuino virtual machine using C macros.
 In order to implement stateful actions, we have extended the existing macros with two new macros.
 We will discuss each macro in turn.
 
-\Cref{fig:action} shows the standard implementation of the subscribe action using the #emph[def\_action] macro.
+@oop:action shows the standard implementation of the subscribe action using the #emph[def\_action] macro.
 We have split the definition into an internal function, shown on the left, and the interface definition on the right.
 The internal function implements the behavior of the subscribe action, it receives as parameters the WebAssembly $m$ module in which it is executed, and the offset and length of the topic string, and the function index.
 On line 6, the parse function will extract the topic string from the WebAssembly memory and parse it as an UTF8 string.
@@ -1183,9 +859,9 @@ After subscribing successfully, any messages from the MQTT broker will be routed
 On lines 10 to 11, the action registers the WebAssembly function with index #emph[fidx] to the callback environment.
 This way, the callback system will concurrently call the function whenever a new message arrives.
 
-The interface definition on the right side of \cref{fig:action} defines the action as a proper WebAssembly function using the #emph[def\_action] macro.
+The interface definition on the right side of @oop:action defines the action as a proper WebAssembly function using the #emph[def\_action] macro.
 The macro takes the name of the action, and its type as arguments.
-In the example, the subscribe action takes three arguments and returns nothing.  % todo our semantic requires actions to return a value
+In the example, the subscribe action takes three arguments and returns nothing. // todo our semantic requires actions to return a value
 The body of the macro takes the arguments from the stack and passes them to the internal function which performs the action.
 At the end the macro lifts the consumed arguments from the stack, and returns true.
 The boolean value returned by actions is used to indicate failure, and are used by the runtime to throw WebAssembly traps in case something goes wrong.
@@ -1195,14 +871,7 @@ The boolean value returned by actions is used to indicate failure, and are used 
 //\begin{figure}
 //    \begin{minipage}[t]{.48\textwidth}
 //        \begin{lstlisting}[language=C++, style=CStyle,escapechar=']
-//// on server
-//def_to_client(subscribe) {
-//  uint32_t topic = arg2.uint32;
-//  uint32_t length = arg1.uint32;
-//
-//  // add transfer to be send with invoke
-//  sync_memory(m, topic, length);
-//}
+
 //\end{lstlisting}
 //    \end{minipage}
 //    \hfill
@@ -1214,9 +883,29 @@ The boolean value returned by actions is used to indicate failure, and are used 
 //  sync_callback();
 //}\end{lstlisting}
 //    \end{minipage}
-//    \caption{The implementation of the transfer functions for the MQTT #emph[subscribe] action in the WARDuino runtime, to enable stateful out-of-place support.}
+//    \caption{}
 //    \label[listing]{fig:transfer}
 //\end{figure}
+
+#snippet("oop:transfer",
+    columns: 2,
+    [The implementation of the transfer functions for the MQTT #emph[subscribe] action in the WARDuino runtime, to enable stateful out-of-place support.],
+    (```cpp
+// on server
+def_to_client(subscribe) {
+  uint32_t topic = arg2.uint32;
+  uint32_t length = arg1.uint32;
+
+  // add transfer to be send with invoke
+  sync_memory(m, topic, length);
+}
+```, ```cpp
+// on client
+def_to_server(subscribe) {
+  // add transfer to update callback env
+  sync_callback();
+}
+```,))
 
 In order to enable stateful out-of-place debugging with the subscribe action, we need to define both the transfer from server to client, and vice versa.
 Analogous to the action definition this can be done in WARDuino using C macros, however, we also provide a number of primitives for constructing transfers.
@@ -1224,10 +913,10 @@ The primitives hide the specifics of the debugger's communication protocol, and 
 In essence, each primitive will extend a hidden transfer object with the necessary information, and when the debugger sends the invoke message, it will serialize the constructed transfer and include it in the message.
 
 
-\Cref{fig:transfer} shows the implementation of both transfer functions for the subscribe action.
+@oop:transfer shows the implementation of both transfer functions for the subscribe action.
 The left side of the figure, shows how the server must transfer state to the client, and the right side how the client must perform the action and return the state changes to the server.
 
-Consider first the server, the #emph[def\_to\_client] macro defines the transfer function for the subscribe action, which in our semantics is used in the #smallcaps("step-client") rule.
+Consider first the server, the #emph[def\_to\_client] macro defines the transfer function for the subscribe action, which in our semantics is used in the _step-client_ rule.
 Since the transfer is created right before the action should be performed, it can easily look at its arguments on the stack.
 The subscribe action only relies on the topic string in WebAssembly, so the transfer only needs to sync this slice of memory.
 This can be done with one of the primitives we provide to help with the state synchronization, in this case #emph[sync\_memory].
@@ -1238,6 +927,7 @@ In the case of our example, only the callback map is updated by the subscribe ac
 For the transfer we can use the #emph[sync\_callback] primitive which will add to the transfer, the minimal necessary data to update the callback environment on the server.
 
 === Prototype: Testing and Debugger Frontend
+
 
 //\begin{figure}
 //    \centering
@@ -1253,13 +943,33 @@ For the transfer we can use the #emph[sync\_callback] primitive which will add t
 //  @fig:implementation
 //\end{figure}
 
+#figure(caption: [//#emph[Left:] The output of a small sample of the test suite for the out-of-place debugger, using the underlying virtual machine's own testing framework called Latch~\cite{lauwaerts24}. #emph[Right:]
+A screenshot of the out-of-place debugger in VS Code.],
+  cetz.canvas({
+    import cetz.draw: *
+
+    content((0,0), (8,8.29), //rect(inset: 0mm, 
+      image("./figures/screenshots/vscode.png", width: 80mm)//)
+    , name: "screenshot")
+    rect((0,0), (8,8.29), stroke: 0.5pt)
+
+    rect((0.42,6.5), (2.60,3.29), stroke: (thickness: 0.4pt, dash: "densely-dashed"))
+    content((-0.42, 6.4), align(right, text(weight: "semibold", size: script, font: sans, [Event \ queue])))
+
+    rect((0.42,7.98), (2.60,7.70), stroke: (thickness: 0.4pt, dash: "densely-dashed"))
+    content((-0.65, 7.9), align(right, text(weight: "semibold", size: script, font: sans, [Debug \ commands])))
+
+    rect((5.64,7.54), (7.40,7.26), stroke: (thickness: 0.4pt, dash: "densely-dashed"))
+    content((8.90, 7.54), align(left, text(weight: "semibold", size: script, font: sans, [AssemblyScript \ library for access \ to actions])))
+}))<fig:implementation>
+
 Our prototype implementation on top of the WARDuino runtime allows developers to use the existing VS Code extension for the warduino debugger to debug AssemblyScript programs using stateful out-of-place debugging.
-\Cref{fig:implementation} shows a screenshot of the debugger frontend in VS Code.
+@fig:implementation shows a screenshot of the debugger frontend in VS Code.
 The frontend supports the standard debug operations, pause, play, step forward, step into, step over, and breakpoints.
 Additionally, the extension features a view of the current events in the event queue on the server.
 These events can be triggered at any point by the developer, similar to performing a step.
 
-We tested the prototype implementation, by checking the invoke non-interference as described in \cref{oop:semantics}.
+We tested the prototype implementation, by checking the invoke non-interference as described in @oop:semantics.
 To test this empirically, we randomly generating a thousand simple WebAssembly programs, which included a number of actions that changed the memory in the WebAssembly module.
 We ran the programs both with and with the out-of-place debugger, and verified that the memory at the end of the program was indeed identical for each program.
 //Secondly, we extended the existing unit testing framework from the WARDuino project to support testing of our stateful out-of-place debugger, and extended the existing test suite for the WARDuino remote debugger with tests specific to stateful out-of-place debugging.
@@ -1421,7 +1131,7 @@ Initial empirical testing shows that our implementation indeed satisfies the cor
 //\begin{figure}[ht!]
 //            \[
 //	\begin{array}{ l l c l }
-//        #emph[(Construct call)] & _construct-call_(s,\xi)    & colon.double.eq (\textbf{i32.const } \xi_{\textsf{topic}}) (\textbf{i32.const } \xi_{\textsf{payload}}) \\
+//        #emph[(Construct call)] & _construct-call_(s,\xi)    & colon.double.eq (\textbf{i32.const } \xi_{textsf{topic}}) (\textbf{i32.const } \xi_{\textsf{payload}}) \\
 //                                &                                 &            & (\textbf{i32.const }s_{\textsf{callbacks}}(\xi_{\textsf{topic}})) \\
 //                                &                                 &            & \textbf{ call\_indirect } \textsf{i32} \times \textsf{i32} \times \textsf{i32} \times \textsf{i32} \rightarrow \epsilon \\
 //

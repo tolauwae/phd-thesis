@@ -241,7 +241,7 @@
 #include "remote/remote.typ"
 
 // Chapter 4
-= Out-of-place debugging // todo make title more specific?
+= Stateful Out-of-place debugging // todo make title more specific?
 
 #quote("Tony Hoare")[Some problems are better evaded than solved.]
 
