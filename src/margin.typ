@@ -1,8 +1,8 @@
 #import "@preview/drafting:0.2.2": set-margin-note-defaults, set-page-properties, margin-note, rule-grid
 #import "@preview/codly:1.3.0": *
 #import "../lib/book.typ": is-page-empty, quote
-#import "../lib/class.typ": s, t, e, f, note-padding, note-gutter, note, small, normal
-#import "../lib/fonts.typ": serif, sans, mathfont, monospace
+#import "../lib/class.typ": s, t, e, f, note-padding, note-gutter, note
+#import "../lib/fonts.typ": serif, sans, mathfont, monospace, small, normal, script
 
 #import "@preview/ctheorems:1.1.3": *
 #show: thmrules.with(qed-symbol: text(size: small, $space square$))
@@ -132,7 +132,7 @@
 
     // running headers
     #let runningheader(number, body) = [
-      #body \[Chap. #number\]
+      _Chapter #number._ #h(0.5em) #body // \[Chap. #number\]
     ]
     #set page(
         header: context {
@@ -159,7 +159,7 @@
                 // Odd: a.b.c section title
                 if last_heading != none {
                     [
-                        #last_heading.body #h(1fr) #counter(page).display()
+                        #h(1fr)#last_heading.body //#h(1fr) #counter(page).display()
                         #v(0.5em)
                     ]
                 } else {
@@ -174,7 +174,8 @@
                 // Check if there are any such headings
                 if headings.len() > 0 {
                   [
-                    #counter(page).display() #h(1fr) #runningheader(counter(heading.where(level: 1)).display(), headings.last().body)
+                    //#counter(page).display()
+                    #runningheader(counter(heading.where(level: 1)).display(), headings.last().body) #h(1fr)
                     #v(0.5em)
                   ]
                 } else {
@@ -188,10 +189,12 @@
     // page footers
     #set page(
         footer: context {
-            if query(selector.or(<chapter-start>)).any(it => (it.location().page() == here().page())) {
+            //if query(selector.or(<chapter-start>)).any(it => (it.location().page() == here().page())) {
+            if calc.odd(here().page()) {
                 align(right)[#counter(page).display()]
             } else {
-                none
+                //none
+                align(left)[#counter(page).display()]
             }
         }
     )
@@ -214,6 +217,9 @@
     // style code snippets
     #show: codly-init.with()
     #set raw(syntaxes: "../lib/wast.sublime-syntax")
+    #show raw: set text(size: 8pt)
+    #show raw.where(block: true): set text(size: script)
+    #show raw.where(block: true): set par(leading: 0.55em)
 
 
 
@@ -252,6 +258,8 @@
 = Multiverse debugging on microcontrollers<chap:multiverse>
 
 #quote("Karl Popper", source: "Knowledge without Authority", theme: theme)[Our knowledge can only be finite, while our ignorance must necessarily be infinite.]
+
+#include "multiverse/multiverse.typ"
 
 // Chapter 6
 
@@ -296,4 +304,6 @@
 #include "foundations/appendix.typ"
 
 #include "remote/appendix.typ"
+
+#include "multiverse/appendix.typ"
 ]
