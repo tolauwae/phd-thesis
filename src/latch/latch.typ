@@ -2,8 +2,9 @@
 
 #import "../../lib/util.typ": circled, line, snippet, algorithm
 #import "../../lib/class.typ": note
+#import "../../lib/fonts.typ": small
 
-#let latch = [#emph("latch")]
+#let latch = [#emph("Latch")]
 #let lines = (dependencies: "lst.dependent.0:4",
   mqtt: (callback: "lst.mqtt.0:1", init: "lst.mqtt.0:7", subscribe: "lst.mqtt.0:8"),
   dump: (expect: "lst.dump.0:4"),
@@ -32,7 +33,7 @@ This is the primary reason why developers still prefer physical testing.
 Another reason is the lack of expressiveness when specifying tests in automated testing frameworks.
 Testing frameworks with simulators almost exclusively focus on unit testing, and hence provide no good alternative to end-to-end physical testing performed by developers manually @vandervoord15:unity.
 
-In this paper, we argue that programmers should not be limited by either the constraints of the hardware, or a simulator imposed by the testing framework.
+In this chapter, we argue that programmers should not be limited by either the constraints of the hardware, or a simulator imposed by the testing framework.
 Therefore, our goal is to design and implement a testing framework for automatically running large-scale versatile tests on constrained systems.
 This has lead to the development of the #latch testing framework (Large-scale Automated Testing on Constrained Hardware).
 #latch enables programmers to script and run tests on a workstation, which are executed on the constrained device.
@@ -48,7 +49,7 @@ but also enables the developer to write debugging-like scripts
 to construct more elaborate testing scenarios
 that closely mimic manual testing on hardware.
 
-The research question we seek to answer in this paper, is whether the managed testing approach, i.e. splitting tests into sequential steps, is sufficient for executing large-scale tests on microcontrollers.
+The research question we seek to answer in this chapter, is whether the managed testing approach, i.e. splitting tests into sequential steps, is sufficient for executing large-scale tests on microcontrollers.
 To answer this question, we will show how managed testing allows #latch to overcome all three major challenges of testing on constrained devices.
 The approach can be summarized as follows.
 In #latch test suites are split up into smaller test instructions that are sent incrementally to the managed testee, thereby freeing the test suites from the #emph[memory constraints] of the hardware.
@@ -56,7 +57,7 @@ This is crucial in enabling large-scale test suites on microcontrollers, such as
 To overcome the #emph[processing constraints], #latch can skip tests that depend on previously failing tests resulting in a faster feedback loop.
 Finally, #latch handles #emph[timeouts] automatically, and includes an analysis mode which reports on the #emph[flakiness of tests].
 
-#strong[Contributions:]
+=== Contributions
 
     - We define a test specification language for writing large tests suite for constrained devices.
     - We develop the #latch framework, that implements the test specification language as an embedded domain-specific language (EDSL).
@@ -64,7 +65,7 @@ Finally, #latch handles #emph[timeouts] automatically, and includes an analysis 
     - We illustrate how #latch can be used to address testing scenarios from all three layers of the testing pyramid @cohn09:succeeding.
     - We evaluate #latch by using it to run 10,213 unit tests on an ESP32 microcontroller.
 
-The rest of the paper starts with a discussion of the challenges of testing on constrained device in @sec:challenges.
+The rest of the chapter starts with a discussion of the challenges of testing on constrained device in @sec:challenges.
 In @sec:details we give a first introduction to the #latch test specification language through a basic example, and use the example to give an overview of the #latch framework.
 We discuss the details of the language in @sec:language, and focus on how tests are written and executed by the framework.
 For each aspect of the test specification language we discuss how it helps #latch to address the challenges outlined previously.
@@ -209,11 +210,11 @@ In that case, each test is only run once and the execution time of the whole tes
 
 === Running the Example on the #latch Architecture<subsec:overview>
 
-To run the above testing scenario on a remote constrained device, the test is loaded into #latch on the local unconstrained device, the #strong[tester].
-During testing, the #strong[tester] manages one ore more #strong[testees] (constrained devices) to execute tests step-by-step.
+To run the above testing scenario on a remote constrained device, the test is loaded into #latch on the local unconstrained device, the #emph[tester].
+During testing, the #emph[tester] manages one ore more #emph[testees] (constrained devices) to execute tests step-by-step.
 @fig:overview gives an overview of all steps and components involved during testing in the #latch framework.
-The left-hand side shows the tester, which runs the #latch #strong[interpreter] and #strong[test execution platform].
-The interpreter component is responsible for interpreting the test suites, which are written in the #strong[test specification language], while the test execution platform sends each instruction in a test step-by-step to the testee device over the available communication medium.
+The left-hand side shows the tester, which runs the #latch #emph[interpreter] and #emph[test execution platform].
+The interpreter component is responsible for interpreting the test suites, which are written in the #emph[test specification language], while the test execution platform sends each instruction in a test step-by-step to the testee device over the available communication medium.
 The test execution platform also parses the result, and handles all other aspects of communication with the testee device.
 
 #figure(image(width: 100%, "../placeholder.png"), // "figures/overview.pdf"), 
@@ -221,14 +222,14 @@ The test execution platform also parses the result, and handles all other aspect
 
 
 We will go over the steps shown in @fig:overview in the order they are executed by #latch.
-Running a test suite is initiated by the interpreter, which takes the test suite specification #circled[1], and schedules the #strong[scenarios] #circled[2].
+Running a test suite is initiated by the interpreter, which takes the test suite specification #circled[1], and schedules the #emph[scenarios] #circled[2].
 Since the example test suite in @lst.suite only contains a single test scenario, the multiplication test, with a single step---the scheduling is not relevant in this case.
 In real test suites, the order in which tests are run is important, it can help detect failing tests early, or minimize expensive setup steps.
-When the interpreter selects a test to be executed, it will instruct the test execution platform #circled[3] to first upload the #strong[software under test], and subsequently sends the instructions of the scenario to the #strong[test instrumentation platform] #circled[4].
+When the interpreter selects a test to be executed, it will instruct the test execution platform #circled[3] to first upload the #emph[software under test], and subsequently sends the instructions of the scenario to the #emph[test instrumentation platform] #circled[4].
 In the case of our example, #latch compiles the #emph[multiplication.ts] file and uploads it to the ESP32 device that is connected to the USB port.
 Once this step is completed, #latch sends the invoke instruction to the testee, which will execute the #emph[mul] function with the supplied arguments.
 
-Aside from forwarding instructions to the test instrumentation platform, the tester can also perform custom actions to control the #strong[environment] #circled[5].
+Aside from forwarding instructions to the test instrumentation platform, the tester can also perform custom actions to control the #emph[environment] #circled[5].
 For instance, these actions can control hardware peripherals, such as sensors and buttons, that interact with the constrained testee #circled[6] during the test.
 
 @lst.action shows how a step might send an MQTT message to a server as an example of an action that acts on the environment.
@@ -264,7 +265,7 @@ When working with constrained devices, communication channels may be slow or fra
 As part of a step, the scenario description can specify a number of assertions over the returned results.
 In the example, we require that the #emph[mul] function returns 42, as specified on #line(lines.unit.check) of @lst.unit-test.
 Once the expected output is received by the tester, #latch checks all assertions against it.
-These assertions are verified by the interpreter #circled[9], before the result of the step is shown in the #strong[user interface] as either passed, failed, or timed out #circled[10].
+These assertions are verified by the interpreter #circled[9], before the result of the step is shown in the #emph[user interface] as either passed, failed, or timed out #circled[10].
 For example, after the test instrumentation platform returns the result of the #emph[mul] function, #latch will check if it indeed equals 42 and report the result.
 
 A step can have three kinds of results; either it timed out, or all its assertions passed, or one of more assertions failed.
@@ -365,25 +366,16 @@ With *invoke* the programmer can call a function and wait for the result, as ill
 This enables unit testing of specific functions, as is the popular approach adopted in most testing frameworks @doctest @junit.
 With *set local* the programmer can change a local variable, this is especially useful to test a program with local boundary conditions without having to rerun the program completely.
 
-\begin{table}[ht]
-   \centering
-   \begin{tabular}{{} l l {}} %
-      	\toprule
-        Category & Commands \\
-        \midrule
-     	Intercession    & invoke, set local, *upload module* \\
-     	Meta            & pause,  set breakpoint, continue,
-                          delete breakpoint, step, step over, *reset* \\
-      Introspection   & core dump, dump callback mapping, dump locals \\
-      \bottomrule
-   \end{tabular}
-   \caption{The #latch commands. Internal commands are in italic.}
-   \label{tab:instructions}
-\end{table}
-#figure(
-  table(),
-  caption: [The #latch commands. Internal commands are in italic.]
-)<tab:instructions>
+#figure([
+  #set text(size: small) //, font: sans)
+  #show table.cell.where(y: 0): set text(weight: "bold") //, font: sans)
+/*align(center,*/ #table(columns: (auto, 60mm), align: horizon + left, stroke: none, fill: (x, y) => if calc.odd(y) { silver },
+  table.header("Category", "Commands"),
+     	"Intercession" , [invoke, set local, _upload module_],
+     	"Meta"         , [pause,  set breakpoint, continue,
+                          delete breakpoint, step, step over, _reset_],
+        "Introspection", [core dump, dump callback mapping, dump locals]
+)], caption: [The #latch commands. Internal commands are in italic.])<tab:instructions>
 
 The *reset* and *upload module* instructions are primarily for internal use in #latch, but are available in the test specification language.
 The upload module instruction loads a binary onto the testee, replacing any current program.
@@ -407,7 +399,7 @@ These commands can optionally take a payload, such as a breakpoint address for e
 
 #snippet("lst.syntax.command",
     columns: 1,
-    [Commands are distinguished by $mono("type")$ and may have callback to access payload. Results are extracted by a parser.],
+    [Commands are distinguished by `type` and may have callback to access payload. Results are extracted by a parser.],
     (```ts
 export interface Command<R> {
     type: Interrupt,                   // type of the debug message (pause, run, step, ...)
@@ -437,7 +429,7 @@ For #latch to run checks over this output, it needs to be of the *Assertable* ty
 
 #snippet("lst.syntax.action",
     columns: 1,
-    [#latch actions allow developers to execute arbitrary code in a test step. Output of such actions can be checked for correctness with the $mono("Assertable<T>")$ interface.],
+    [#latch actions allow developers to execute arbitrary code in a test step. Output of such actions can be checked for correctness with the `Assertable<T>` interface.],
     (```ts
 type Assertable<T extends Object | void> = {[index: string]: any};
 
@@ -509,7 +501,7 @@ Consider the core dump command which returns a state object, shown in @lst.synta
 
 #snippet("lst.syntax.dump",
     columns: 1,
-    [The *core dump* command returns a state object, which contains the source location, execution mode, and name of the currently executing function.],
+    [The _core dump_ command returns a state object, which contains the source location, execution mode, and name of the currently executing function.],
     (```ts
 const dump: Command<State>;
 
@@ -528,7 +520,7 @@ The first checks whether the mode field in the state is set to pause, and the se
 
 #snippet("lst.dump",
     columns: 1,
-    [Example step that uses the *core dump* command to check that execution paused in the $mono("echo")$ function.],
+    [Example step that uses the *core dump* command to check that execution paused in the `echo` function.],
     (```ts
 const step: Step = {
     title: "CHECK: entered *echo* function",
@@ -690,7 +682,7 @@ The resulting list of tests, is ordered in such a way that trees are executed on
 //    \State $schedule \gets$ [ ]
 //    \State $trees \gets$ findDependencyGraphs($suite$)\label{alg:hybridschedule:graphs}
 //    \ForAll{$tree \in trees$}
-//        \State #strong[append] $schedule$ #strong[with] breadth-first($tree$)
+//        \State #emph[append] $schedule$ #emph[with] breadth-first($tree$)
 //    \EndFor
 //    \State \Return $schedule$
 //    \end{algorithmic}
@@ -707,7 +699,7 @@ The resulting list of tests, is ordered in such a way that trees are executed on
 //    \ForAll{$tree \in trees$}
 //        \State $levels \gets$ groupSiblings($tree$)
 //        \ForAll{$index$, $level \in levels$}\label{alg:priorityschedule:levels} 
-//        \State #strong[append] $acc[index]$ #strong[with] $level$
+//        \State #emph[append] $acc[index]$ #emph[with] $level$
 //        \EndFor
 //    \EndFor
 //    \State \Return flatten($accumulator$)
@@ -831,7 +823,7 @@ The assertions are written as S-expressions.\footnote{This conforms with the off
 
 #snippet("lst.specsource",
     columns: 1,
-    [An #emph[assert-return] test from the official WebAssembly Specification test suite, testing the $mono("f32.mul")$ operation.],
+    [An #emph[assert-return] test from the official WebAssembly Specification test suite, testing the `f32.mul` operation.],
     (```wast
 (module (func (export "mul") (param $x f32) (param $y f32) (result f32) (f32.mul (local.get $x) (local.get $y))))
 (assert_return (invoke "mul" (f32.const -0x0p+0) (f32.const 0x0p+0)) (f32.const -0x0p+0))
@@ -847,7 +839,7 @@ Therefore, all specification tests for WebAssembly can be encoded as a single te
 
 #snippet("lst.spectest",
     columns: 1,
-    [The $mono("f32.mul")$ test has two steps, each checking the result of $mono("mul")$ on different inputs.}],
+    [The `f32.mul` test has two steps, each checking the result of `mul` on different inputs.],
     (```ts
 const test: Test = { // Spec test
   title: "Test f32.mul operation",
@@ -1143,14 +1135,14 @@ However, when testing on microcontrollers in this way, the test scenarios often 
 We are not aware of any testing framework that provides an alternative solution.
 
 In this section, we will discuss the differences between #latch and the few exiting unit testing frameworks for microcontrollers further.
-In this paper we have proposed a new way of testing on microcontrollers individually, but IoT systems are often tested as a whole in industry.
+In this chapter we have proposed a new way of testing on microcontrollers individually, but IoT systems are often tested as a whole in industry.
 While this kind of testing answers an entirely different set of demands than #latch, we do give a brief overview of these approaches here, for completeness.
 Similarly, testing plays a large role in general software development.
 As a result, a wide range of research topics are related to the #latch framework, of which not all have been previously applied to IoT.
 In the remainder of this section, we discuss #emph[holistic IoT testing], other #emph[unit testing frameworks] broadly, #emph[remote testing], #emph[scriptable debugging], #emph[test environments] for IoT programs, #emph[device farms] for mobile applications, #emph[conditional testing], #emph[test prioritization and selection], and #emph[flaky tests].
 Wherever possible, we include examples from IoT or microcontroller settings.
 
-#strong[Unit Testing Frameworks.]
+#emph[Unit Testing Frameworks.]
 Constrained devices are still programmed primarily in low-level language such as C and C++.
 Many traditional unit testing frameworks are available for these languages, such as Google Test @googletest23:googletest, Boost.Test @boost-test-team23:what, CUTE @ifs-institut-fur-software23:cute, and bandit @beyer23:bandit.
 There are a handful of frameworks targeting microcontrollers explicitly, such as Unity @platformio23:unity @vandervoord15:unity and ArduinoTest @murdoch23:arduinounit.
@@ -1158,7 +1150,7 @@ These work analogous to other unit testing frameworks, but are small enough to r
 While preferable over manual testing, these frameworks require the tests suites to be very small, since they are compiled and run along with the framework in their entirety on the device.
 In contrast, #latch allows arbitrarily large test suites.
 
-#strong[Remote Testing.]
+#emph[Remote Testing.]
 #latch's managed testing is adjacent to remote testing, but with some important differences.
 Remote testing is not a novel idea, for instance #cite(form: "prose", <jard99:remote>) argued in 1999 that local synchronous tests can be translated to remote asynchronous tests without losing any testing power.
 Remote testing has mostly been used to test distributed systems @yao05:framework.
@@ -1173,7 +1165,7 @@ However, it works significantly different from how #latch executes large test su
 While #latch allows arbitrarily large test suites by executing tests step-by-step, Unity does not address the memory constraints of the target devices as it compiles and uploads test suites as one monolithic executable.
 The framework also does not provide the debugger-like scripts (with custom actions) supported by Latch that enable the automation of standard hardware tests.
 
-#strong[Holistic IoT Testing.]
+#emph[Holistic IoT Testing.]
 Existing tools for IoT testing focus largely on testing networked systems of many devices holistically~@popereshnyak18:iot @kanstren18:architectures, rather than the more common approach where components are tested selectively.
 Holistic testing of networked systems are by and large incompatible with many of the common development practices; such as test driven development for instance, which relies on selective testing of single components.
 Moreover, wholesale testing of heterogeneous system is very difficult, so many testing tools instead focus on monitoring to try and detect errors @datadog24:end @appoptics.
@@ -1184,14 +1176,14 @@ Neither does it lend itself well to test-driven development, as testing can only
 Therefore, there is a real need for selective---rather than holistic---testing of IoT software on microcontrollers.
 This is much easier with the single target testing in the style provided by #latch.
 
-#strong[Scriptable Debugging.]
+#emph[Scriptable Debugging.]
 #latch's scriptable debugger-like hardware tests are inspired by scriptable debugging, which has been used in many other domains @marceau07:design.
 Scriptable debugging refers to all debugging techniques that can be controlled by developers through a programming language or similar tools such as regular expressions.
 Programmable debugging goes back to the early eighties, with many of the early proposals, such as Dispel @johnson81:dispel and Dalek @olsson90:dalek, exploring variations on the concept of breakpoints.
 Recent work on a scriptable debugger API for Pharo @dupriez19:sindarin, exposes a wide variety of advanced debugging operations, and allows developers to solve many challenging debugging scenarios through automated scripts.
 We are not aware of any framework which also applies the idea of scriptable debugging to testing in the context of constrained hardware.
 
-#strong[Test Environments.]
+#emph[Test Environments.]
 A popular research topic in the domain of IoT testing, are heterogeneous test environments @bures20:interoperability, where software can be distributed to nodes which are connected via a controlled network.
 This solution focuses on the challenging heterogeneity of IoT systems, and does not take into account the constraints the limited memory puts on the test suite size.
 Most test environments are virtual, and emulate the entire IoT environment @ramprasad19:emu-iot-a-virtual-internet @nikolaidis21:iotier @symeonides20:fogify.
@@ -1206,27 +1198,27 @@ However, setting up such large and often complex systems is complicated and time
 Subsequently, the test environments confine users to the specific choices in hardware, virtualization, and network technologies made by the service.
 While these test environments reduce the overhead of setting up a testing lab, they do not fundamentally help developers overcome the hardware limitations faced when executing large test suites.
 
-#strong[Device Farms.]
+#emph[Device Farms.]
 These test environments are sometimes called testing farms or device farms in case they use real hardware, and are a popular approach for testing mobile applications @huang14:appacts @fazzini20:managing.
 Curiously, testing on devices seems much more prevalent in the field of testing mobile applications @kong19:automated.
 We believe this might be because mobile devices have far more memory than the embedded devices targeted by #latch, and therefore have no problem running large test suites.
 This strengthens our view that testing on constrained hardware presents a worthwhile research direction.
 However, the existing device farms heavily target mobile devices, and again limit users to the chosen technologies and hardware.
 
-#strong[Conditional testing.]
+#emph[Conditional testing.]
 Dependencies in #latch can be viewed as conditional skips for tests, where a test is skipped if any of the scenarios it depends on fail.
 Conditional skips have been around for some time in unit testing frameworks, such as the pytest framework for the Python language @krekel23:pytest, and the JUnit framework for Java @bechtold23:junit.
 Pytest includes a *skipif* annotation which takes a boolean expression as its argument.
 In JUnit developers can use the *Assume* class, which provides a set of methods for conditional execution of tests.
 Modern frameworks targeting constrained devices @platformio23:unit @murdoch23:arduinounit do not support conditional tests.
 
-#strong[Test prioritization and selection.]
+#emph[Test prioritization and selection.]
 Another purpose of the dependencies in the test description language, are to determine the order tests are run in.
 Research on software testing has recently increased its attention to test prioritization and test selection @pan21:test.
 These techniques can also be applied to testing IoT systems @medhat20:framework, where they are particularly useful since they can reduce large test suites to the most important tests, and help prioritize tests in such a way that regression tests fail as early as possible.
 An interesting line of future research could focus on integrating these techniques in #latch.
 
-#strong[Flaky Tests.]
+#emph[Flaky Tests.]
 Flaky tests represent an active domain of research @parry21:survey, which focuses on three problems: detecting flaky tests, finding root causes, and fixing flaky tests @zolfaghari21:root.
 The first step is to detect which tests are flaky.
 A popular approach is to look at the code coverage of tests @zolfaghari21:root @bell18:deflaker.
@@ -1242,7 +1234,7 @@ Testing is an essential part of the software development cycle which is currentl
 The limited memory and processing power of these constrained devices restrict the size of the test suite and makes testing slow, impeding a fast feedback loop.
 Moreover, due to the non-deterministic and unpredictable environment, tests can become flaky.
 
-In this paper, we answered the question of how to design and implement a testing framework for automatically running large-scale versatile tests on constrained systems.
+In this chapter, we answered the question of how to design and implement a testing framework for automatically running large-scale versatile tests on constrained systems.
 We introduce our novel testing framework #latch (Large-scale Automated Testing on Constrained Hardware), which needed to overcome three challenges; the memory constraints, processing constraints, and the timeouts and flaky tests.
 In essence, #latch splits test suites into small test instructions which are sent by a managing tester to a managed testee (constrained device).
 Because the constrained device receives the test instructions incrementally from the tester, it does not need to maintain the whole test suite in memory.

@@ -1,14 +1,18 @@
+#import "../../../lib/util.typ": tablehead, highlight
+#import "../../semantics/arrows.typ": *
+
+#import "@preview/curryst:0.5.0": rule, prooftree
 
 //\begin{figure}
 //        \[
 //	\begin{array}{ l l c l }
 //            #emph[(WebAssembly Program state)] & K                         & \Coloneqq  & \{ s, v^ast, e^ast \} \\
 //            #emph[(Global store)]              & s                         & \Coloneqq  & \{ \textsf{inst } \textit{inst}^ast, \textsf{tab } \textit{tabinst}^ast, \textsf{mem } \textit{meminst}^ast, \colorbox{lightgray}{\textsf{prim} $P$} \} \\
-//            //%#emph[(Instances)]                 & \textit{inst}             & \Coloneqq  & \{ \textsf{func } \textit{cl}^*, \textsf{glob } v^*, \textsf{tab } i^?, \textsf{mem } i^?, \colorbox{lightgray}{\textsf{prim} $P$} \} \\
-//            #emph[(Primitive table)]           & \colorbox{lightgray}{$P$} & \Coloneqq  & \colorbox{lightgray}{$p^*$} \\
+//            //%#emph[(Instances)]                 & \textit{inst}             & \Coloneqq  & \{ \textsf{func } \textit{cl}^ast, \textsf{glob } v^ast, \textsf{tab } i^?, \textsf{mem } i^?, \colorbox{lightgray}{\textsf{prim} $P$} \} \\
+//            #emph[(Primitive table)]           & \colorbox{lightgray}{$P$} & \Coloneqq  & \colorbox{lightgray}{$p^ast$} \\
 //            \\
 //            \hline \\
-//            #emph[(Primitive)]                 & \colorbox{lightgray}{p}   & \coloneq  & \colorbox{lightgray}{$f : v^* \rightarrow \{ \textsf{ret } v , \textsf{cps } r \}$} \\
+//            #emph[(Primitive)]                 & \colorbox{lightgray}{p}   & \coloneq  & \colorbox{lightgray}{$f : v^ast \rightarrow \{ \textsf{ret } v , \textsf{cps } r \}$} \\
 //            #emph[(Compensating action)]       & \colorbox{lightgray}{r}   & \coloneq  & \colorbox{lightgray}{$f : \epsilon \rightarrow \epsilon$} \\
 //        \end{array}
 //	\]
@@ -16,7 +20,25 @@
 //	<fig:prim-def>
 //\end{figure}
 
-#let primdef = []
+#let inst = $sans("inst")$
+#let tab = $sans("tab")$
+#let tabinst = $"tabinst"$
+#let mem = $sans("mem")$
+#let meminst = $"meminst"$
+#let prim = $sans("prim")$
+#let ret = $sans("ret")$
+#let cps = $sans("cps")$
+
+#let primdef = [
+    $
+    &"(WebAssembly Program state)"& K & colon.double.eq {s, v^ast, e^ast} \
+    &"(Global store)"& s & colon.double.eq {inst "inst"^ast, tab tabinst^ast, mem meminst^ast, highlight(#silver, prim P}) \
+    &"(Primitive table)"& highlight(#silver, P) & colon.double.eq highlight(#silver, p^ast) \
+    &&& \ // todo add line
+    &"(Primitive)"& highlight(#silver, p) & = highlight(#silver, #[$f : v^ast arrow.r {ret v, cps r}$]) \
+    &"(Compensating action)"& highlight(#silver, r) & = highlight(#silver, #[$f: epsilon arrow.r epsilon$]) \
+    $
+]
 
 //\begin{figure}
 //	\begin{mathpar}
@@ -46,7 +68,27 @@
 //	<fig:language>
 //\end{figure}
 
-#let language = []
+#let call = $"call"$
+
+#let language = table(columns: (2.0fr, 1fr), stroke: none, gutter: 1.0em,
+      tablehead("Non-Deterministic Input Primitives"), "",
+      table.cell(colspan: 2, table(columns: (1fr), stroke: none,
+        prooftree(rule(
+          $
+          {s; v^ast, v^ast_0 (call j)} wasmarrow {s; v^ast, v}
+          $,
+          $P(j) = p$, $p ∈ P^"In"$, $v in floor.l p(v_0^ast)_ret floor.r$,
+          name: "input-prim"
+        )),
+        prooftree(rule(
+          $
+          {s; v^ast, v^ast_0 (call j)} wasmarrow {s; v^ast, v}
+          $,
+          $P(j) = p$,$p in P^"Out"$,$floor.l p(v_0^ast)_ret floor.r = v$,
+          name: "output-prim"
+        )),
+      )),
+    )
 
 // \begin{figure}
 //        \[
@@ -68,7 +110,31 @@
 //	<fig:configurations>
 //\end{figure}
 
-#let multconfig = []
+#let dbg = $italic("dbg")$
+#let es = $italic("es")$
+#let msg = $italic("msg")$
+#let mocks = $italic("mocks")$
+#let play = $italic("play")$
+#let pause = $italic("pause")$
+#let step = $italic("step")$
+#let stepback = $italic("stepback")$
+#let mock = $italic("mock")$
+#let unmock = $italic("unmock")$
+#let nop = $italic("nop")$
+
+#let multconfig = [
+    $
+    &"(Debugger state)"& dbg & colon.double.eq ⟨ es, msg, mocks, K_n bar.v S^ast ⟩ \
+    &"(Execution state)"& es & colon.double.eq play ∣ pause \
+    &"(Incoming messages)"& msg & colon.double.eq nothing ∣ step ∣ stepback ∣ pause ∣ play ∣ mock ∣ unmock \
+    &"(Program state)"& K & colon.double.eq {s, v^ast, e^ast} \
+    &"(Overrides)"& mocks & colon.double.eq nothing ∣ mocks, (j, v^ast) arrow.r.bar v \
+    &"(A snapshot)"& S_n & colon.double.eq {K_m, p_{cps}} \
+    &"(Snapshots list)"& S^ast & colon.double.eq S_0 ⋅ ... ⋅ S_{n-1} ⋅ S_n \
+    &"(Starting state)"& dbg_"start" & colon.double.eq angle.l pause, nothing, nothing, K_0 bar.v {K_0, E} angle.r \
+    &"(Empty action)"& r_nop & colon.double.eq λ(). nop \
+    $
+]
 
 //\begin{figure}
 //        \begin{mathpar}
@@ -77,32 +143,32 @@
 //                        \textsf{non-prim } K_n \\
 //                        K_n wasmarrow K_{n+1}
 //                    }
-//                    { \langle \textsc{play}, \varnothing, mocks, K_n \; | \; S^* \rangle
+//                    { \langle \textsc{play}, \varnothing, mocks, K_n \; | \; S^ast \rangle
 //                      dbgarrow
-//                  \langle \textsc{play}, \varnothing, mocks, K_{n+1} \; | \; S^* \rangle }
+//                  \langle \textsc{play}, \varnothing, mocks, K_{n+1} \; | \; S^ast \rangle }
 //
 //                 \inferrule[(\textsc{step-forwards})]
 //       	            { 
 //                        \textsf{non-prim } K_n \\
 //                        K_n wasmarrow K_{n+1}
 //                    }
-//                    { \langle \textsc{pause}, step, mocks, K_n \; | \; S^* \rangle
+//                    { \langle \textsc{pause}, step, mocks, K_n \; | \; S^ast \rangle
 //                      dbgarrow
-//                  \langle \textsc{pause}, \varnothing, mocks, K_{n+1} \; | \; S^* \rangle }
+//                  \langle \textsc{pause}, \varnothing, mocks, K_{n+1} \; | \; S^ast \rangle }
 //
 //                  \inferrule[(\textsc{pause})]
 //       	            { 
 //                    }
-//                    { \langle \textsc{play}, pause, mocks, K_n \; | \; S^* \rangle
+//                    { \langle \textsc{play}, pause, mocks, K_n \; | \; S^ast \rangle
 //                      dbgarrow
-//                  \langle \textsc{pause}, \varnothing, mocks, K_n \; | \; S^* \rangle }
+//                  \langle \textsc{pause}, \varnothing, mocks, K_n \; | \; S^ast \rangle }
 //
 //                  \inferrule[(\textsc{play})]
 //       	            { 
 //                    }
-//                    { \langle \textsc{pause}, play, mocks, K_n \; | \; S^* \rangle
+//                    { \langle \textsc{pause}, play, mocks, K_n \; | \; S^ast \rangle
 //                      dbgarrow
-//                  \langle \textsc{play}, \varnothing, mocks, K_n \; | \; S^* \rangle }
+//                  \langle \textsc{play}, \varnothing, mocks, K_n \; | \; S^ast \rangle }
 //	\end{mathpar}
 //        \caption{The small-step rules describing forwards exploration in the multiverse debugger for WebAssembly instructions without primitives.}
 //	<fig:forwards>
@@ -114,27 +180,27 @@
 //        \begin{mathpar}
 //                \inferrule[(\textsc{run-prim-in})]
 //       	            { 
-//                        K_n = \{ s ;v^*; v^*_0 (call \; j) \} \\
+//                        K_n = \{ s ;v^ast; v^ast_0 (call \; j) \} \\
 //                        P(j) = p \\
 //                        p \in P^{In} \\
-//                        mocks(j, v^*_0) = \varepsilon \\
+//                        mocks(j, v^ast_0) = \varepsilon \\
 //                        K_n wasmarrow K_{n+1} \\
 //                    }
-//                    { \langle \textsc{play}, \varnothing, mocks, K_n \; | \; S^* \rangle
+//                    { \langle \textsc{play}, \varnothing, mocks, K_n \; | \; S^ast \rangle
 //                      dbgarrow
-//                  \langle \textsc{play}, \varnothing, mocks, K_{n+1} \; | \; S^* \cdot \{K_{n+1} , r_{nop}\} \rangle }
+//                  \langle \textsc{play}, \varnothing, mocks, K_{n+1} \; | \; S^ast \cdot \{K_{n+1} , r_{nop}\} \rangle }
 //
 //                \inferrule[(\textsc{run-prim-out})]
 //       	            { 
-//                        K_n = \{ s ;v^*; v^*_0 (call \; j) \} \\
+//                        K_n = \{ s ;v^ast; v^ast_0 (call \; j) \} \\
 //                        P(j) = p \\
 //                        p \in P^{Out} \\
-//                        p(v^*_0) = \{ \textsf{ret } v, \textsf{cps } r \} \\
-//                        K_{n+1} = \{ s ;v^*; v \} \\
+//                        p(v^ast_0) = \{ \textsf{ret } v, \textsf{cps } r \} \\
+//                        K_{n+1} = \{ s ;v^ast; v \} \\
 //                    }
-//                    { \langle \textsc{play}, \varnothing, mocks, K_n \; | \; S^* \rangle
+//                    { \langle \textsc{play}, \varnothing, mocks, K_n \; | \; S^ast \rangle
 //                      dbgarrow
-//                  \langle \textsc{play}, \varnothing, mocks, K_{n+1} \; | \; S^* \cdot \{K_{n+1} , r\} \rangle }
+//                  \langle \textsc{play}, \varnothing, mocks, K_{n+1} \; | \; S^ast \cdot \{K_{n+1} , r\} \rangle }
 //	\end{mathpar}
 //        \caption{The small-step rules describing forwards exploration for input and output primitives in the multiverse debugger for WebAssembly, without input mocking.}
 //	<fig:forwards-prim>

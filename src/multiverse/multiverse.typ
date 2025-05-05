@@ -1,8 +1,12 @@
 #import "../../lib/util.typ": code, snippet, algorithm, semantics, lineWidth, headHeight, tablehead, highlight, boxed
+#import "../../lib/class.typ": note
 #import "./figures/semantics.typ": *
 #import "../semantics/arrows.typ": *
 
 #import "@preview/lovelace:0.3.0": pseudocode, with-line-label, pseudocode-list, line-label
+
+The second, and final, new debugging technique we investigated for microcontrollers, is multiverse debugging.
+As part of our investigation, we extended multiverse debugging to handle input/output operations, and created a prototype debugger that enables reversible actions on microcontrollers.
 
 == Introduction
 
@@ -16,7 +20,7 @@
 Unfortunately, debugging programs that involve input/output (I/O) operations using existing multiverse debuggers can reveal inaccessible program states that are not encountered during regular execution.
 This is known as the probe effect @gait86:probe, and can occur in multiverse debuggers when they do not account for the effect of I/O operations on the external environment when changing the program state.
 Encountering such states during the debugging session can significantly hinder the debugging process, as the programmer may mistakenly assume a bug is present in the code, when in fact, the issue is caused by the debugger.
-In this paper, we investigate how we can scale multiverse debugging to programs running on a microcontroller which interacts with the environment through I/O operations.
+In this chapter, we investigate how we can scale multiverse debugging to programs running on a microcontroller which interacts with the environment through I/O operations.
     This introduces three new challenges.
 
     First, the effect of output operations on the environment can influence later states in the execution path, for example when a robot drives forward.
@@ -32,12 +36,12 @@ In this paper, we investigate how we can scale multiverse debugging to programs 
     Third, due to the hardware limitations of the microcontrollers that we target it is unfeasible to run the multiverse debugger entirely on the microcontroller.
     We thus need to expand multiverse debugging so that it can be used even in such a restricted environment. 
 
-    === Overview
-    In this paper, we present a new approach to multiverse debugging tackling the three main challenges posed in the introduction.     
-    First, we establish a well-defined set of I/O operations that are \textit{deterministically reversible}, which is a crucial requirement for the correctness proof of our multiverse debugger.
-    Secondly, we define semantics such that the multiverse debugger can instrument input operations, which is needed to allow the programmer to interactively explore the execution tree.
-    Third, we define our multiverse debugger as a \textit{remote debugger} with a sparse snapshotting semantics to accommodate the hardware limitations of the microcontrollers that we target.    
-    Finally, based on our formal semantics, we have implemented a prototype debugger, called MIO, on top of the WARDuino WebAssembly virtual machine~@lauwaerts24:warduino capable of debugging various microcontrollers such as the ESP32, STM32 and Raspberry Pi Pico.
+    // === Overview
+    // In this chapter, we present a new approach to multiverse debugging tackling the three main challenges posed in the introduction.     
+    // First, we establish a well-defined set of I/O operations that are _deterministically reversible_, which is a crucial requirement for the correctness proof of our multiverse debugger.
+    // Secondly, we define semantics such that the multiverse debugger can instrument input operations, which is needed to allow the programmer to interactively explore the execution tree.
+    // Third, we define our multiverse debugger as a _remote debugger_ with a sparse snapshotting semantics to accommodate the hardware limitations of the microcontrollers that we target.    
+    // Finally, based on our formal semantics, we have implemented a prototype debugger, called MIO, on top of the WARDuino WebAssembly virtual machine~@lauwaerts24:warduino capable of debugging various microcontrollers such as the ESP32, STM32 and Raspberry Pi Pico.
 
 == MIO: Multiverse Input/Output Debugger in Practice<mult:practice>
 
@@ -149,14 +153,11 @@ While our multiverse debugger can deal with a large set of I/O operations, there
 Intuitively, our multiverse debugger supports non-deterministic input primitives as long as the range of possible input values is known.
 Output primitives are supported as long as they are atomic, and are deterministically reversible, i.e. after reversing an output operation the environment will be in the same state as before applying the operation. 
 
-\paragraph{Input primitives}
-Input primitives are allowed to be non-deterministic as long as the \textit{range} of the input primitives is known, i.e. a temperature sensor might have a range between -20 degrees till 160 degrees. Knowing the range of our input primitives is important so that the debugger can be instrumented to only sample values that can actually be observed during normal execution.
+#strong[Input primitives] Input primitives are allowed to be non-deterministic as long as the _range_ of the input primitives is known, i.e. a temperature sensor might have a range between -20 degrees till 160 degrees. Knowing the range of our input primitives is important so that the debugger can be instrumented to only sample values that can actually be observed during normal execution.
 
-\paragraph{Output primitives}
-First, we require output primitives to be synchronously and atomically, i.e.  all side effects from the operation have to be fully completed during the call of the operation in the virtual machine. Second, for a given execution of the I/O operation, there must be a \textit{deterministic compensating action}. This compensating action undoes the effects of the forward execution, bringing the environment back to a state before executing the actions. 
+#strong[Output primitives] First, we require output primitives to be synchronously and atomically, i.e.  all side effects from the operation have to be fully completed during the call of the operation in the virtual machine. Second, for a given execution of the I/O operation, there must be a _deterministic compensating action_. This compensating action undoes the effects of the forward execution, bringing the environment back to a state before executing the actions. 
 
-\paragraph{Predictable dependencies}
-We assume \textit{predictable} dependencies of the I/O operations are known, for example consider a setup where an LED is directly pointed towards a light sensor. During regular execution, turning the LED on will directly influence the possible values which can be read, i.e. there is a dependency between the output pin and the possible sensor values which can be read. 
+#strong[Predictable dependencies] We assume _predictable_ dependencies of the I/O operations are known, for example consider a setup where an LED is directly pointed towards a light sensor. During regular execution, turning the LED on will directly influence the possible values which can be read, i.e. there is a dependency between the output pin and the possible sensor values which can be read. 
 Our MIO debugger, has initial support for expressing such simple dependencies, in the semantics however, we take abstraction and assume that sensor values are independent. 
 
 === WebAssembly Language Semantics
@@ -177,8 +178,8 @@ The global store allows access to any function within a module instance, denoted
 Since multiverse debuggers explore all possible execution paths, they have to be able to reproduce the program's execution, even when non-determinism is involved.
 It is therefore important to consider where non-determinism is introduced in the program, and how it can be handled.
 Since the WebAssembly semantics on their own are fully deterministic, we can choose precisely where non-determinism is introduced in our system.
-In the context of microcontrollers, non-deterministic input is unavoidable. % since the external environment is inherently non-deterministic.
-Our system therefore limits non-determinism exclusively to the input\footnote{In this work we do not consider parallelism as a source of non-determinism, since this has been examined thoroughly by the original paper on multiverse debugging by #cite(form: "prose", <torres19:multiverse>).}.
+In the context of microcontrollers, non-deterministic input is unavoidable. //% since the external environment is inherently non-deterministic.
+Our system therefore limits non-determinism exclusively to the input#note[We do not consider parallelism as a source of non-determinism, since this has been examined thoroughly by the original paper on multiverse debugging by #cite(form: "prose", <torres19:multiverse>).].
 This means that each branch in the execution tree can therefore be traced to a different input value.
 The output primitives in MIO, on the other hand, are deterministic in terms of the program state.
 @mult:mocking discuss how the debugger can reproduce non-deterministic input reliably through input mocking.
@@ -212,10 +213,10 @@ There is no need for any arguments, since the compensating action is generated u
 #let mocks = $"mocks"$
 
 Given the definition of the primitives in $P$, we can define the forwards execution of the primitives in WebAssembly, as shown in @fig:language.
-Non-determinism is introduced exclusively through the \textsc{input-prim} rule, which is used to evaluate input primitives.
-The evaluation of the primitive $p$ non-deterministically returns a value $v$ from the codomain of the primitive function, $\lfloor p(v^*_0)_ret \rfloor$.
+Non-determinism is introduced exclusively through the _input-prim_ rule, which is used to evaluate input primitives.
+The evaluation of the primitive $p$ non-deterministically returns a value $v$ from the codomain of the primitive function, $floor.l p(v^*_0)_ret floor.r$.
 Here, the rule simply discards the compensating action, and places the return value of the primitive on the stack.
-The \textsc{output-prim} rule works analogously, except the evaluation produces its return value deterministically.
+The _output-prim_ rule works analogously, except the evaluation produces its return value deterministically.
 Note that compensating actions $p(v^*_0)_cps$ are not used for the regular forward execution, but are crucial when moving backwards in time.
 In the next sections, we show how the compensating actions are used during multiverse debugging.
 
@@ -230,17 +231,17 @@ Using the recipe for defining debugger semantics from #cite(form: "prose", <torr
 @fig:mult:configurations shows the configuration of the multiverse debugger for WebAssembly with input and output primitives.
 The program state in the underlying language semantics is labeled with an iteration index $n$, which corresponds to the number of steps in the underlying semantic since the start of the execution, or the depth in the multiverse tree.
 The debugger state $dbg$ contains the execution state of the program, incoming debug message $msg$, mocked input $mocks$, the program state $K_n$, and the snapshot list $S^*$.
-The snapshots $S^*$ are a cons list of snapshots $S_n$, containing the program state $K_n$ and the compensating action $p_{cps}$.
+The snapshots $S^ast$ are a cons list of snapshots $S_n$, containing the program state $K_n$ and the compensating action $p_cps$.
 The rules of the debugger semantics, presented in the following sections, will show how the snapshot list is extended—and how the snapshots are used to travel back in time.
 
 Mocked inputs are stored as a key value pairs, where the index identifying the input primitive $j$, and the list of argument values $v^*$ are mapped to the overriding return value $v$.
-The key value map is represented here as a partial function, which compares lists of values $v^*$ element-wise.
-For any key that is not defined in the map, we write $mocks(j,v^*) = epsilon.alt$.
+The key value map is represented here as a partial function, which compares lists of values $v^ast$ element-wise.
+For any key that is not defined in the map, we write $mocks(j,v^ast) = epsilon.alt$.
 
 #let nop = $"nop"$
 
-The starting state of the debugger $dbg_"start"$ is defined as the paused state with no incoming or outgoing messages, an empty mocks environment, the initial program state $K_0$, and a snapshot list containing only the initial snapshot $S_0 = \{ K_0, r_nop \}$.
-Here $r_{nop}$ is the empty action, which takes no arguments and returns nothing.
+The starting state of the debugger $dbg_"start"$ is defined as the paused state with no incoming or outgoing messages, an empty mocks environment, the initial program state $K_0$, and a snapshot list containing only the initial snapshot $S_0 = { K_0, r_nop }$.
+Here $r_nop$ is the empty action, which takes no arguments and returns nothing.
 This function indicates that no compensating action is needed.
 
 === Forwards Exploration in Multiverse Debuggers<mult:forwards>
@@ -250,25 +251,21 @@ This function indicates that no compensating action is needed.
     forwards,
 "fig:forwards")
 
-#let call = $"call"$
-#let step = $"step"$
-#let pause = $"pause"$
-#let play = $"play"$
-
 @fig:forwards shows the basic small-step rules for stepping forwards in the multiverse debugger, without input and output primitives.
 These rules allow the debugger to explore traditional WebAssembly programs, without any non-deterministic input or output.
 For clarity, we use several shorthand notations in the rules.
-We use the notation $(K_n wasmarrow K_{n+1})$ to say that the program state $K$ takes a step to the program state $K'$ in the underlying language semantics, where $K' = K_{n+1}$.
-The notation $(sans("non-prim") K)$ is used to indicate that the program state $K$ is not a primitive call, or more fully, it is not the case that $K = \{ s ;v^*; v^*_0 (call \; j) \} and P(j) = p$.
+We use the notation $(K_n wasmarrow K_(n+1))$ to say that the program state $K$ takes a step to the program state $K'$ in the underlying language semantics, where $K' = K_n+1$.
+The notation $(sans("non-prim") K)$ is used to indicate that the program state $K$ is not a primitive call, or more fully, it is not the case that $K = \{ s ;v^ast; v^ast_0 (call \; j) \} and P(j) = p$.
 We describe the rules in detail below.
 
-   / run: The rule for running the program forwards in the underlying language semantics. The debugger takes a step in the underlying language semantics ($K_n wasmarrow K_{n+1}$) as long as the execution state is \textsc{play}, there are no incoming or outgoing messages, and the program state is not a primitive call.
+   / run: The rule for running the program forwards in the underlying language semantics. The debugger takes a step in the underlying language semantics ($K_n wasmarrow K_(n+1)$) as long as the execution state is #play, there are no incoming or outgoing messages, and the program state is not a primitive call.
         While running in this way, the snapshot list $S^*$ remains unchanged.
-   / step-forwards: When the debugger receives the $step$ message, it takes one more step ($K_n wasmarrow K_{n+1}$), and transitions to the \textsc{pause} state if it was not already paused.
 
-   / pause: When the debugger receives a $pause$ message in the \textsc{play} state, it transitions to the \textsc{pause} state. Note that afterwards, all the run rules are no longer applicable.
+   / step-forwards: When the debugger receives the $step$ message, it takes one more step ($K_n wasmarrow K_(n+1)$), and transitions to the #pause state if it was not already paused.
 
-   / play: The rule for continuing the execution. When the debugger receives the $play$ message in the \textsc{pause} state, the execution state transitions to the \textsc{play} state.
+   / pause: When the debugger receives a $pause$ message in the _play_ state, it transitions to the #pause state. Note that afterwards, all the run rules are no longer applicable.
+
+   / play: The rule for continuing the execution. When the debugger receives the $play$ message in the #pause state, the execution state transitions to the #play state.
 
 #semantics(
     [The small-step rules describing forwards exploration for input and output primitives in the multiverse debugger for WebAssembly, without input mocking.],
@@ -282,9 +279,9 @@ The step rules are identical to the run rules, but they transition to the paused
 These rules can be found in @app:rules.
 
 //\begin{description}
-//    \item[\textsc{run-prim-in}] The rule for calling an input primitive. When the program state is a primitive call, the call will not be mocked, there are no incoming messages, and the execution state is \textsc{play}, the debugger takes a step forwards in the underlying language semantics ($K_n wasmarrow K_{n+1}$), and adds a new snapshot to the snapshot list $\{K_{n+1} , r_{nop}\}$.
+//    \item[_run-prim-in_] The rule for calling an input primitive. When the program state is a primitive call, the call will not be mocked, there are no incoming messages, and the execution state is #play, the debugger takes a step forwards in the underlying language semantics ($K_n wasmarrow K_{n+1}$), and adds a new snapshot to the snapshot list $\{K_{n+1} , r_{nop}\}$.
 //        The compensating action $r_{nop}$ is used to indicate that no compensating action is needed for input primitives.
-//    \item[\textsc{run-prim-out}] The rule for calling an output primitive. When the program state is an output primitive call, there are no incoming messages, and the execution state is \textsc{play}, the debugger will perform the primitive call similar to the \textsc{output-prim} rule in the underlying language semantics.
+//    \item[_run-prim-out_] The rule for calling an output primitive. When the program state is an output primitive call, there are no incoming messages, and the execution state is #play, the debugger will perform the primitive call similar to the _output-prim_ rule in the underlying language semantics.
 //        It adds the return value of the primitive to the stack, moving the state to $K_{n+1}$, the same state reached by the underlying language semantics.
 //        However, it will not discard the compensating action $p(v^*_0)_{cps} = r$, but add a new snapshot to the snapshot list $\{K_{n+1} , r\}$.
 //\end{description}
@@ -316,10 +313,10 @@ In the next section, we discuss how the multiverse debugger can explore the exec
 //
 //    % Paths (Top Row) with custom Stealth arrows
 //    \draw[-farrow] (start) -- (A);
-//    \draw[-farrow] (A) -- node[below] {\textsc{step-prim-out}} (B);
+//    \draw[-farrow] (A) -- node[below] {_step-prim-out_} (B);
 //    \draw[-] (B) -- (C);
 //    \draw[-farrow] (C) -- (D);
-//    \draw[-farrow] (D) -- node[below] {\textsc{step-prim-out}} (E);
+//    \draw[-farrow] (D) -- node[below] {_step-prim-out_} (E);
 //
 //    % Parallel paths (Bottom Row)
 //    \draw[farrow-, dashed] (F1) -- node[above] {$r'()$} (G1);
@@ -331,7 +328,7 @@ In the next section, we discuss how the multiverse debugger can explore the exec
 //    \node[draw, rectangle] at (6,-1.5) {$S^* \cdot \{K_n , r\}$};
 //
 //\end{tikzpicture}
-//\caption{Schematic of how the \textsc{step-back-compensate} rule works.
+//\caption{Schematic of how the _step-back-compensate_ rule works.
 //    Starting from state $K_m$, the dotted arrow shows how the debugger jumps to the previous state $K_n$, and compensates the output primitive with $r'()$, while the full arrows show the normal execution.
 //    Top right: the snapshots before. Top left: the snapshots after.}
 //<schematic:backwards>
@@ -352,35 +349,35 @@ As part of this jump back in time, the snapshot containing the compensating acti
 
 Since snapshots are only added when the program performs a primitive call, the second to last snapshot in the list was taken after the previous primitive call resulting in state $K_n$.
 This means, that after restoring the internal virtual machine state, the program is now at the point right after the previous primitive call.
-Starting from this point, the debugger can replay the program's execution forwards to $K_{m-1}$, which will not include any primitive calls.
+Starting from this point, the debugger can replay the program's execution forwards to $K_(m-1)$, which will not include any primitive calls.
 This means the steps will be deterministic, and will not change the external environment.
 This corresponds with the full arrow at the bottom of the figure.
 Next to it is shown the snapshot list after the step back, which now only contains the snapshot of the state $K_n$.
 
-In the outlined scenario the last transition in the chain, from $K_{m-1}$ to $K_m$, performs an output action.
+In the outlined scenario the last transition in the chain, from $K_(m-1)$ to $K_m$, performs an output action.
 However, if this transition is a standard WebAssembly instruction instead, no compensating action will be performed.
-Instead, the debugger will immediately restore the virtual machine state to $K_n$ and replay the program's execution forwards to $K_{m-1}$.
+Instead, the debugger will immediately restore the virtual machine state to $K_n$ and replay the program's execution forwards to $K_(m-1)$.
 In this case, none of the snapshots will be removed.
 This enables the debugger to continue stepping back in time.
 
 //\begin{figure}
 //	\begin{mathpar}
-//                \inferrule[(\textsc{step-back})]
+//                \inferrule[(_step-back_)]
 //       	            {
 //                        K_n wasmarrow^{m-n-1} K_{m-1} \\
 //                        m > n \\
 //                    }
-//                    { \langle \textsc{pause}, step back, mocks, K_m \; | \; S^* \cdot \{K_{n} , r\} \} \rangle
+//                    { \langle #pause, step back, mocks, K_m \; | \; S^* \cdot \{K_{n} , r\} \} \rangle
 //                      dbgarrow
-//                  \langle \textsc{pause}, \varnothing, mocks, K_{m-1} \; | \; S^* \cdot \{K_{n} , r\} \rangle }
+//                  \langle #pause, \varnothing, mocks, K_{m-1} \; | \; S^* \cdot \{K_{n} , r\} \rangle }
 //
-//                \inferrule[(\textsc{step-back-compensate})]
+//                \inferrule[(_step-back-compensate_)]
 //       	            {
 //                        \textsf{first }  r'() \textsf{ then } K_n wasmarrow^{m-n-1} K_{m-1} \\
 //                    }
-//                    { \langle \textsc{pause}, step back, mocks, K_m \; | \; S^* \cdot \{K_{n} , r\} \cdot \{K_{m} , r'\} \rangle
+//                    { \langle #pause, step back, mocks, K_m \; | \; S^* \cdot \{K_{n} , r\} \cdot \{K_{m} , r'\} \rangle
 //                      dbgarrow
-//                  \langle \textsc{pause}, \varnothing, mocks, K_{m-1} \; | \; S^* \cdot \{K_{n} , r\} \rangle }
+//                  \langle #pause, \varnothing, mocks, K_{m-1} \; | \; S^* \cdot \{K_{n} , r\} \rangle }
 //	\end{mathpar}
 //        \caption{The small-step reduction rule for stepping backwards in the multiverse debugger.}
 //	<fig:backwards>
@@ -392,31 +389,30 @@ This enables the debugger to continue stepping back in time.
 
 
 Each of the two outlined scenarios correspond with a rule in the multiverse debugger semantics, shown in @fig:backwards.
-The first scenario where the effects of an output primitive is reversed, is described by the \textsc{step-back-compensate} rule.
-The second scenario where the last transition is a standard WebAssembly instruction, is described by the \textsc{step-back} rule.
+The first scenario where the effects of an output primitive is reversed, is described by the _step-back-compensate_ rule.
+The second scenario where the last transition is a standard WebAssembly instruction, is described by the _step-back_ rule.
 We describe the rules in detail below.
 
-\begin{description}
-    \item[\textsc{step-back}] The rule for stepping back in time. When the debugger receives a #emph[step back] message, the debugger restores the external state from the last snapshot in the snapshot list, which is not the current state.
-        The debugger then replays the program's execution from that point to exactly one step ($K_n wasmarrow^{m-n-1} K_{m-1}$) before the starting state.
+/ step-back: The rule for stepping back in time. When the debugger receives a #emph[step back] message, the debugger restores the external state from the last snapshot in the snapshot list, which is not the current state.
+        The debugger then replays the program's execution from that point to exactly one step ($K_n attach(wasmarrow, tr: m-n-1) K_(m-1)$) before the starting state.
         Since the restored snapshot remains in the past, it is kept in the snapshot list, to allow for further backwards exploration.
-    \item[\textsc{step-back-compensate}] The rule for stepping back in time when the last transition was a primitive call.
+
+/ step-back-compensate: The rule for stepping back in time when the last transition was a primitive call.
         This is always the case when the current state is $K_m$ is part of the last snapshot.
         When the debugger receives a #emph[step back] message, the debugger performs the compensating action $r'$ from the last snapshot in the snapshot list, which reversed the effects of the last primitive call.
         Then, the debugger restores the external state $K_n$ from the second to last snapshot in the snapshot list.
         The debugger then replays the program's execution from that point to exactly one step before the starting state.
         The last snapshot is removed from the snapshot list, since it now lies in the future.
-\end{description}
 
-In the case, where no primitive call has yet been made, the snapshot list contains exactly $\{K_0,r_{nop}\}$, as defined by $dbg_"start"$, which the \textsc{step-back} rule can jump to.
+In the case, where no primitive call has yet been made, the snapshot list contains exactly ${K_0,r_nop}$, as defined by $dbg_"start"$, which the _step-back_ rule can jump to.
 If the current state is $K_0$, stepping back is not possible.
-Specifically, the \textsc{step-back} rule is not be applicable, since $m$ and $n$ are both zero, and the \textsc{step-back-compensate} rule requires the snapshot list to contain at least two snapshots.
+Specifically, the _step-back_ rule is not be applicable, since $m$ and $n$ are both zero, and the _step-back-compensate_ rule requires the snapshot list to contain at least two snapshots.
 
 === Instrumenting Non-deterministic Input in Multiverse Debuggers<mult:mocking>
 
 //\begin{figure}
 //	\begin{mathpar}
-//                \inferrule[(\textsc{register-mock})]
+//                \inferrule[(_register-mock_)]
 //       	            {
 //                        msg = mock(j, v^ast, v) \\
 //                        P(j) = p \\
@@ -429,7 +425,7 @@ Specifically, the \textsc{step-back} rule is not be applicable, since $m$ and $n
 //                      dbgarrow
 //                      \langle rs, \varnothing, mocks', K_n \; | \; S^ast \rangle }
 //
-//                \inferrule[(\textsc{unregister-mock})]
+//                \inferrule[(_unregister-mock_)]
 //       	            {
 //                        msg = unmock(j, v^ast) \\
 //                        %p_{code} = (\textsf{func} \; a^n \rightarrow v \; \textsf{local} \; t^ast e^ast) \\
@@ -439,7 +435,7 @@ Specifically, the \textsc{step-back} rule is not be applicable, since $m$ and $n
 //                      dbgarrow
 //                      \langle rs, \varnothing, mocks', K_n \; | \; S^ast \rangle }
 //
-//                \inferrule[(\textsc{step-mock})]
+//                \inferrule[(_step-mock_)]
 //       	            { 
 //                        K_n = \{ s ;v^ast; v^ast_0 (call \; j) \} \\
 //                        P(j) = p \\
@@ -447,31 +443,31 @@ Specifically, the \textsc{step-back} rule is not be applicable, since $m$ and $n
 //                        mocks(j, v^ast_0) = v \\
 //                        K'_{n+1} = \{ s';v'^ast;v \} \\
 //                    }
-//                    { \langle \textsc{pause}, step, mocks, K_n \; | \; S^ast \rangle
+//                    { \langle #pause, step, mocks, K_n \; | \; S^ast \rangle
 //                      dbgarrow
-//                  \langle \textsc{pause}, \varnothing, mocks, K'_{n+1} \; | \; S^ast \cdot \{K'_{n+1}, r_{nop}\} \rangle }
+//                  \langle #pause, \varnothing, mocks, K'_{n+1} \; | \; S^ast \cdot \{K'_{n+1}, r_{nop}\} \rangle }
 //	\end{mathpar}
-//        \caption{The small-step rule for mocking input in the MIO debugger, only including the step rule. The analogous rule for when the debugger is not paused (\textsc{run-mock}) is shown in @app:rules.}
+//        \caption{The small-step rule for mocking input in the MIO debugger, only including the step rule. The analogous rule for when the debugger is not paused (_run-mock_) is shown in @app:rules.}
 //	<fig:mocking>
 //\end{figure}
 #figure(image("../placeholder.png", height: 30%),
-    caption: [The small-step rule for mocking input in the MIO debugger, only including the step rule. The analogous rule for when the debugger is not paused (\textsc{run-mock}) is shown in @app:rules.],
+    caption: [The small-step rule for mocking input in the MIO debugger, only including the step rule. The analogous rule for when the debugger is not paused (_run-mock_) is shown in @app:rules.],
 )<fig:mocking>
 
 
 
 In order to replay execution paths in the multiverse tree accurately, the multiverse debugger needs to be able to override the input to the program.
 Mocking of input happens through the key value map $mocks$ shown in @fig:mult:configurations.
-New values can be added to the map using the \textsc{register-mock} rule, and existing values can be removed using the \textsc{unregister-mock} rule.
+New values can be added to the map using the _register-mock_ rule, and existing values can be removed using the _unregister-mock_ rule.
 Whenever the debugger encounters an input primitive call, it will always check the $mocks$ map for an overriding value.
-If a value is found, the debugger will replace the call to the primitive with the mock value $v$. This is done by the \textsc{step-mock} rule.
+If a value is found, the debugger will replace the call to the primitive with the mock value $v$. This is done by the _step-mock_ rule.
 
 / register-mock: The rule for registering a new mock value in the multiverse debugger. When the debugger receives a message $"mock"(j, v^*, v)$, the debugger will update the entry for $(j,v^*)$ in the $mocks$ environment to $v$.
         If an entry already exists in the environment, the rule will override the existing value.
 / unregister-mock: The rule for unregistering a mock value in the multiverse debugger. When the debugger receives a message $"unmock"(j, v^*)$, the debugger will remove the mock value from the $mocks$ map.
-        If no value is found in the environment, the rule will have no effect. %, and the messages will simply be removed.
+        If no value is found in the environment, the rule will have no effect. //%, and the messages will simply be removed.
 / step-mock: The _step-mock_ rule for stepping forwards in the multiverse debugger when an input primitive call is encountered. If the input primitive call is found in the $mocks$ map, the debugger will replace the call with the mock value $v$.
-The program state is then updated to the new program state $K_{n+1}$, and a new snapshot is added to the snapshot list.
+The program state is then updated to the new program state $K_(n+1)$, and a new snapshot is added to the snapshot list.
 The snapshot includes the new program state and the empty compensating action $r_nop$, since no compensating action is needed for input primitives.
 
 === Arbitrary Exploration of the multiverse tree
@@ -481,18 +477,18 @@ In this section, we discuss how the multiverse debugger can be used to explore d
 This can be done by @alg:jumping.
 When the debugger jumps from a state $K_m$ to a state $K_n$, the debugger will find the smallest common ancestor of $K_m$ and $K_n$, or the join.
 The debugger will then step backwards from $K_m$ to the join.
-We use the notation $revarrow$ to indicate that the debugger is reversing the execution, it is equivalent to a debugging step $dbgarrow$ that only uses the \textsc{step-back} and \textsc{step-back-compensate} rules.
-In the final step of the algorithm, execution is replayed from the join to $K_n$ using the \textsc{step-mock} rule whenever it encounters a non-deterministic primitive call.
+We use the notation $revarrow$ to indicate that the debugger is reversing the execution, it is equivalent to a debugging step $dbgarrow$ that only uses the _step-back_ and _step-back-compensate_ rules.
+In the final step of the algorithm, execution is replayed from the join to $K_n$ using the _step-mock_ rule whenever it encounters a non-deterministic primitive call.
 
 #algorithm(
     [The algorithm for traveling to any position in the multiverse tree.],
     pseudocode-list[
 + #strong[Require] the current program state $K_m$ #strong[and] the target program state $K_n$ #strong[and] the snapshot list $S^*$.
 + $K_"join" arrow.l "find_join"(K_m, K_n)$
-+ #line-label(<alg.jumping:while>) *while* $dbg_"current"[K] eq.not K_"join"$ *do*
++ #line-label(<alg.jumping:while>) *while* $dbg_"current" [K] eq.not K_"join"$ *do*
   + $dbg_"current" revarrow dbg_"next"$
   + $dbg_"current" arrow.l dbg"next"$
-+ *while* $dbg_"current"[K] eq.not K_n$ *do*
++ *while* $dbg_"current" [K] eq.not K_n$ *do*
   + $dbg_"current" dbgarrow dbg_"next"$
   + $dbg_"current" arrow.l dbg_"next"$
 ], "alg:jumping")
@@ -501,9 +497,9 @@ In the final step of the algorithm, execution is replayed from the join to $K_n$
 //    \centering
 //    \begin{tikzpicture} %[label/.style={draw,rectangle,fill=white}]
 //        % primitives labels
-//        \node at (3,1.30) {\textsc{input}};
-//        \node at (5,1.30) {\textsc{input}};
-//        \node at (7,1.30) {\textsc{output}};
+//        \node at (3,1.30) {_input_};
+//        \node at (5,1.30) {_input_};
+//        \node at (7,1.30) {_output_};
 //
 //        % trunk
 //        \node[draw, circle, fill=black, inner sep=1pt] (1) at (0,0) {};
@@ -557,36 +553,36 @@ In the final step of the algorithm, execution is replayed from the join to $K_n$
 //        \draw[farrow-, draw=color2] (8) -- (9);
 //
 //        % step back
-//        \draw[dashed,-farrow, draw=color0] (9) to [out=95,in=0] node[near start, above right] {\textit{arbitrary jump}} (T);
+//        \draw[dashed,-farrow, draw=color0] (9) to [out=95,in=0] node[near start, above right] {_arbitrary jump_} (T);
 //
 //        % path
 //        \node at (6,-2.0) {\small \textcolor{color2}{$K_5 revarrow K_4 revarrow K_3 revarrow K_2 revarrow K_1 dbgarrow K'_2 dbgarrow K'_3 dbgarrow K'_4$}};
 //    \end{tikzpicture}
-//    \caption{Schematic of how the multiverse debugger can jump to any arbitrary state in the past, using the \textsc{step-back} and \textsc{step-mock} rules.
+//    \caption{Schematic of how the multiverse debugger can jump to any arbitrary state in the past, using the _step-back_ and _step-mock_ rules.
 //    For the arbitrary jump from state $K_5$ to $K_4'$, the join $K_1$ is underlined and shown in blue.
 //    Top right: the list of snapshots before the arbitrary jump. Bottom: the execution path from $K_5$ to $K_4'$.
-//    Steps with the \textsc{step-back} and \textsc{step-back-compensate} rules are shown as $\hookrightarrow_r$.}
+//    Steps with the _step-back_ and _step-back-compensate_ rules are shown as $\hookrightarrow_r$.}
 //    <schematic:arbitrary-jump>
 //\end{figure}
 
 #figure(image("../placeholder.png", height: 30%),
-    caption: [Schematic of how the multiverse debugger can jump to any arbitrary state in the past, using the \textsc{step-back} and \textsc{step-mock} rules.
+    caption: [Schematic of how the multiverse debugger can jump to any arbitrary state in the past, using the _step-back_ and _step-mock_ rules.
     For the arbitrary jump from state $K_5$ to $K_4'$, the join $K_1$ is underlined and shown in blue.
     Top right: the list of snapshots before the arbitrary jump. Bottom: the execution path from $K_5$ to $K_4'$.
-    Steps with the \textsc{step-back} and \textsc{step-back-compensate} rules are shown as $revarrow$.],
+    Steps with the _step-back_ and _step-back-compensate_ rules are shown as $revarrow$.],
 )<schematic:arbitrary-jump>
 
 @schematic:arbitrary-jump illustrates the algorithm for jumping to an arbitrary state, when the user clicks on a node on another branch in the multiverse tree.
 The figure shows a possible multiverse tree for a program where the second and third instruction are input primitives.
 The program has executed two input primitives in a row, and the debugger has explored some of the possible inputs.
-Each node in the figure is labeled with the program state and possible compensating action, where $r_{nop}$ indicates that no compensating action is needed.
+Each node in the figure is labeled with the program state and possible compensating action, where $r_{nop}$ indicates that no compensating action is needed
 For clarity, the external state are also numbered.
 The figure shows clearly that the external state only changes after a primitive call.
 The current state is $K_5$, and the debugger wants to jump to $K_4'$.
 Per the algorithm, the debugger finds the join of the two states, which is $K_1$.
-The debugger then replays the execution from $K_5$ to $K_1$ in reverse order, using the \textsc{step-back} and \textsc{step-back-compensate} rules.
+The debugger then replays the execution from $K_5$ to $K_1$ in reverse order, using the _step-back_ and _step-back-compensate_ rules.
 It is important that the debugger steps back one instruction at a time, to ensure that the external state is correctly restored.
-From the join $K_1$, the debugger replays the execution to $K_4'$ in the forward order, using the \textsc{step-mock} rule whenever it encounters a non-deterministic primitive call.
+From the join $K_1$, the debugger replays the execution to $K_4'$ in the forward order, using the _step-mock_ rule whenever it encounters a non-deterministic primitive call.
 This ensures that the jump deterministically follows the exact execution path, thereby ensuring that the external state is correctly restored.
 
 === Correctness of the Multiverse Debugger Semantics<mult:correctness>
@@ -623,7 +619,7 @@ In the inductive case, the proof proceeds very similarly, the only non-trivial c
 //    \theoremdebuggercompleteness
 //\end{theorem}
 
-The proof for completeness follows almost directly from the fact that for every transition in the underlying language semantics, the debugger can take a corresponding step. For non-deterministic input primitives, we can step to the same state with the \textsc{register-mock} and \textsc{step-mock} rules.
+The proof for completeness follows almost directly from the fact that for every transition in the underlying language semantics, the debugger can take a corresponding step. For non-deterministic input primitives, we can step to the same state with the _register-mock_ and _step-mock_ rules.
 
 Together the debugger soundness and completeness theorems ensure that the multiverse debugger is correct in terms of its observation of the underlying language semantics.
 However, it gives us no guarantees about the correctness of the compensating actions, and the consistency of external effects during a debugging session.
@@ -633,9 +629,9 @@ There are only two options, the output primitive rules, and the rule that applie
 //\begin{definition}[External state effects]
 //    The function $external$ returns the steps affecting external state for any series of rules in the debugging or underlying language semantics.
 //    $$external(p) = \left\{\begin{array}{ll}
-//            (s \text{ for } s \text{ in } p \text{ where } s = \textsc{step-prim-out} & \text{if } p = dbg \hookrightarrow^*_{d,i} dbg' \\
-//                                        \vee \; s = \textsc{ step-back-compensate})      & \\
-//            (s \text{ for } s \text{ in } p \text{ where } s = \textsc{output-prim} ) & \text{if } p = K \hookrightarrow^*_{i} K' \\
+//            (s \text{ for } s \text{ in } p \text{ where } s = _step-prim-out_ & \text{if } p = dbg \hookrightarrow^*_{d,i} dbg' \\
+//                                        \vee \; s = _ step-back-compensate_)      & \\
+//            (s \text{ for } s \text{ in } p \text{ where } s = _output-prim_ ) & \text{if } p = K \hookrightarrow^*_{i} K' \\
 //    \end{array}\right.
 //    $$
 //\end{definition}
@@ -753,7 +749,7 @@ def_prim_reverse(rotate) {
 
 To illustrate the implementation of reversible primitives, we will use the example of the #emph[rotate] primitive, which rotates a servo motor for a given number of degrees.
 The forwards implementation is shown on the left side of @fig:motor-impl.
-%The servo motors are controlled by pulse-width modulation (PWM) signals.
+//The servo motors are controlled by pulse-width modulation (PWM) signals.
 To move the motor a given number of degrees the primitive first sets the target angle of the motor encoder, this happens on line~\ref{line:encode}.
 The motor encoder is used to track the current motor angle, as well as the absolute target angle, which can be set with the #emph[set\_angle] method.
 To rotate the motor a number of degrees relative to its current position, the primitive adds the degrees to the current motor angle (line~\ref{line:relative}).
@@ -766,7 +762,7 @@ Second, the #emph[def\_prim\_reverse] macro compensates the primitive by moving 
 The angles captured by the #emph[def\_prim\_serialize] macro are absolute target angles. The compensating action moves the motors back to these angles by first setting the target angle, as shown on line~\ref{line:set-angle}.
 It then uses the same #emph[drive] function to move the motor.
 
-=== Input: Mocking of Primitives
+=== Input: mocking of primitives
 
 The input mocking is implemented analogous to the debugger semantics, by adding a map to the in the virtual machine state.
 This map is used to store the mocked values for the input primitives, which are received by a new debug message in the remote debugger.
@@ -1098,7 +1094,7 @@ This microcontroller was connected to a laptop running the MIO debugger frontend
 //        \coordinate (c) at (current bounding box.north);
 //        \node at (c) [anchor=south] {\pgfplotslegendfromname{sharedlegend}};
 //    \end{tikzpicture}
-//    \caption{Comparison of execution time of \textit{no snapshotting} with \textit{snapshotting for every instructions}, and different checkpointing intervals; \textit{every 5, 10, 50, and 100 instructions}.
+//    \caption{Comparison of execution time of _no snapshotting_ with _snapshotting for every instructions_, and different checkpointing intervals; _every 5, 10, 50, and 100 instructions_.
 //        The performance overhead is shown as execution time relative to the execution time when taking no snapshots.
 //    Left: Comparison of all checkpointing policies, snapshotting, and no snapshotting.
 //    Right: Comparison of all checkpointing policies with no snapshotting. The averages are taken over 10 runs of the same program.}
@@ -1106,25 +1102,25 @@ This microcontroller was connected to a laptop running the MIO debugger frontend
 //\end{figure}
 
 #figure(image("../placeholder.png", height: 30%),
-    caption: [Comparison of execution time of \textit{no snapshotting} with \textit{snapshotting for every instructions}, and different checkpointing intervals; \textit{every 5, 10, 50, and 100 instructions}.
+    caption: [Comparison of execution time of _no snapshotting_ with _snapshotting for every instructions_, and different checkpointing intervals; _every 5, 10, 50, and 100 instructions_.
         The performance overhead is shown as execution time relative to the execution time when taking no snapshots.
     Left: Comparison of all checkpointing policies, snapshotting, and no snapshotting.
     Right: Comparison of all checkpointing policies with no snapshotting. The averages are taken over 10 runs of the same program.],
 )<fig:snapshotting-performance>
 
 
+//
+=== Forward execution with checkpointing
 
-=== Forward Execution with Checkpointing
-
-The first experiment evaluates the performance impact of checkpointing on the execution speed. % overhead of taking snapshots at different intervals in comparison to taking snapshots at every instruction or taking no snapshots at all.
-We measured the execution time of a fixed number of instructions, when taking no snapshots, taking a snapshot every instruction, and for snapshotting after different intervals (5, 10, 50, or 100 instructions), as shown in @fig:snapshotting-performance. % for various different snapshot policies.
-To reduce the impact of variable unknown factors, the program executed by the virtual machine includes no primitive calls. Specifically, this program checks for each integer from 1 to 13374242 if they are prime. Because this program has no primitive calls, the VM will only take snapshots at fixed intervals which are determined by the frontend.
+The first experiment evaluates the performance impact of checkpointing on the execution speed. //% overhead of taking snapshots at different intervals in comparison to taking snapshots at every instruction or taking no snapshots at all.
+We measured the execution time of a fixed number of instructions, when taking no snapshots, taking a snapshot every instruction, and for snapshotting after different intervals (5, 10, 50, or 100 instructions), as shown in @fig:snapshotting-performance. //% for various different snapshot policies.
+To reduce the impact of variable unknown factors, the program executed by the virtual machine includes no primitive calls. Specifically, this program checks for each integer from 1 to $13,374,242$ if they are prime. Because this program has no primitive calls, the VM will only take snapshots at fixed intervals which are determined by the frontend.
 
 The left plot shown in @fig:snapshotting-performance, gives the time it took to execute up to 1250 instructions for each snapshot policy relative to taking no snapshots.
 Since snapshotting every instruction is so much slower, we added the right plot showing the same results, but without snapshotting at every instruction.
 For such small numbers of instructions, the execution time without any debugger intervention, remains roughly the same, taking on average 222.7ms. These results are shown in red.
 In contrast, when taking snapshots after every executed instruction, the execution time increases dramatically.
-For 1250 instructions it takes on average 19 seconds, which is around 85 times slower. % than without snapshotting.
+For 1250 instructions it takes on average 19 seconds, which is around 85 times slower. //% than without snapshotting.
 For only 250 instructions the execution time increases seventeen-fold, to 3.9 seconds.
 
 Once checkpointing is used the overhead reduces significantly.
@@ -1141,7 +1137,7 @@ This is due to the fact that the current prototype has not yet been optimized fo
 The prototype only uses a simple run-length encoding of the WebAssembly memory to reduce the size of the snapshots.
 In future improvements, the snapshot sizes could be reduced greatly by only communicating the changes compared to the previous snapshot.
 //%This shows that, as the time between checkpoints is increased, the slowdown can be reduced significantly. %to around a factor 2 which is much better than the original 100 times slower execution.
-However, in practice the performance is already sufficient to provide users with a responsive debugger interface as we illustrate in the online demo videos, which can be found \href{https://youtube.com/playlist?list=PLaz61XuoBNYVcQqHMAAXQNf8fz5IAMahe&si=HNrKY9YzqDFadATN}{here}\footnote{Full link: \href{https://youtube.com/playlist?list=PLaz61XuoBNYVcQqHMAAXQNf8fz5IAMahe&si=HNrKY9YzqDFadATN}{https://youtube.com/playlist?list=PLaz61XuoBNYVcQqHMAAXQNf8fz5IAMahe\&si=HNrKY9YzqDFadATN}}.
+However, in practice the performance is already sufficient to provide users with a responsive debugger interface as we illustrate in the online demo videos, which can be found #link("https://youtube.com/playlist?list=PLaz61XuoBNYVcQqHMAAXQNf8fz5IAMahe&si=HNrKY9YzqDFadATN")[here]#footnote[Full link: #link("https://youtube.com/playlist?list=PLaz61XuoBNYVcQqHMAAXQNf8fz5IAMahe&si=HNrKY9YzqDFadATN")].
 The example we highlight later in @mult:usecase, requires on average snapshot every 37 instructions.
 This reduces overhead sufficiently to have a responsive debugging experience for users.
 Additionally, the I/O operations by comparison typically take much longer to execute, a single action easily taking several seconds.
@@ -1230,16 +1226,16 @@ Between one thousand and 30 thousand re-executed instructions, the time to step 
 
 Our analysis of the checkpoint strategy's impact on stepping back shows that the overhead is minimal.
 The prototype is able to re-execute 30 thousand non-I/O instructions in around one second.
-Compared to the overhead of checkpointing on forwards execution (see @fig:snapshotting-performance), we can safely conclude that in practice the overhead on backwards execution is negligible. % introduced by reducing the number of snapshots 
-This is further evidenced in our \href{https://youtube.com/playlist?list=PLaz61XuoBNYVcQqHMAAXQNf8fz5IAMahe&si=HNrKY9YzqDFadATN}{demo videos}, where developers mostly have to wait for physical I/O actions to complete, and stepping back is otherwise instantaneous.
+Compared to the overhead of checkpointing on forwards execution (see @fig:snapshotting-performance), we can safely conclude that in practice the overhead on backwards execution is negligible. //% introduced by reducing the number of snapshots 
+This is further evidenced in our #link("https://youtube.com/playlist?list=PLaz61XuoBNYVcQqHMAAXQNf8fz5IAMahe&si=HNrKY9YzqDFadATN")[demo videos], where developers mostly have to wait for physical I/O actions to complete, and stepping back is otherwise instantaneous.
 
-=== Use case: Lego Mindstorms Color Dial<mult:usecase>
+=== Use case: Lego Mindstorms color dial<mult:usecase>
 
 To illustrate the practical potential of MIO and its new debugger approach, we present a simple reversible robot application using Lego Mindstorms components components.
 However, not just microcontroller applications may benefit from our novel approach, there are many application domains where output is entirely in the form of digital graphics, which are more easily reversible---such as video games, simulations, etc.
 Nevertheless, to highlight the potential of the approach we demonstrate the MIO debugger using small physical robots and other microcontroller applications, as this is a more challenging environment for multiverse debugging.
 Using the digital input and motor primitives described in @mult:implementation, we developed a color dial, as a simplified application.
-We developed this example alongside a few others to further demonstrate the usability of the MIO debugger\footnote{Code for all examples can be found #emph[[link to repository removed for double-blind review]]}, and have created demo videos for a few of the examples, which can be found \href{https://youtube.com/playlist?list=PLaz61XuoBNYVcQqHMAAXQNf8fz5IAMahe&si=HNrKY9YzqDFadATN}{online}\footnote{Full link: \href{https://youtube.com/playlist?list=PLaz61XuoBNYVcQqHMAAXQNf8fz5IAMahe&si=HNrKY9YzqDFadATN}{https://youtube.com/playlist?list=PLaz61XuoBNYVcQqHMAAXQNf8fz5IAMahe\&si=HNrKY9YzqDFadATN}}.
+We developed this example alongside a few others to further demonstrate the usability of the MIO debugger#footnote[Code for all examples can be found #emph[[link to repository removed for double-blind review]]], and have created demo videos for a few of the examples, which can be found #link("https://youtube.com/playlist?list=PLaz61XuoBNYVcQqHMAAXQNf8fz5IAMahe&si=HNrKY9YzqDFadATN")[online]#footnote[Full link: #link("https://youtube.com/playlist?list=PLaz61XuoBNYVcQqHMAAXQNf8fz5IAMahe&si=HNrKY9YzqDFadATN")].
 
 //%\paragraph{Binary LED counter} A binary counter that shows the binary representation of numbers using LEDs, showing each number one by one. When stepping back, the counter will show the previous number again, by turning on and off the necessary LEDs.
 //%\paragraph{Smart curtain} A smart curtain that opens and closes depending on the lighting conditions. If the curtain opens the developer can step back to make the curtain close again, allowing them to explore a different program state with ease.
@@ -1261,7 +1257,7 @@ We developed this example alongside a few others to further demonstrate the usab
 The color dial application works as follows, the robot has a color sensor that can detect the color of objects.
 Depending on the color seen by the sensor, a single motor will move the needle on the dial to the location indicating the color seen by the sensor.
 We built the dial using LEGO Mindstorms components~@ferreira24:open as shown on the left of @fig:robot.
-%The example is written in AssemblyScript using the reversible primitives introduced by the MIO debugger to the WARDuino virtual machine.
+//The example is written in AssemblyScript using the reversible primitives introduced by the MIO debugger to the WARDuino virtual machine.
 The right-hand side of @fig:robot shows the infinite loop that controls the robot, written in AssemblyScript.
 In this loop, the robot will continually read sensor values from the color sensor. While doing so it will move the needle of the dial to the correct position indicating the current color seen by the sensor.
 The needle is only moved if the color sensor sees a value different from what the dial is currently indicating.
@@ -1292,7 +1288,7 @@ while (true) {
 ```,))), caption: [Left: Lego color dial that recognizes the color of objects. Right: The main loop controlling the behavior of the color dial. The dial is controlled by a single motor connected to pin IO1, and the color sensor is connected to pin IO2.])<fig:robot>
 
 The program for the color dial uses the reversible primitive #emph[rotate], used as an example in @mult:implementation, to rotate the needle of the dial.
-By using only reversible output primitives, the program written for this robot automatically becomes reversible. %without any additional input from the programmer.
+By using only reversible output primitives, the program written for this robot automatically becomes reversible. //%without any additional input from the programmer.
 This means that while debugging the application, the color the needle is pointing towards will always correspond to variable #emph[current] in the program.
 Concretely, if the debugger steps back through the program from the end of a loop iteration to line~\ref{line:target}, it will move the needle back to the previous color without having to read a new sensor value.
 This makes it easy to test certain state transitions where the needle is pointing at one particular color and now has to move to a different color.
@@ -1312,9 +1308,9 @@ Using the I/O primitives supported by MIO, various other applications could be b
 == Related work<mult:related>
 
 Our work builds directly on WebAssembly~@haas17:bringing@rossberg19:webassembly@rossberg23:webassembly and WARDuino~@lauwaerts24:warduino, as we have discussed in @mult:webassembly and @mult:implementation.
-In this section, we present an overview of further related work. %previous work on reversible debuggers and multiverse debuggers, as well as other related works that have inspired our approach.
+In this section, we present an overview of further related work. //%previous work on reversible debuggers and multiverse debuggers, as well as other related works that have inspired our approach.
 
-\paragraph{Multiverse debuggers}
+=== Multiverse debuggers
 
 Multiverse debugging has emerged as a powerful technique to debug non-deterministic program behavior, by allowing programmers to explore multiple execution paths simultaneously.
 It was proposed by #cite(form: "prose", <torres19:multiverse>) to debug parallel actor-based programs, with a prototype called Voyager~@gurdeep19:multiverse, that worked directly on the operational semantics of the language defined in PLT Redex~@felleisen09:semantics.
@@ -1331,7 +1327,8 @@ Explore-first editors, such as the original by #cite(form: "prose", <steinert12:
 While explore-first editors consider the variations in the program code itself, multiverse debuggers focus on variations of program execution caused by non-deterministic behavior for a single code base.
 Combining these two techniques could lead to a powerful development environment, and represents interesting future work.
 
-\paragraph{Exploring Execution Trees}
+=== Exploring execution trees
+
 Many automatic verification and other analysis tools also explore the execution tree of a program, such as software #emph[model checkers]~@godefroid97:model@jhala09:software, #emph[symbolic execution]~@king76:symbolic@cadar11:symbolic@baldoni18:survey, and #emph[concolic execution]~@godefroid05:dart@sen06:automated@marques22:concolic.
 These techniques are great at automatically detecting program faults, however, they rely on a precise description of the problem or program specification, often in the form of a formal model.
 This is in stark contrast with debuggers, which are tools to help developers find mistakes for which no precise formula exists, and for which the causes are often unknown.
@@ -1339,7 +1336,8 @@ Despite the major differences, static analysis techniques could greatly help imp
 For multiverse debugging the techniques could help guide developers through large and complicated execution trees.
 Additionally, the techniques for handling the state explosion problem~@valmari98:state@kurshan98:static@kahlon09:monotonic developed for these analysis tools, can help reduce the number of redundant execution paths in multiverse debugging.
 
-\paragraph{Reversible debuggers}
+=== Reversible debuggers
+
 Reversible debugging, also called back-in-time debugging, has existed for more than fifty years~@balzer69:exdams, and has been implemented with various strategies~@engblom12:review.
 #emph[Record-replay debuggers]~@agrawal91:execution-backtracking@feldman88:igor@ronsse99:recplay@boothe00:efficient@burg13:interactive@ocallahan17:engineering allow offline debugging with a checkpoint-based trace.
 In spite of all the different implementation strategies, few reversible debuggers also reverse output effects, with a few notable exceptions.
@@ -1358,14 +1356,16 @@ Reversible debuggers for the #emph[graphical programming language] Scratch~@malo
 However, in all these debuggers, the output effects are internal to the system.
 For the Scratch debuggers, the visual output is actually part of the execution model~@maloney10:scratch-programming-language.
 
-\paragraph{Reversible programming languages}
+=== Reversible programming languages
+
 The concept of reversible computation has a longstanding history in computer science~@zelkowitz73:reversible@bennett88:notes@mezzina20:software, with the most notable models for reversibility being reversible Turing machines~@axelsen16:on, and reversible circuits~@saeedi13:synthesis.
 Furthermore, the design of reversible languages has evolved into its own field of study~@gluck23:reversible, with languages for most programming paradigms, such as the imperative, and first reversible language, Janus~@lutz86:janus@yokoyama08:principles@lami24:small-step-semantics, several functional languages~@yokoyama12:towards@matsuda20:sparcl, object-oriented languages~@schultz16:elements@haulund17:implementing@hay-schmidt21:towards, monadic computation~@heunen15:reversible, and languages for concurrent systems~@danos04:reversible@schordan16:automatic@hoey18:reversing.
 Several works have investigated how reversible languages can help reversible debuggers~@chen01:reversible@engblom12:review@lanese18:cauder, however, full computational reversibility is not necessary for back-in-time debugging~@engblom12:review.
-%A lot of research has gone into reversible computing for concurrent systems, leading to 
+//A lot of research has gone into reversible computing for concurrent systems, leading to 
 Moreover, these reversible languages do not consider output effects on the external world, with a few notable exceptions in the space of proprietary languages for industrial robots.
 
-\paragraph{Reverse execution of industrial robots}
+=== Reverse execution of industrial robotics
+
 While numerous examples can be imagined where actions affecting the environment cannot be easily reversed, there are sufficient scenario's where this is possible, for reverse execution to be widely used in industry.
 The reversible language by #cite(form: "prose", <schultz20:reversible>) is particularly interesting.
 The work proposes a system for error handling in robotics applications through reverse execution, and identifies two types of reversibility; direct and indirect.
@@ -1374,7 +1374,8 @@ Through our compensating actions, MIO is able to handle both directly and indire
 SCP-RASQ uses a similar system of user-defined compensating actions, to reverse indirectly reversible operations.
 Using these kinds of languages, we believe that the MIO debugger could be extended to support more complex output primitives, which could control industrial robots.
 
-\paragraph{Reversibility}
+=== Reversibility
+
 The concept of reversibility is well understood on a theoretical level, for both sequential context~@leeman86:formal, and concurrent systems.
 The latter is much more complex, and has lead to two major definitions; causal-consistent reversibility~@danos04:reversible@lanese14:causal-consistent-reversibility, and time reversibility~@weiss75:time-reversibility@kelly81:reversibility.
 Causal-consistent reversibility is the idea that an action can only be reversed after all subsequent dependent actions have been reversed~@lanese14:causal-consistent-reversibility.
@@ -1385,7 +1386,8 @@ Our debugger works on a single-threaded language, where the non-determinism is i
 In our work, the undo actions are causally consistent in the single-threaded world.
 We believe that we can extend MIO to support concurrent languages, and that the existing literature~@lanese18:cauder@giachino14:causal-consistent-reversible-debugging can help to ensure it stays causally consistent.
 
-\paragraph{Remote Debugging on Microcontrollers}
+=== Remote debugging on microcontrollers
+
 In remote debugging~@rosenberg96:how, a debugger frontend is connected to a remote debugger backend running the program being debugged.
 The MIO debugger uses remote debugging to mitigate some limitations of microcontrollers, an approach that has been adopted for many embedded systems~@potsch17:advanced@skvar-c24:in-field-debugging@soderby24:debugging.
 These debuggers fall in two categories; #emph[stub] and #emph[on-chip]~@li09:research.
@@ -1397,14 +1399,16 @@ To address these limitations, a new form of remote debugging, called out-of-plac
 This technique moves part of the debugging process to a more powerful machine, which can reduce debugging interference and speedup performance.
 The MIO debugger is already sufficiently fast, but a speed-up can likely be achieved by adopting out-of-place debugging.
 
-\paragraph{Environment Modeling}
+=== Environment modeling
+
 There are many environment interactions that can influence the possible input values and thereby the possible execution paths of a program.
 We have elided these interactions from the formal model and assume that I/O operations are independent, while our prototype does support defining simple #emph[predictable dependencies] between I/O operations.
 Modeling the interactions between I/O operations is also hugely important for testing, and #emph[environment modeling] has therefore been widely studied in this area~@blackburn98:using.
 Environment models are often used for automatic test generation~@dalal99:model-based@auguston05:environment for a certain specification, and have also been applied to real-time embedded software~@iqbal15:environment.
-% todo more examples + can be used for future work
+// todo more examples + can be used for future work
 
-\paragraph{Formalizing Debuggers}
+=== Formalizing debuggers
+
 Previous efforts to define debuggers formally have been incredibly varied in their depth and approach, and have not yet reached a consensus on any standard method.
 An early attempt used PowerEpsilon~@zhu91:higher-order @zhu92:program to define a denotational semantic describing the source mapping needed to debug a toy language that can compile to a toy instruction set~@zhu01:denotational.
 In 2012, the work by #cite(form: "prose", <li12:formal>) focussed on automatic debuggers, and defined operational semantics for tracing, and for backwards searching based on those traces.

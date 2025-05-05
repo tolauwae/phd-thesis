@@ -21,6 +21,8 @@
 #let espruino = canvas({
   draw.set-style(legend: (fill: white))
     // barchart: 
-    chart.columnchart(benchmarks, size: (auto, 5), labelkey: 0, mode: "clustered", value-key: (1,2), y-mode: "log", y-format: "sci", y-min: 0, y-max: 1000, y-tick-step: none, y-ticks: (10, 100, 1000), y-base: 10)
+    chart.columnchart(benchmarks, size: (auto, 5), labelkey: 0, mode: "clustered", value-key: (1,2),
+      //y-mode: "log", y-format: "sci", 
+      y-min: 0, y-max: 1000, y-tick-step: none, y-ticks: (10, 100, 1000), y-base: 10)
 })
 

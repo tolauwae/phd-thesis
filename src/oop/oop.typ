@@ -1,6 +1,6 @@
 #import "../../lib/util.typ": code, snippet, algorithm, semantics, lineWidth, headHeight, tablehead, highlight, boxed
 #import "../../lib/class.typ": note, theorem, proofsketch, proof, example, lemma
-#import "../../lib/fonts.typ": sans, script
+#import "../../lib/fonts.typ": sans, script, serif
 
 #import "./figures/cetz/led.typ": ledcetz
 #import "./figures/semantics.typ": *
@@ -37,7 +37,7 @@ In this chapter, we present the first formalisation of the technique, and attemp
 Naturally, our work builds on the preceding out-of-place debugging works, and these deserve a proper introduction.
 Therefore, we first provide an overview of how out-of-place debugging works, and discuss how our contributions relate to previous work.
 
-=== The origin of out-of-place debugging
+=== The origin of out-of-place debugging<oop:history>
 
 Out-of-place debugging was originally devised to minimize debugging interference of remote debuggers for big data applications @marra18:out-of-place, by moving the debugging session to another device.
 The first out-of-place debugger, IDRA, was developed for the Pharo language, and allowed for debugging of live distributed big data applications.
@@ -47,7 +47,7 @@ The prototype showed how out-of-place debugging can reduce the debugging latency
 // todo motivation for out-of-place debugging on microcontrollers
 === Out-of-place debugging for microcontrollers
 
-// 1. why on microncotrollers: motivation for edward
+// 1. why on microncotrollers: motivation for Edward
 In the context of embedded applications, out-of-place debugging has great potential for improving the debugging experience offered by remote debuggers.
 This is due to the techninque being ideally suited for tackling the three main drawbacks of remote debuggers.
 Firstly, the debugger is run on the remote device.
@@ -63,8 +63,8 @@ Thirdly, the delays introduced by the remote communication can exasperate the de
 An initial investigation by #cite(form: "prose", <rojas21:wood>) looked at out-of-place debugging as a solution for live debugging of _in-production_ embedded applications.
 The work paved the way for using out-of-place debugging on microcontrollers, and while its topic is very interesting, there are many questions around the idea of debugging in production.
 In-production debugging is rarely seen in practice, and considered by some to be undesirable.
-Regardless, out-of-place debugging can provide numerous other benefits to debuggers for microncotrollers.
-In  this dissertation, we will therefore not concern ourselves with the problem of in-production debugging, and instead present how we adapted---and extended---out-of-place debugging to work for microncotrollers during the traditional development stage.
+Regardless, out-of-place debugging can provide numerous other benefits to debuggers for microcontrollers.
+In  this dissertation, we will therefore not concern ourselves with the problem of in-production debugging, and instead present how we adapted---and extended---out-of-place debugging to work for microcontrollers during the traditional development stage.
 
 === The gaps in out-of-place debugging
 
@@ -98,8 +98,8 @@ We will illustrate the various concepts involved using our prototype implementat
 #[
 
 #figure(
-  grid(columns: (1.0fr, 1.3fr),
-    ledcetz,
+  grid(columns: (1.1fr, 1.0fr),
+    image("figures/led.svg"),
     snippet("oop:lst.example", [], headless: true,
     (```ts
 import {pinMode, PinMode,
@@ -190,9 +190,37 @@ At any point, a message can be received on the topic "SENSOR", at which point th
 On the right-hand side of @oop:app:problem, we show a schematic of the microcontroller connected to the MQTT broker.
 The connection with the MQTT broker is an example of an asynchronous non-transferable resource, which can produce new MQTT messages at any point in the program, and subsequently triggering a callback, such as the _log_ function in the example.
 
+#figure(
+  grid(columns: (1.1fr, 1.0fr),
+    image("figures/mqtt.svg"),
+    snippet("oop:lst.example", [], headless: true,
+    (```ts
+import {MQTT} from "warduino/assembly";
+import {init} from "./util";
+import * as config from "./config";
+
+export function main(): void {
+    // connect to WiFi & MQTT broker
+    init();
+
+    // Subscribe to MQTT topic
+    MQTT.subscribe(
+        "SENSOR",
+        // and log value
+        log(topic: string,
+            payload: string) => {
+            // ...
+    });
+    // ...
+}
+```,)),
+  ),
+  caption: [Small example application illustrating the state desynchronization problem in out-of-place debugging, when receiving MQTT messages. The application simply logs sensor values received via MQTT messages.]
+)<oop:app:problem>
+
 === Out-of-place debugging for event-driven applications
 
-// extension of edward on wood
+// extension of Edward on wood
 
 Previous out-of-place debuggers @marra18:out-of-place @rojas21:wood, did not support asynchronous non-transferable resources, such as the MQTT connection in the example.
 Access to non-transferable resources from the client was only possible by request of the server, such as through synchronous remote function calls in the case of #cite(form: "prose", <rojas21:wood>).
@@ -227,37 +255,6 @@ The example in @oop:app:problem, illustrates both synchronous and asynchronous s
 First, the MQTT.subscribe function, illustrates synchronous state desynchronization.
 It modifies the internal state of the runtime on the server by storing the callback to be triggered upon receiving the "SENSOR" messages, which the subsequent out-of-place code depends on.
 Second, whenever an MQTT message is received, this message is stored in memory (on the server) and should be executed as soon as the currently executing instruction is finished. // todo does not need to be immediate due to the partial ordering REMOVE ?
-
-
-
-#figure(
-  grid(columns: (1.0fr, 1.3fr),
-    ledcetz,
-    snippet("oop:lst.example", [], headless: true,
-    (```ts
-import {MQTT} from "warduino/assembly";
-import {init} from "./util";
-import * as config from "./config";
-
-export function main(): void {
-    // connect to WiFi and MQTT broker
-    init();
-
-    // Subscribe to MQTT topic
-    MQTT.subscribe(
-        "SENSOR",
-        // and log value
-        log(topic: string,
-            payload: string) => {
-            // ...
-    });
-
-    // ...
-}
-```,)),
-  ),
-  caption: [Small example application illustrating the state desynchronization problem in out-of-place debugging, when receiving MQTT messages. The application simply logs sensor values received via MQTT messages.]
-)<oop:app:problem>
 
 === The abstract model of out-of-place debugging
 
@@ -302,8 +299,8 @@ The IDRA debugger @marra18:out-of-place is the first implementation of out-of-pl
 It explicitly scopes the side effects on internal state to the local server, thereby allowing developers to debug a node in the network without effecting the _live_ execution of the distributed software.
 However, this means that IDRA can only read from the non-transferable resources, such as files, and not write to them.
 
-The EDWARD debugger @lauwaerts22:event-based-out-of-place-debugging is an out-of-place debugger for microcontrollers, where the goal is to free the debugger from the constraints of the microcontroller.
-Following the example of IDRA, EDWARD attempts to scope all changes to the internal state to the local server.
+The Edward debugger @lauwaerts22:event-based-out-of-place-debugging is an out-of-place debugger for microcontrollers, where the goal is to free the debugger from the constraints of the microcontroller.
+Following the example of IDRA, Edward attempts to scope all changes to the internal state to the local server.
 In order to support receiving MQTT messages it employs a complex ad-hoc synchronization mechanism specifically to handle this use case.
 
 Both implementations of out-of-place debugging, on the left side the spectrum, keep internal state changes scoped to the local server, showing the need to find solutions that deal with state desynchronization in a systematic way.
@@ -403,12 +400,11 @@ This design choice enables us to have a clear and easy division between transfer
     invokeconfig,
 "oop:fig:invoking")
 
-We build on the semantics of WebAssembly as defined by #cite(form: "prose", <haas17:bringing>).
+#note[We use the terms _forward_ and _backward_ transfer to refer to the direction of the state changes, similar to program slicing.]We build on the semantics of WebAssembly as defined by #cite(form: "prose", <haas17:bringing>).
 @oop:fig:prim-def shows data extensions to WebAssembly needed to support non-transferable resources.
 The WebAssembly program state is defined as a configuration $K$, with global store $s$, local values $v^*$, and the current stack of instructions $e^*$.
 The #emph[global] action table $A$ contains all actions, each action $a$ is a named pair of a closure $cl$ and a transfer functions $t$ and $r$.
 The closure consists of the code which performs the action over the non-transferable resource. 
-#note[We use the terms _forward_ and _backward_ transfer to refer to the direction of the state changes, similar to program slicing.]
  The backward transfer function $t$, returns the state $s'$ needed to perform the action, given the arguments $v^*$ and the current state $s$ of the server. 
  The forward transfer function $r$, produces the state $s'$ that has been altered by execution the action given the state $s$ after executing the action on the client. 
  We refer to elements of named tuples, such as the transfer function as $a_(transfer)$.
@@ -549,7 +545,7 @@ The process is split into three steps, corresponding to four evaluation rules, f
         At this point, the client makes use of the $a_{transfer^{-1}}$ function of the action to compute which state needs to be synchronised. 
         This difference is then transferred back to the server in a #smallcaps("sync") message, along with the return value $v$ of the action.
 
-=== Modeling Asynchronous Non-transferable Resources<oop:Asynchronous>
+== Modeling Asynchronous Non-transferable Resources<oop:Asynchronous>
 
 The semantics so far, allow for the out-of-place debugger to handle programs with synchronous operations that are both stateless and stateful.
 However, in microcontroller systems, actions can be triggered asynchronously by elements such as sensors, hardware interrupts, and asynchronous communication protocols like MQTT.
@@ -577,7 +573,7 @@ Pure WebAssembly does not have support for callbacks, therefore, we extend the W
   [
     The reduction rules describing the event and callback handling in our concurrent callback system for asynchronous events in WebAssembly, based on the lightweight callback system of the WARDuino virtual machine @lauwaerts24:warduino.
   ],
-  [],
+  crules,
   "oop:sem:callbacks"
 )
 
@@ -615,17 +611,22 @@ Whenever an event arrives in the event queue, the WebAssembly runtime will inter
 Such callbacks cannot have a return type, to ensure that callbacks do not break a well-typed WebAssembly program.
 However, callbacks can update other internal state, such as global variables, or linear memory. // todo double check if this does not break our solution
 Asynchronous events and callbacks introduce non-determinism into the WebAssembly languages, which can seriously complicate debugging of programs.
-However, simplifying debugging of non-deterministic bugs is beyond the scope of this paper, and is an orthogonal problem to that of state desynchronization in out-of-place debugging. // todo show in proofs that this does not change things
+However, simplifying debugging of non-deterministic bugs is beyond the scope of this chapter, and is an orthogonal problem to that of state desynchronization in out-of-place debugging. // todo show in proofs that this does not change things
 In fact, some recent work on debugging non-deterministic programs in WebAssembly uses some resource-heavy program analysis, which can benefit from out-of-place debugging to reduce overhead, and support resource-constraint microcontrollers. // todo cite demo and master thesis maarten
 
-=== Debugging Asynchronous Non-transferable Resources<oop:debugAsynchronous>
+== Debugging Asynchronous Non-transferable Resources<oop:debugAsynchronous>
+
+#figure(
+    caption: [],
+    image("figures/oopdebugging.svg", width: 80%),  // todo update image
+)<oop:forwardevents>
 
 The callback system and the asynchronous non-transferable resources it enables, present a second challenge for handling state desynchronization in out-of-place debugging.
 Identical to the other parts of the program's runtime, we wish to have the callback system run on the client.
 Unfortunately, events are generated on the side of the server.
 Building on the semantics we discussed so far, we show how out-of-place debuggers can deal with these kind of asynchronous state changes in the following sections.
 
-==== An Example of Asynchronous Resources
+=== An Example of Asynchronous Resources
 
 To illustrate the challenges introduced by asynchronous resources to stateful out-of-place debugging, we take another detailed look at our running MQTT example (@oop:app:problem).
 Developers familiar with the MQTT subscribe operation, would expect it to send a message to the MQTT broker, indicating that the client is interested in a specific topic.
@@ -636,7 +637,7 @@ In stateful out-of-place debugging, the update of the callback system by an acti
 However, whenever the client receives MQTT messages, it places these in the event queue of the callback handling system.
 This is a clear example of asynchronous desynchronization, which needs to be handled differently.
 
-==== The Callback System in Out-of-place Debugging
+=== The Callback System in Out-of-place Debugging
 
 We revisit the semantics of stateful out-of-place debugging entirely, since the current semantics have no way of dealing with events produced by non-transferable resources.
 We will define a new semantics $attach(dbgarrow, tr: alpha)$ that encapsulates the previous syntax and evaluation rules, but adds support for synchronization and control of event-driven non-transferable resources.
@@ -656,7 +657,7 @@ The events are another matter, these are generated asynchronously, and so need t
 However, in this case too, synchronization is only necessary from server to client.
 
 
-==== Controlling the dispatching of Asynchronous Events
+=== Controlling the dispatching of Asynchronous Events
 
 While it is important for microcontroller applications to interrupt a program's execution to handle asynchronous events, during debugging this is extremely distracting and confusing.
 Debugging relies on giving the developer control over the program's execution, but asynchronous code takes away this control.
@@ -667,7 +668,7 @@ We therefore want full control over the impact that asynchronous events have on 
   [
     The semantics of push-based asynchronous non-transferable resources in out-of-place debugging $attach(#dbgarrow, tr: alpha)$, which encapsulates the relation $dbgarrow$, and provides control over the non-determinism of events to the developer.
   ],
-  events,
+  eventsrules,
   "oop:sem:events"
 )
 
@@ -693,8 +694,7 @@ We provide a summary of each rule below.
 
 // todo adding the **control** over events is not so easy. we need to remove the interrupt rule from the language semantics and replace it with the debug instructions
 
-=== Correctness of Out-of-place Debugging<oop:soundness>
-
+== Correctness of Out-of-place Debugging<oop:soundness>
 
 Given the presented formalization of out-of-place debugging, we can now proof several interesting properties showing the soundness of the approach.
 Before we give the proofs of general correctness for our debugger, we first proof two lemmas showing that invoking a non-transferable resource from the server does not change the observable behavior of the program, compared to its normal execution on the client.
@@ -801,14 +801,30 @@ $ forall K' : K multi(wasmarrow) K' arrow.double.r.long dbg_start attach(dbgarro
 == Implementation<oop:implementation>
 
 // todo show vs code plugin
-We have implemented the stateful out-of-place debugger formalized above in a prototype debugger, called #emph[Edgar].
-The #emph[Edgar] debugger is built on top of the WARDuino runtime @lauwaerts24:warduino, a WebAssembly runtime for microcontrollers.
-The implementation leverages the existing stateless implementation of the WARDuino runtime, and extends it with the necessary infrastructure for state synchronization.
-This involved extending the existing communication protocol with the necessary messages for state synchronization, and refactoring the communication infrastructure of the runtime to handle the new messages.
+We have implemented the stateful out-of-place debugger formalized above in a prototype debugger, called #emph[Edward].
+The #emph[Edward] debugger is built on top of the WARDuino runtime @lauwaerts24:warduino, a WebAssembly runtime for microcontrollers.
+The prototype provides the features described in the previous section.// for IoT applications that compile to WebAssembly.
+//The implementation leverages the existing stateless implementation of the WARDuino runtime, and extends it with the necessary infrastructure for state synchronization.
+//This involved extending the existing communication protocol with the necessary messages for state synchronization, and refactoring the communication infrastructure of the runtime to handle the new messages.
 Additionally, we created a new high-level interface for defining actions which integrates the state synchronization interface described in @oop:semantics.
 The stateful debugger can be used in VS Code to debug AssemblyScript programs running on an instance of the WARDuino runtime, thanks to a dedicated extension to the VS Code IDE.
 
-//Edgar extends the EDWARD debugger's communication protocol with the necessary messages for state synchronization, as described by the formal semantics.
+=== Virtual Machine Requirements<subsec:requirements>
+
+In order to implement out-of-place debugging, any candidate VM must support the following:
+
+    + Standard instrumentation required for halting and stepping through a program.
+    + Support forward and backward state transfer for non-transferable resources.
+    + Update the state provided the data received from the transfer functions.
+    + Capture and serialize all asynchronous events produced by non-transferable resources.
+
+First, the virtual machine needs to support the elementary debug commands of any online debugger, which at least include halting and stepping through a program.
+Second, as we have demonstrated, state synchronization is equally fundamental for out-of-place debugging.
+The virtual machine should be able to support forward and backward state transfer for non-transferable resources.
+//In our implementation, the virtual machine provides primitives for state serialization, that allow developers to easily implement the transfer functions for the actions on non-transferable resources.
+Third, given the data provided by the transfer functions, the virtual machine must be able to update its own state.
+Four, the virtual machine must be able to capture and serialize all asynchronous events produced by non-transferable resources.
+Thereby allowing them to be forwarded from server to client.
 
 #snippet("oop:action",
     columns: 2,
@@ -938,29 +954,27 @@ For the transfer we can use the #emph[sync\_callback] primitive which will add t
 //\begin{minipage}{\textwidth}
 //  \includegraphics[width=\linewidth]{./figures/vscode.pdf}
 //\end{minipage}%
-//    \caption{%#emph[Left:] The output of a small sample of the test suite for the out-of-place debugger, using the underlying virtual machine's own testing framework called Latch~\cite{lauwaerts24}. #emph[Right:]
+//    \caption{%#emph[Left:] The output of a small sample of the test suite for the out-of-place debugger, using the underlying virtual machine's own testing framework called Latch~@lauwaerts24:latch. #emph[Right:]
 //A screenshot of the out-of-place debugger in VS Code.}
 //  @fig:implementation
 //\end{figure}
 
-#figure(caption: [//#emph[Left:] The output of a small sample of the test suite for the out-of-place debugger, using the underlying virtual machine's own testing framework called Latch~\cite{lauwaerts24}. #emph[Right:]
+#let screenshot = rect(inset: 0mm, image("./figures/screenshots/vscode.png", width: 80mm))
+#figure(caption: [//#emph[Left:] The output of a small sample of the test suite for the out-of-place debugger, using the underlying virtual machine's own testing framework called Latch~@lauwaerts24:latch. #emph[Right:]
 A screenshot of the out-of-place debugger in VS Code.],
   cetz.canvas({
     import cetz.draw: *
 
-    content((0,0), (8,8.29), //rect(inset: 0mm, 
-      image("./figures/screenshots/vscode.png", width: 80mm)//)
-    , name: "screenshot")
-    rect((0,0), (8,8.29), stroke: 0.5pt)
+    content((0,0), (8,8.29), screenshot, name: "screenshot")
 
-    rect((0.42,6.5), (2.60,3.29), stroke: (thickness: 0.4pt, dash: "densely-dashed"))
-    content((-0.42, 6.4), align(right, text(weight: "semibold", size: script, font: sans, [Event \ queue])))
+    rect((0.42,6.5), (2.60,3.29), stroke: (thickness: 0.4pt, dash: (2pt, 2pt), join: "round"))
+    content((-0.42, 6.4), align(right, text(weight: "semibold", size: script, font: serif, [Event \ queue])))
 
-    rect((0.42,7.98), (2.60,7.70), stroke: (thickness: 0.4pt, dash: "densely-dashed"))
-    content((-0.65, 7.9), align(right, text(weight: "semibold", size: script, font: sans, [Debug \ commands])))
+    rect((0.42,7.98), (2.60,7.70), stroke: (thickness: 0.4pt, dash: (2pt, 2pt)))
+    content((-0.65, 7.9), align(right, text(weight: "semibold", size: script, font: serif, [Debug \ commands])))
 
-    rect((5.64,7.54), (7.40,7.26), stroke: (thickness: 0.4pt, dash: "densely-dashed"))
-    content((8.90, 7.54), align(left, text(weight: "semibold", size: script, font: sans, [AssemblyScript \ library for access \ to actions])))
+    rect((5.64,7.54), (7.40,7.26), stroke: (thickness: 0.4pt, dash: (2pt, 2pt)))
+    content((8.90, 7.54), align(left, text(weight: "semibold", size: script, font: serif, [AssemblyScript \ library for access \ to actions])))
 }))<fig:implementation>
 
 Our prototype implementation on top of the WARDuino runtime allows developers to use the existing VS Code extension for the warduino debugger to debug AssemblyScript programs using stateful out-of-place debugging.
@@ -998,6 +1012,162 @@ We ran the programs both with and with the out-of-place debugger, and verified t
 //@fig:performance
 //\end{figure}
 
+== Evaluation
+
+=== Debugging Common Bug Issues<oop:debugging-common-bug-issues>
+
+As mentioned in the introduction, a 2021 study on `5,565 bugs in 91 IoT projects` showed that the most frequent types of bugs are related to software development and device issues @makhshari21:iot-bugs.
+In this section, we show an example program illustrating how out-of-place debugging better accommodates finding and solving device issues than regular remote debugging.
+\Cref{subsec:concurrency} provides a similar comparison but for a software development issue due to concurrency. // todo add appendix
+
+#strong("The Bug.") Many device issues are related to handling interrupts @makhshari21:iot-bugs.
+@oop:hardwareproblems shows a simple AssemblyScript application that toggles an LED when a button is pressed.
+The code listens for a hardware interrupts triggered on the falling edge of the button pin (line 11).
+Upon receiving an interrupt, the `buttonPressed` function is called, which toggles the LED (line 7).
+While the code may not contain errors, the hardware can cause bugs in it.
+Consider the following bug scenario: when testing the application with a real button, the LED sometimes does not change despite the button being pressed.
+
+#snippet("oop:hardwareproblems",
+    columns: 2,
+    [A simple AssemblyScript program that toggles an LED when a button is pressed.],
+    (```ts
+import * as wd from warduino;
+
+const LED: u32 = 25;
+const BUTTON: u32 = 26;
+
+function buttonPressed(): void {
+  wd.digitalWrite(LED, !wd.digitalRead(LED));
+}
+
+export function main() : void {
+  wd.interruptOn(BUTTON, wd.FALLING, buttonPressed);
+  while(true);
+}
+```,))
+
+#strong("Bugfixing with a Remote Debugger.") With a regular remote debugger, developers could start their diagnosis by adding a breakpoint in the `buttonPressed` callback function triggered when pressing the button.
+Note that in this simple example, there is only one single callback function,
+but in more complex IoT applications developers may need to place breakpoints in many callback functions as it is difficult to rule out which ones are not causing to the faulty behavior.
+//the developer will notice that the \lstinline{buttonPressed} function is actually called when pressing the button.
+
+Stepping through code with asynchronous callbacks is generally not easy with current state of the art remote debuggers.
+//%In more complex applications with many callbacks, the developer needs to manually place a breakpoint at each callback function in order to debug the application.
+Keeping track of all the asynchronous callbacks increases the number of times a developer needs to manually step through the application before discovering the error, complicating debugging. //as IoT applications typically have many callback due to its event-driven nature.
+Moreover, stepping through the code is relatively slow, as the network latency between the developer's machine and the remote device slows down the debug session.
+Finally, most applications will not feature a busy loop as in our example, but the main thread runs concurrently with the asynchronous invocations, making it harder to notice errors.
+//%Furthermore, most application code will have much more complex code in the main thread than a simple busy loop as in our example.
+//%This means that the code in the main thread is running concurrently with the asynchronous invocations, making it harder to notice errors.
+//%\carlos{This argument feels weird to me. To show that remote debugging fig 10 is hard. We make up a complex application that consists of a greater amount of callbacks and a complex main and basically say "because it is hard to remote debug the complex application then we can conclude that it is also hard to debug the much simpler example i.e., fig 10".}
+
+Once the developer has stepped through all the asynchronous code letting the callbacks execute, the de developer might notice that the `buttonPressed` callback is strangely invoked multiple times.
+The reason is that a single button press can trigger multiple hardware interrupts due to a common problem of physical buttons called _contact bouncing_ @mcbride89:electrical.
+Contact bouncing happens when the voltage of a mechanical switch pulses rapidly, instead of performing a clean transition from high to low.
+In that case, the pin can register a falling edge multiple times in a row.
+Subsequently, the `buttonPressed` function is triggered multiple times for a single press.
+If contact bouncing causes the function to be triggered an even number of times, the state of the LED seems to remain the same, making the developer believe the code does nothing.
+// remain the same to the human observer.
+It is not trivial to deduce the underlying contact bouncing problem by only stepping through the program. //without any extra information.
+
+#strong[Bugfixing with #smallcaps("Edward").] Let us now revisit the scenario using out-of-place debugging.
+With #smallcaps("Edward"), developers can pull an out-of-place debug session from the remote device, and begin debugging locally at their machine.
+#smallcaps("Edward") provides the developer with a dedicated view on the event queue with all asynchronous events that happen at the remote device, and the ability to choose when the next event happens.
+When the developer pushes the physical button once during debugging, they will immediately notice that #smallcaps("Edward")'s events view suddenly contains multiple identical events for a single button press, as shown in \cref{fig:manyevents}.
+This information enables the developer to more easily detect the contact bouncing issue. // without even having to step through the code.
+
+If the developer has not yet deduced the root cause of the bug, they could use stepping through the code in a similar way than when using the remote debugger.
+However, this time, stepping through the code is fast as debugging happens locally without incurring in network communication.
+Moreover, #smallcaps("Edward") allows debugging the program backwards.
+This means that during debugging when the LED does not turn on, the developer can step back to the previous step to diagnose what exactly went wrong during the execution.
+There is no need to restart the program and try to guess what the right conditions for the bug were.
+
+//%Such a debugger can detect the same hardware bugs as remote debuggers, because the debugger captures all non-transferable resources, including asynchronous events.
+//%In our prototype frontend, we provide the developer with a full view of the event queue and the ability to choose when the next event happens.
+//%In this instance, the developer can pull the debug session from the constraint device and move it to their laptop. 
+//%When they push the physical button, they will immediately notice that the event queue in the debugger frontend suddenly contains multiple identical events for a single button press, as shown in \cref{fig:manyevents}.
+//%A better overview and management of the asynchronous events makes that the developer can easily detect the bug without even having to step through the code.
+
+//%In addition, when the bug is not immediately evident from the incoming events the out-of-place debugger allows the developer to debug much faster as code not accessing the non-transferable resources is executed locally thus greatly reducing latency.
+//%Finally, the developer has control over when the events must be handled which allows for a much more in-depth debug session.
+
+\begin{figure}
+    \includegraphics[width=0.25\textwidth]{figures/screenshots/manyevents}
+    \caption{The debugger frontend shows a list of identical interrupts after a single button press.}
+    \label{fig:manyevents}
+\end{figure}
+
+#strong("Conclusion.") This example illustrates that using out-of-place debugging makes a difference when debugging device issues compared to a remote debugger.
+Since #smallcaps("Edward") captures all non-transferable resources and provides a view on the event queue with all asynchronous events that happened at the remote device, developers can more easily diagnose device issues.
+For those cases where stepping is still needed, this happens with low latency.
+#smallcaps("Edward") also allows developers to step backwards, potentially reducing the debugging time as applications may not need to be restarted to reproduce the conditions for the bug to appear.
+
+//%We believe our example illustrates that even with remote debugging this is not always trivial.
+//%Certainly, in more complex problems the developer cannot exclude the possibility of software issues without extensive debugging and testing.
+//%This is where using out-of-place makes a significant difference.
+
+
+=== Quantitative Evaluation<oop:quantative>
+
+// todo rework + add random generated programs
+// todo forward reference to latch (as the framework for testing the implementation)
+
+We now present some preliminary quantitative evaluation of #smallcaps("Edward"), to underscore the potential of our approach to reduce performance impact while debugging IoT devices.
+//%to reduce the performance impact of debugging IoT devices.
+//%\Oop debugging avoids as much as possible network communication to the IoT device during an out-of-place debug session, reducing latency while debugging and network overhead.
+//%\Oop reduces the performance impact primarily by avoiding as much as possible the main bottleneck of remote debugging, accessing the device.
+
+\begin{figure}
+\begin{tabular}{ lrr }
+                      & \#Instructions &  \\
+ Location independent & 2092 & 99.15\% \\
+ \Nt                  &   18 & 0.85\% \\
+ \hline
+ Total                & 2110 & 100\% \\
+\end{tabular}
+\caption{Labeling of Wasm instructions for a smart lamp application (\cref{app:concurrency} in \cref{subsec:concurrency}).}
+\label{tab:colouring}
+\end{figure}
+
+\paragraph{Code Analysis.} To analyze the potential communication needed between debugger and remote device, consider the smart lamp application written in AssemblyScript allowing users to control the brightness of an LED (cf. \cref{app:concurrency} in \cref{subsec:concurrency}).
+
+While remote debugging requires network communication between debugger and the remote device for \emph{all} debugging operations and all types of instructions,
+\oop debugging only requires network communication for those instructions that access \nt resources.
+In order to get an estimate of the amount of instructions which are location dependent compared to the non-transferable instruction we labeled each of the Wasm instructions of the smart lamp application's code as a location-independent instruction, or an instruction that accesses a \nt resource. The results shown in \cref{tab:colouring} confirm our suspicion that location-independent instructions outweigh instructions accessing \nt resources.
+
+%Our benchmarks were conducted using an ESP32-DevKitC V4 board\footnote{\url{https://docs.espressif.com/projects/esp-idf/en/latest/esp32/hw-reference/esp32/get-started-devkitc.html}} connected with a dell xps 9310 laptop through a local network. This board features an ESP32 WROVER IE chip that operates at 240 MHz, with 520 KiB SRAM, 4 MB SPI flash and 8 MB PSRAM.
+
+\paragraph{Network Overhead.}
+In order to get an estimate of the difference in network overhead between remote debugging and \oop debugging we benchmarked the (debugging) network overhead of the smart lamp application. 
+Our benchmarks were performed on a M5StickC~\cite{m5stickc} connected to a MacBook Pro with an Apple M1 Pro chip operating at 3.2 GHz CPU and 32GiB of RAM, through a local network.
+
+ \Cref{fig:remote_debugging_overhead} plots the network overhead of stepping through the application with a remote debugging session. As we can see, there are small step-wise fluctuations caused by the changing amount of local variables in the program. The network overhead for each debugging step is approximately 2.2 kB.  
+
+For \oop debugging, we benchmarked the network overhead of taking a full snapshot at each remote stepping operation, i.e. the network overhead involved with starting an out-of-place debugging session. Note that in practice the developer needs to perform this operation only once.
+\Cref{fig:remote_snapshot_overhead} shows the results of taking a snapshot at each stepping operation of the smart-lamp application. 
+As expected, the network overhead involved with taking a full snapshot is much higher than a single debugging step, each full snapshot takes approximately 130 kB. 
+
+The significant difference in network overhead between a remote debugging step and a full snapshot is expected and is mostly because the snapshot captures the stack and a full memory dump of the running application.
+
+Luckily, once a snapshot has been taken the debugging session can be executed locally and the subsequent debugging  session will be much faster. Avoiding access to the remote device reduces network overhead and lowers debugging latency. The network overhead for proxied calls is much smaller than a normal debugging step and takes at most 10 bytes per remote call with an additional 4 bytes per argument. More importantly the network overhead for stepping through each of the location independent instructions is zero.
+
+\paragraph{Latency.}
+Finally, we also benchmarked the difference in latency between local debugging steps and remote debugging steps. When stepping through the smart-lamp application with \oop debugging, we find that local steps take on average approximately 5ms while a remote \emph{proxy call} takes approximately 500ms. 
+
+In practice this means that the developer using \oop debugging will perceive almost instantaneously local debugging steps interleaved with remote calls which are perceived slower. As these non-transferable instructions make up less than  1\% of the code, most debugging steps will be able to be executed fast.
+
+ \begin{figure}[t]
+\begin{center}
+		\includegraphics[width=1\columnwidth]{figures/remote_step_overhead}
+                \caption{Network communication overhead of 30 step operations using remote debugging.
+                         Note that the overhead axis starts at 2kB.}
+                //%     \robbert{Graph should start at 0, maybe results from \cref{fig:remote_snapshot_overhead} should also be included here}
+                //%     \robbert{A graph of \oop debugging would also be nice, with a giant spike at index 0 and almost nothing for the rest}
+                //%     \robbert{Could the raw data be placed in the repo?}
+		\label{fig:remote_debugging_overhead}
+\end{center}
+\end{figure}
+
+
 == Discussion<oop:discussion>
 
 //After evaluating our experimental prototype in several practical scenarios, 
@@ -1005,7 +1175,7 @@ Before giving a detailed overview of the related work, we now consider the wider
 
 #heading(numbering: none, level: 4, "On the design choices")
 
-This paper presents the first formal foundation for out-of-place debugging and address within it the important challenge of state desynchronization, which has been neglected by previous works.
+This chapter presents the first formal foundation for out-of-place debugging and address within it the important challenge of state desynchronization, which has been neglected by previous works.
 This resulted in the first stateful out-of-place debugger implementation.
 We choose to focus on the context of microcontroller programming, as it is a domain where out-of-place debugging can provide significant benefits, and where the support for stateful operations is crucial.
 The resource constraints imposed by microcontrollers are the main motivation for out-of-place debugging in this context, which inevitably impacted the design choices we made in a significant manner.
@@ -1023,10 +1193,11 @@ Using existing models for event interleaving, it should be possible to weaken ou
 
 The current abstract of asynchronous events in our debugger semantics is a very simple model of the environment.
 The model does not take into account the exact timing of events, and assumes all interleaving of events are possible.
-However, such timings and interleavings are crucial for many applications~\cite{lamport78}.
+However, such timings and interleavings are crucial for many applications @lamport78:time.
 Luckily, this problem has been extensively studied in the field of distributed systems, and a wide range of models exist to capture the asynchronous behavior.
 Likewise, the literature on automated testing has a broad range of techniques for modeling the environment.
 We give a brief overview of the literature on synchronization and consistency in distributed systems, and environment modeling in testing.
+
 
 == Related Work<oop:related>
 
@@ -1035,9 +1206,9 @@ In this section, we will discuss other related works.
 
 #heading(numbering: none, level: 4, "Remote Debugging")
 
-In remote debugging~\cite{rosenberg96}, a debugger frontend connects to a remote backend that executes the target program.
-However, remote debugging may worsen the probe effect~\cite{gait86} and can experience significant delays due to the overhead of running the debugger on the microcontroller coupled with continuous communication requirements.
-Regardless, due to the ability to debug remote processes, remote debuggers are ubiquitous in software development, with popular debuggers such as GDB~\cite{shortab} and LLDB~\cite{shortaa}, as well as default support for remote debugging by many development environments // todo ~\cite{shorta_, mikejo500025}.
+In remote debugging @rosenberg96:how, a debugger frontend connects to a remote backend that executes the target program.
+However, remote debugging may worsen the probe effect @gait86:probe and can experience significant delays due to the overhead of running the debugger on the microcontroller coupled with continuous communication requirements.
+Regardless, due to the ability to debug remote processes, remote debuggers are ubiquitous in software development, with popular debuggers such as GDB @gdb and LLDB @remote, as well as default support for remote debugging by many development environments // todo ~@shorta_, mikejo500025.
 
 // todo need more on alternative debugging solutions
 
@@ -1045,71 +1216,71 @@ Regardless, due to the ability to debug remote processes, remote debuggers are u
 
 #heading(numbering: none, level: 4, "Remote Debugging Embedded Systems")
 
-Remote debugging is widely used in embedded systems~\cite{potsch17,skvar-c24,soderby24} and typically follows one of two approaches: stub or on-chip debugging~\cite{li09}.
-A stub is a lightweight software module running on the microcontroller that instruments the program, whereas on-chip debugging employs dedicated hardware—such as JTAG-based debuggers~\cite{shortm}—to facilitate the process.
-These hardware debuggers can integrate with various software tools \cite{soderby24}, including the popular OpenOCD debugger~\cite{hogl06}.
+Remote debugging is widely used in embedded systems @potsch17:advanced @skvar-c24:in-field-debugging @soderby24:debugging and typically follows one of two approaches: stub or on-chip debugging @li09:research.
+A stub is a lightweight software module running on the microcontroller that instruments the program, whereas on-chip debugging employs dedicated hardware—such as JTAG-based debuggers @ieee-standard—to facilitate the process.
+These hardware debuggers can integrate with various software tools @soderby24:debugging, including the popular OpenOCD debugger~@hogl06:open.
 Using hardware debuggers is not easy, and is mostly used to debug programs written in low-level programming languages such as C and C++.
-Additionally, there are several security concerns with JTAG interfaces~\cite{lee16, vishwakarma18} by allowing attackers to reverse engineering the microcontroller's software, or % todo ...
+Additionally, there are several security concerns with JTAG interfaces @lee16:brief-review @vishwakarma18:exploiting by allowing attackers to reverse engineering the microcontroller's software, or // todo ...
 
 To provide a more modern programming experience, several virtual machines (VMs) tailored for microcontrollers have been developed to abstract away the complexities of low-level programming, and provide stubs for remote debugging capabilities---to replace the hardware debuggers.
-Notable examples include Espruino for JavaScript~\cite{williams14}, MicroPython for Python~\cite{george21}, and WARDuino and Wasm3 for languages compiled to WebAssembly~\cite{massey21, lauwaerts24a}.
+Notable examples include Espruino for JavaScript @williams14:espruino, MicroPython for Python @george21:micropython, and WARDuino and Wasm3 for languages compiled to WebAssembly @massey21:wasm3 @lauwaerts24:warduino.
 The debugging support varies widely between these VMs.
-For example, Espruino~\cite{williams14} enables remote debugging of JavaScript programs and allows developers to modify source code to log runtime information (e.g., stack traces), which is either forwarded to a debugger client or stored on the microcontroller if the client is disconnected.
-In contrast, MicroPython~\cite{george21} does not offer a remote debugger, requiring programmers to rely on printf statements for debugging.
-Wasm3 introduces a source-level remote debugger integrated with GDB~\cite{shymanskyy23}, though this feature is in its early stages and has not been actively maintained for the past two years.
+For example, Espruino~@williams14:espruino enables remote debugging of JavaScript programs and allows developers to modify source code to log runtime information (e.g., stack traces), which is either forwarded to a debugger client or stored on the microcontroller if the client is disconnected.
+In contrast, MicroPython~@george21:micropython does not offer a remote debugger, requiring programmers to rely on printf statements for debugging.
+Wasm3 introduces a source-level remote debugger integrated with GDB @shymanskyy23:wasm3wasm-debug, though this feature is in its early stages and has not been actively maintained for the past two years.
 In comparison, our work not only delivers a remote debugging experience but also provides online debugging with minimal latency on demand.
 Moreover, to the best of our knowledge, no other approach offers developers the ability to access and control the processing of events generated by the remote device.
 
 #heading(numbering: none, level: 4, "Out-of-place Debugging")
 
-We briefly discussed the previous works on out-of-place debugging in \cref{oop:spectrum}.
-Here, we provide a more indepth discussion of both the IDRA, and the EDWARD debugger, and the difference between the motivation behind the two debuggers.
+We briefly discussed the previous works on out-of-place debugging in @oop:history.
+Here, we provide a more indepth discussion of both the IDRA, and the Edward debugger, and the difference between the motivation behind the two debuggers.
 
-The IDRA debugger~\cite{marra18} was developed to debug big data applications written in Pharo Smalltalk~\cite{black10}.
+The IDRA debugger @marra18:out-of-place was developed to debug big data applications written in Pharo Smalltalk @black10:pharo.
 Given this context, it had two objectives.
 First, to enable the online debugging of non-stoppable applications.
 In a live production setting, it is not possible to stop the running of a big data applications because of a fault in one of the cluster's nodes.
 By moving the debugging session locally, out-of-place debugging can still provide a online experience similar to a remote debugger without the need to stop the application on the remote cluster.
 Second, the IDRA debugger aims to reduce debugging interference caused by the communication delays in remote debuggers, by reducing the amount of communication needed with the remote process.
 
-The EDWARD debugger on the other hand was developed for the microcontroller environment, where the motivations for out-of-place debugging are very different.
-The main motivation of the EDWARD debugger is to overcome the resource constraints of the microcontroller, allowing for more complex and resource intensive debugging techniques.
+The Edward debugger on the other hand was developed for the microcontroller environment, where the motivations for out-of-place debugging are very different.
+The main motivation of the Edward debugger is to overcome the resource constraints of the microcontroller, allowing for more complex and resource intensive debugging techniques.
 This in turn provides a more modern programming experience to developers.
 The work further focuses on asynchronous non-transferable resources.
-While access to non-transferable resources in IDRA is always in one direction, from local debugger to remote process, the EDWARD debugger allows for two-way communication, based on the callback system from the WARDuino runtime.
-This is the same system we based our semantics of asynchronous events on (\cref{oop:Asynchronous}).
+While access to non-transferable resources in IDRA is always in one direction, from local debugger to remote process, the Edward debugger allows for two-way communication, based on the callback system from the WARDuino runtime.
+This is the same system we based our semantics of asynchronous events on (@oop:Asynchronous).
 
 #heading(numbering: none, level: 4, "Synchronization and Consistency in Distributed Systems")
 
 In our work, the out-of-place debugger comprises two remote processes, the server and the client.
 The semantics of the debugger clearly describe the synchronization between these two devices, however, if we were to extend the debugger to multiple devices, the synchronization would become much more complex.
 Synchronization in distributed systems has of course been widely studied.
-Clock synchronization goes back to the earliest distributed systems in the seventies and eighties~\cite{lamport78, kopetz87, schmuck90}, and has been a crucial part of distributed systems ever since~\cite{auguston05}. % todo auguston05 is wrong
-In fact, with the rise of internet of things applications, the problem has received renewed attention~\cite{mani18,yi-gitler20}.
+Clock synchronization goes back to the earliest distributed systems in the seventies and eighties @lamport78:time @kopetz87:clock @schmuck90:continuous, and has been a crucial part of distributed systems ever since @auguston05:environment. // todo auguston05 is wrong
+In fact, with the rise of internet of things applications, the problem has received renewed attention @mani18:architecture @yi-gitler20:overview.
 
 More generally, the problem of replicating data and consistency within a distributed network is an enormous field of research on its own.
 Much effort has been put into developing solutions for (strong) eventual consistency, where the requirement for synchronization is weakened to allow for higher availability.
-A common approach is to use conflict-free replicated data types (CRDTs)~\cite{shapiro11}, which allow for concurrent updates to data without the need for any coordination~\cite{almeida24}.
+A common approach is to use conflict-free replicated data types (CRDTs) @shapiro11:conflict-free-replicated-data-types, which allow for concurrent updates to data without the need for any coordination @almeida24:approaches.
 It is an open question whether eventual consistency is enough for out-of-place debugging, or whether stronger consistency guarantees are needed.
-However, many other forms of consistency exist, such as sequential consistency~\cite{lamport79}, causal consistency~\cite{terry94,perrin16}, and linearizability~\cite{herlihy90}.
+However, many other forms of consistency exist, such as sequential consistency @lamport79:how, causal consistency @terry94:session @perrin16:causal, and linearizability @herlihy90:linearizability.
 It is our believe that the type of consistency used in out-of-place debugging is tied strongly to its application context.
-//guarantees such as linearizability~\cite{herlihy90} are certain to suffice for out-of-place debugging of multiple devices.
+//guarantees such as linearizability~@herlihy90:linearizability are certain to suffice for out-of-place debugging of multiple devices.
 Yet given the vast amount of work in this field, we believe that the existing techniques for consistency can be used to generalize our formalization to multiple devices, and to further strengthen the formal guarantees.
 
 #heading(numbering: none, level: 4, "Program Slicing")
 
 Given the microcontroller setting, our approach determines the state needed to be transferred statically as part of the definition of the actions on non-transferable resources.
 However, for more complex actions, it would be advisable to use static analysis to determine the slice of the state.
-This is very similar to program slicing~\cite{weiser81,xu05} which decomposes a program into segments based on a #emph[slicing criterion].
+This is very similar to program slicing @weiser81:program @xu05:brief which decomposes a program into segments based on a #emph[slicing criterion].
 This criterion can slice in two directions, either #emph[backward] when identifying segments that might affect the criterion, or #emph[forward] when the segments is affected by the criterion.
 In our semantic, the transfer at the start of an invocation is similar to backward slicing, and the difference returned at the end is similar to forward slicing.
-Many different techniques for slicing exist~\cite{xu05}, both dynamic and static, or hybrid.
-Only a few works have looked into static~\cite{stievenart22} and dynamic~\cite{stievenart23} slicing of WebAssembly programs, however, many of the existing techniques can be expected to work with WebAssembly as well, without great difficulty.
+Many different techniques for slicing exist @xu05:brief, both dynamic and static, or hybrid.
+Only a few works have looked into static @stievenart22:static and dynamic @stievenart23:dynamic slicing of WebAssembly programs, however, many of the existing techniques can be expected to work with WebAssembly as well, without great difficulty.
 
 #heading(numbering: none, level: 4, "Environment Modeling")
 
-Environment modeling is a technique used in testing to model the behavior of the environment in which a program runs~\cite{blackburn98}.
-Such models are often used for automatic test generation~\cite{dalal99,auguston05} for a certain specification, and has also been applied to real-time embedded software~\cite{iqbal15}.
+Environment modeling is a technique used in testing to model the behavior of the environment in which a program runs @blackburn98:using.
+Such models are often used for automatic test generation @dalal99:model-based @auguston05:environment for a certain specification, and has also been applied to real-time embedded software @iqbal15:environment.
 Our work models the asynchronicity of the environment through simple partial order reduction of instantaneous events.
 This model enables exploring different behavior based on the order of events, and to a certain extent the timings of asynchronous events.
 More advanced models of the environment could help take into account additional dependencies between events, and real-time effects.
@@ -1121,7 +1292,7 @@ In this work, we address this limitation by presenting the first formal semantic
 Our approach allows for the debugging of programs with stateful operations on non-transferable resources, with a lazy synchronization strategy where state is only send to the client device when it is required.
 Our formalization allows us to also define correctness for stateful out-of-place debugging, which we divide into soundness and completeness.
 The proof for these theorems show that stateful out-of-place debugging is able to debug programs without introducing impossible execution paths, or missing concrete paths.
-We have implemented our approach in a prototype debugger, called #emph[Edgar], which is built on top of the WARDuino runtime, and VS Code extension.
+We have implemented our approach in a prototype debugger, called #emph[Edward], which is built on top of the WARDuino runtime, and VS Code extension.
 Initial empirical testing shows that our implementation indeed satisfies the correctness criteria defined in our formalization.
 
 //= Auxiliary Debugger Rules<app:rules> // todo move to appendix
