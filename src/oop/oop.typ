@@ -9,7 +9,7 @@
 #import "@preview/cetz:0.3.4"
 
 Today, remote debuggers---like the one presented in the previous chapter---are commonly used to debug microcontrollers, however, there are severe disadvantages.
-Luckily, a novel technique, called out-of-place debugging, can be adopted to overcome these disadvantages.
+Luckily, a novel technique, called out-of-place debugging, can be adopted to largely evade these disadvantages by moving the debugging session to another more powerful device.
 
 During the writing of this dissertation we explored two new concepts for out-of-place debugging, which are essential for microcontrollers.
 Initially, we explored how to support event-driven applications, which are common in microcontrollers.
@@ -142,13 +142,13 @@ By using out-of-place debugging, this is no longer necessary.
 The microcontroller only needs to run a minimal stub to receive a handful of debugging instructions to instrument the runtime.
 
 @oop:fig:oop-definition shows the components involved in out-of-place debugging, the developer's local _client_ on the left, while the right side shows the remote _server_.
-#note[Despite their small size, we refer to the microcontrollers as the _server_, because they _serve_ the _requests_ for information from the local debugger .]
+#note[Despite their small size, we refer to the microcontrollers as the _server_, because they _serve_ the _requests_ for information from the local debugger.]
 The remote server is the device where the software is intended to run.
 In the case of the blinking light application, this would be the microcontroller that controls the LED.
 Uniquely in out-of-place debugging, the entire debugging session---consisting of the runtime and the program being debugged---lives on the client.
 
 #figure(
-  image("../placeholder.png", height: 30%),
+  image("figures/architecture.svg", width: 100%),
   caption: [Schematic showing the concept of out-of-place debugging with all the involved components.]
 )<oop:fig:oop-definition>
 
@@ -702,8 +702,8 @@ Before we give the proofs of general correctness for our debugger, we first proo
 Specifically, we proof that given the execution of an action in the non-debugger semantics, there must exist a path in the debugger semantics that moves the client from the same starting state to the same end state. 
 
 #lemma("Invoking completeness")[
-    The remote invoking of an action in the debugger semantics is _complete_, when for every debugging configuration $dbg$ with $K$ in $S$ and , where the next instruction in $K$ is a call to an action $a$, and $K'$ the result of that action ($K #wasmarrow K'$), the following holds:
-    $ exists dbg' . dbg attach(dbgarrow, tr: alpha comma *) dbg' and (K' in S "of" dbg') $
+    The remote invoking of an action in the debugger semantics is _complete_, when for every debugging configuration $dbg$ with $K$ in $S$ and, where the next instruction in $K$ is a call to an action $a$, and $K'$ the result of that action ($K #wasmarrow K'$), the following holds:
+    $ exists dbg' : dbg attach(dbgarrow, tr: alpha comma *) dbg' and (K' in S "of" dbg') $
 ]<theorem:invoking>
 #proof($bold("Invoking completeness for" attach(dbgarrow, tr: alpha comma ast))$)[
 //    Given $K arrow.r.hook/g_i K'$, we can clearly construct a path in the debugging semantics by following the invocation rules from \cref{sem:events}.
@@ -721,11 +721,32 @@ The lemma in the other direction is likewise important.
 The invoking of actions is sound when for any action invocation that takes $dbg$ to $dbg'$, there is also a path in the underlying language semantics that takes program state $K$ to $K'$, respectively the program states in $S$ for $dbg$ and $dbg'$.
 
 #lemma("Invoking soundness")[
-    The remote invoking of an action in the debugger semantics is _sound_, when the following holds:
-    $ forall dbg, dbg' : (call a) "in" dbg and dbg attach(dbgarrow, tr: alpha comma ast) dbg' and boxed(sync(s comma v)) in S' "of" dbg' \ arrow.double.r.long K wasmarrow K' ", where" K in S "of" dbg and K' in S' $
+    //The remote invoking of an action in the debugger semantics is _sound_, when the following holds.
+    Given any $dbg attach(dbgarrow, tr: alpha comma ast) dbg'$, where the next instruction in $K$ of $C$ in $dbg$ is a call to an action $a$, the sequence $dbg attach(dbgarrow, tr: alpha comma ast) dbg' = dbg_0 attach(dbgarrow, tr: alpha) dots attach(dbgarrow, tr: alpha) dbg_n$ exists, and:
+
+    $ forall i < n : K in C "of" dbg_i = K in C "of" dbg_0 $
+
+    Then:
+
+    $ exists K' : K wasmarrow K' and K in C "of" dbg_n $
 ]<theorem:invoking>
+
+The precise formulation is quite involved, but informally, the lemma states that given any sequence $dbg attach(dbgarrow, tr: alpha comma ast) dbg'$ that starts from the call of an action $a$ in the program state $k$ of the client $C$, and ends in the first state $dbg'$ where this program state has been changed, we there must exist a sequence of steps in the underlying language semantics that takes $K$ to $K'$ (the new program state in $dbg'$).
+The proof follows from the construction of the debugging semantics.
+
 #proof[
-  // todo ... induction
+  Given the starting state of the sequence, $dbg$, the sequence must at some point include either _step-invoke_ and _run-invoke_, or it cannot reach a state $dbg'$ where the program state in the client has changed. // todo add lemma in appendix for this statement
+  The reasoning for both is identical.
+  All other rules that can be taken in the state $dbg$ do not change the program state $K$ in $C$, and cannot lead to any state updates.
+
+  Let us assume the sequence includes the _step-invoke_ rule.
+  The only rules that can be applied next are in order, the _invoke-start_, _invoke-run_, and _invoke-end_ rules, which execute the action $a$ on the server, and finally the _sync_ rule, which updates the program state on the client.
+  This updates the program state on the server to $K''$ using the backward transfer function for the action $a$, and then performs the action, thereby taking the program state $K''$ to $K'''$ in the server.
+  In the final step the data from the forward transfer function updates the program state on the client to $K''''$.
+
+  The proof comes down to proving that the program state $K''''$ on the client, is equivalent to the program state $K'$, produced under normal execution on the server starting from $K$ (i.e., $K wasmarrow K'$).
+  By definition of the backward transfer function that updates the program state in the server to $K''$ in the _invoke-start_ rule, we know that with regard to the step $K'' wasmarrow K'''$, the state $K''$ is equivalent to $K$ in the client.
+  This means that the changes in the program state $K'''$ are equivalent to the changes in the program state $K'$, and since the forward function sends exactly all these changes to the client, we know that $K''''$ is equivalent to $K'$.
 ]
 
 // todo add paragraph
