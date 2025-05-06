@@ -526,7 +526,7 @@ For fullness, @oop:sem:stepping already contains the rule for handling the forwa
   [
     The semantics of out-of-place execution, i.e., on the server, in stateful out-of-place debugging.
   ],
-  invoking,
+  invokingrules,
   "oop:sem:invoking"
 )
 
@@ -706,6 +706,22 @@ Specifically, we proof that given the execution of an action in the non-debugger
     $ exists dbg' : dbg attach(dbgarrow, tr: alpha comma *) dbg' and (K' in S "of" dbg') $
 ]<theorem:invoking>
 #proof($bold("Invoking completeness for" attach(dbgarrow, tr: alpha comma ast))$)[
+    Since we know that $K wasmarrow K'$ exists, we can construct a path in the debugger semantics that brings the client to the same state. The sequence is as follows:
+
+    1. _invoke-start_ sets up the server-side execution of the action $a$, updating the server state to $K''$ using the backward transfer function.
+
+    2. _invoke-run_ performs the action $K'' wasmarrow K'''$, thereby taking the program state to $K'''$ in the server.
+
+    3. _invoke-end_ sends all changes to the program state from the server to the client using the forward transfer function, and _sync_ message.
+
+    4. _sync_ applies the data from the forward transfer function to update the client’s program state to $K''''$.
+
+  //The proof comes down to proving that the program state $K''''$ on the client, is equivalent to the program state $K'$, produced under normal execution on the server starting from $K$ (i.e., $K wasmarrow K'$).
+  //By definition of the backward transfer function that updates the program state in the server to $K''$ in the _invoke-start_ rule, we know that with regard to the step $K'' wasmarrow K'''$, the state $K''$ is equivalent to $K$ in the client.
+  //This means that the changes in the program state $K'''$ are equivalent to the changes in the program state $K'$, and since the forward function sends exactly all these changes to the client, we know that $K''''$ is equivalent to $K'$.
+
+    By definition, after _invoke-start_, $K''$ is equivalent to the client’s original state $K$ with respect to the semantics of the action $a$. Therefore, the execution $K'' wasmarrow K'''$ mirrors the direct semantics $K wasmarrow K'$. Since the forward transfer function transmits all changes to the program state, we have $K''''$ on the client equivalent to $K'$ under the underlying language semantics.
+
 //    Given $K arrow.r.hook/g_i K'$, we can clearly construct a path in the debugging semantics by following the invocation rules from \cref{sem:events}.
 //    Since we know that the next step in $arrow.r.hook/g_i$ for $K$ is #smallcaps("action"), we also know that for any debugging with the running state can use the #smallcaps("run-client") rule.
 //    After this, it follows that the #smallcaps("invoke-start") and #smallcaps("invoke-run") rules can be applied successively, and we know that the latter will use $arrow.r.hook/g_i$ to perform the same action, and step to a state $K''$.
@@ -728,25 +744,32 @@ The invoking of actions is sound when for any action invocation that takes $dbg$
 
     Then:
 
-    $ exists K' : K wasmarrow K' and K in C "of" dbg_n $
+    $ exists K' : K wasmarrow K' and K' in C "of" dbg_n $
 ]<theorem:invoking>
 
 The precise formulation is quite involved, but informally, the lemma states that given any sequence $dbg attach(dbgarrow, tr: alpha comma ast) dbg'$ that starts from the call of an action $a$ in the program state $k$ of the client $C$, and ends in the first state $dbg'$ where this program state has been changed, we there must exist a sequence of steps in the underlying language semantics that takes $K$ to $K'$ (the new program state in $dbg'$).
 The proof follows from the construction of the debugging semantics.
 
 #proof[
-  Given the starting state of the sequence, $dbg$, the sequence must at some point include either _step-invoke_ and _run-invoke_, or it cannot reach a state $dbg'$ where the program state in the client has changed. // todo add lemma in appendix for this statement
-  The reasoning for both is identical.
-  All other rules that can be taken in the state $dbg$ do not change the program state $K$ in $C$, and cannot lead to any state updates.
+    Consider the initial debugger state $dbg$ with program state $K$.
+    To reach a state $dbg'$ where the client’s program state has changed, the sequence of steps in the debug semantics, must eventually apply either the _step-invoke_ or _run-invoke_ rule (by construction of the semantics; see supporting lemma in @app:oop).
 
-  Let us assume the sequence includes the _step-invoke_ rule.
-  The only rules that can be applied next are in order, the _invoke-start_, _invoke-run_, and _invoke-end_ rules, which execute the action $a$ on the server, and finally the _sync_ rule, which updates the program state on the client.
-  This updates the program state on the server to $K''$ using the backward transfer function for the action $a$, and then performs the action, thereby taking the program state $K''$ to $K'''$ in the server.
-  In the final step the data from the forward transfer function updates the program state on the client to $K''''$.
+    Once step-invoke or run-invoke are applied, the only possible sequence of rules is again:
 
-  The proof comes down to proving that the program state $K''''$ on the client, is equivalent to the program state $K'$, produced under normal execution on the server starting from $K$ (i.e., $K wasmarrow K'$).
-  By definition of the backward transfer function that updates the program state in the server to $K''$ in the _invoke-start_ rule, we know that with regard to the step $K'' wasmarrow K'''$, the state $K''$ is equivalent to $K$ in the client.
-  This means that the changes in the program state $K'''$ are equivalent to the changes in the program state $K'$, and since the forward function sends exactly all these changes to the client, we know that $K''''$ is equivalent to $K'$.
+    1. _invoke-start_ sets up the server-side execution of the action $a$, updating the server state to $K''$ using the backward transfer function.
+
+    2. _invoke-run_ performs the action $K'' wasmarrow K'''$, thereby taking the program state to $K'''$ in the server.
+
+    3. _invoke-end_ sends all changes to the program state from the server to the client using the forward transfer function, and _sync_ message.
+
+    4. _sync_ applies the data from the forward transfer function to update the client’s program state to $K''''$.
+
+  We know there is a step $K'' wasmarrow K'''$ in the underlying semantics, which is the result of the action $a$ on the server, but on the client the program state moves from $K$ to $K''$.
+  By definition of the backward transfer function, $K''$ is semantically equivalent to $K$ with respect to $a$.
+  Therefore, the execution $K'' \to K'''$ has the same effect on program state as the transition $K \to K'$.
+  Since the forward transfer function precisely transmits these changes back to the client, the updated client state $K''''$ is equivalent to $K'$.
+
+  Thus, a step $K wasmarrow K'$ exists, with $K'$ in $C$ of $dbg_n$.
 ]
 
 // todo add paragraph

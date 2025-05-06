@@ -2,7 +2,7 @@
 #import "@preview/codly:1.3.0": *
 #import "../lib/book.typ": is-page-empty, quote
 #import "../lib/class.typ": s, t, e, f, note-padding, note-gutter, note
-#import "../lib/fonts.typ": serif, sans, mathfont, monospace, small, normal, script
+#import "../lib/fonts.typ": serif, sans, mathfont, monospace, small, normal, script, codefont
 
 #import "@preview/ctheorems:1.1.3": *
 #show: thmrules.with(qed-symbol: text(size: small, $space square$))
@@ -217,7 +217,7 @@
     // style code snippets
     #show: codly-init.with()
     #set raw(syntaxes: "../lib/wast.sublime-syntax")
-    #show raw: set text(size: 8pt)
+    #show raw: set text(size: codefont)
     #show raw.where(block: true): set text(size: script)
     #show raw.where(block: true): set par(leading: 0.55em)
 
@@ -235,7 +235,7 @@
 // Chapter 2
 = Foundations for Debugging Techniques<chapter:foundations>
 
-#quote("Donald Knuth", theme: theme)[Beware of bugs in the above code;\ I have only proved it correct, not tried it.]
+#quote("Donald Knuth", source: "personal communication c. 1970", theme: theme)[Beware of bugs in the above code;\ I have only proved it correct, not tried it.]
 
 #include "foundations/foundations.typ"
 
@@ -265,9 +265,9 @@
 
 = Managed Testing
 
-#quote("Miyamoto Musashi", theme: theme)[If you know the way broadly, you will see it in everything.] // TODO find a better quote
+#quote("Miyamoto Musashi", source: "The Book of Five Rings", theme: theme)[If you know the way broadly, you will see it in everything.] // TODO find a better quote
 
-//#include "testing/testing.typ"
+#include "latch/latch.typ"
 
 // Appendices and references
 
@@ -304,6 +304,8 @@
 #include "foundations/appendix.typ"
 
 #include "remote/appendix.typ"
+
+#include "oop/appendix.typ"
 
 #include "multiverse/appendix.typ"
 ]
