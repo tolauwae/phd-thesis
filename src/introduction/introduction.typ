@@ -1,7 +1,6 @@
 #import "../../lib/class.typ": note, definition
 // todo the very first sentence should say something about bugs
 
-
 As surely as computers will continue to run software, so will software continue to have bugs and mistakes.
 That’s not pessimism; it’s reality. After all we live in an imperfect world.
 No formal method, nor static checker, or machine learning model can ever eliminate all mistakes---especially, for software which interacts with this imperfect, and unpredictable world.
@@ -21,7 +20,9 @@ Many mistakes arise precisely where models stop: at the interfaces, in the messy
 This almost exclusively involves inspecting program execution with debuggers, where developers trace the steps that led to the failure.
 //That is what debuggers make possible.
 
-This kind of empirical investigation is what we call _"debugging"_, and was best described by Andreas Zeller in his definitive guide, _"Why Programs Fail: A Guide to Systematic Debugging"_ @zeller05:why, provides a thorough overview of debugging as a part of software development, providing a scientific approach to isolating bugs, and discussing best practices, common tools, and novel techniques.
+This kind of empirical investigation is what we call _"debugging"_, and was best described by Andreas Zeller in his definitive guide, _"Why Programs Fail: A Guide to Systematic Debugging"_ @zeller05:why, which provides a thorough overview of debugging as a part of software development, describes a scientific approach to isolating bugs, and discusses best practices, common tools, and novel techniques.
+
+We would like to start with a brief history of debugging.
 
 == The history of debugging  // we talk about debugging since we see it broadly (also print statements)
 
@@ -29,8 +30,8 @@ Debugging has been central to programming since the earliest days of computer sc
 
 No history of debugging is complete without also mentioning Maurice Wilkes' famous anecdote, describing the first time he experienced a need for debugging back in 1949: _"As soon as we started programming, [...] we found to our surprise that it wasn’t as easy to get programs right as we had thought it would be. [...] Debugging had to be discovered. I can remember the exact instant [...] when I realized that a large part of my life from then on was going to be spent in finding mistakes in my own programs."_ @wilkes79:birth @spinellis18:modern
 The term _debugging_ came into circulation shortly after Wilkes famous encounter. //, and continues to be an integral part of programming today.
-From that point on, debuggers evolved alongside programming languages and systems, from the early days of assembly language and machine code to the high-level languages we use today.
-And Wilkes' description still sums up the need for debugging up perfectly today.
+From that point on, debuggers evolved alongside programming languages and computer systems, from the early days of assembly language and punch cards to the high-level languages we use today.
+And Wilkes' description still sums up the need for debugging perfectly today.
 
 === The dirty little secret
 
@@ -40,27 +41,28 @@ And certainly, during the following decades, debugging was proven to indeed help
 Still, debuggers have always remained somewhat in the shadows, with developers having a long tradition of avoiding debugging during software development.
 Many researchers have tried to understand why debuggers are avoided so much, and unsurprisingly, the causes are varied.
 The cognitive load of debugging is undeniable, and while it is by no means trivial to learn, few programmers are formally trained in debugging @mccauley08:debugging @beller18:on.
-Many programmers are overconfidence in the correctness of their code @chattopadhyay22:cognitive, which leads to an unwillingness to examine their code with the needed level of scrutiny.
+Many programmers are overconfident in the correctness of their code @chattopadhyay22:cognitive, which leads to an unwillingness to examine their programs with the needed level of scrutiny.
 Laziness cannot be discounted either, as debuggers are often---perhaps rightly---perceived as hard to set up.
-In many cases programmers feel it is not worth the time to use debuggers for mistakes, they perceive as small or easy to diagnose @mccauley08:debugging.
+In many cases programmers feel it is not worth the time to use debuggers for mistakes---they perceive as small or easy to diagnose @mccauley08:debugging.
 
 The unpopularity of debuggers under developers is not a new phenomenon.
-This situation was famously criticized thirty years ago by Henry Lieberman in his introduction to the 1997 special issue of Communications of the ACM, entitled _"The Debugging Scandal and What to Do About It"_ with the words, _"Debugging is the dirty little secret of computer science"_ @lieberman97:debugging, lamenting not just the unpopularity of debuggers, but the lack of attention and improvement they had received in the field.
-In the decades since, the research community has made tremendous strides.
+This situation was famously criticized thirty years ago by Henry Lieberman in his introduction to the 1997 special issue of Communications of the ACM, entitled _"The Debugging Scandal and What to Do About It"_ with the words, _"Debugging is the dirty little secret of computer science"_ @lieberman97:debugging, lamenting not just the unpopularity of debuggers, but the lack of attention and improvement they had received.
+Luckily, in the decades since, the research community has made tremendous strides.
 Yet to a certain extent, the situation remains unchanged in practice---especially in the domain of embedded software, where debuggers are still laborious to set up and industry adoption of research advances continues to lag behind.
 
 === A steady evolution
 
-While debugging is still the dirty little secret of software development, it is no longer so in the scientific community.
+While debugging may remain the dirty little secret of software development to some extent, it is no longer so in the scientific community.
 The literature on debugging is vast, from proposals of novel debugging techniques, to studies on the cognitive aspects of debugging @perscheid17:studying @beller18:on.
 
 During the early days of computer programming in the 1950s, most debugging was necessarily done with print statements, added to the punch cards used in those days @backus57:fortran.
-One of the first improvements on this system, was to add new macros specific for debugging, which help improve traces of the program, such as those added in the share operating system for the IBM 709 @hanford60:share.
-These kind of macros can be considered the first iterations of so called _offline debuggers_, or often _post-mortem debuggers_, which are debuggers used to analyze a program after it has crashed or terminated, often through traces of the program's execution.
+One of the first improvements on this system, was to add new macros specific for debugging, which help improve traces of the program, such as those added in the _share_ operating system for the IBM 709 @hanford60:share.
+These kind of macros can be considered the first iterations of so called _offline debuggers_, or often _post-mortem debuggers_, which are debuggers used to analyze a program after it has crashed or terminated, usually through traces of the program's execution.
 
-During the same decade, the first _online debuggers_ were developed, which in contrast enable interactive inspection, control, and modification of a program’s execution state while the program is running.
+During the same decade, the first _online debuggers_ were developed as well, which in contrast enable interactive inspection, control, and modification of a program’s execution state while the program is running.
 One of the earliest examples is the RCA 501 system @smith58:design, which included six breakpoint switches, and a paper tape reader and monitor printer for debugging.
-Computers have changed dramatically since the 1950s, and the days of magnetic tapes are long gone, however, the debugging tools of the RCA 501 system are very similar to the core debug operations present in most modern debuggers today.
+Of course computers have changed dramatically since the 1950s, and the days of magnetic tapes are long gone, however, the debugging tools of the RCA 501 system are very similar to the core debug operations present in most modern debuggers today.
+A clear illustration of how slow adoption of new debugging techniques has been.
 
 //While debugging is still seen as hard, and something to avoid if possible, by many programmers, not all is doom and gloom.
 //The current knowledge and practice of debugging can still be lamented, but over the last few decades, we have seen some improvements, and increased interested in understanding debugging and debuggers.
@@ -70,7 +72,7 @@ Most of these concepts were already present in the earliest debuggers, as the 19
 
 However, the term debugger has always been interpreted broadly, and many tools have been developed to find faults in programs.
 One wildly different class of debuggers, are _automatic debuggers_, which are designed to automatically find and fix bugs.
-Since debugging is such a loathsome task, it is not surprising that computer scientists have tried to automate as soon as the first bugs were discovered @jacoby61:automation.
+Since debugging is such a detested task, it is not surprising that computer scientists have tried to automate it as soon as the first bugs were discovered @jacoby61:automation.
 The term automatic debuggers has been used to describe both algorithmic debuggers @shapiro83:algorithmic, model checking, and tools for automatic fixing of bugs. // todo add cites
 However, in this dissertation we are interested in the more traditional _manual debuggers_.
 
@@ -78,9 +80,9 @@ From the 1990s onwards, the focus of debugging research shifted towards more adv
 Let us highlight a few techniques here.
 
 _Record-replay debuggers_ @agrawal91:execution-backtracking@feldman88:igor@ronsse99:recplay@boothe00:efficient@burg13:interactive@ocallahan17:engineering allow offline debugging with a checkpoint-based trace, and have been widely studied.
-They have also been widely adopted in industry, with tools such as the RR framework @ocallahan17:engineering, which is one of the most advanced record-replay debugger to date.
+They have also been widely adopted in industry, with tools such as the RR framework @ocallahan17:engineering, which is one of the most advanced and widely used record-replay debugger to date.
 
-_Omniscient debuggers_ @lewis03:debugging@pothier07:scalable take this approach one step further, recording the entire execution of a program, allowing free offline exploration of the entire history, both backwards and forwards, and enabling advanced queries on causal relationships in the execution @pothier09:back.
+_Omniscient debuggers_ @lewis03:debugging@pothier07:scalable takes this approach one step further, recording the entire execution of a program, allowing free offline exploration of the entire history, both backwards and forwards, and enabling advanced queries on causal relationships in the execution @pothier09:back.
 
 Omniscient debuggers are sometimes referred to as _time-travel debuggers_, _back-in-time debuggers_, or _reversible debuggers_.
 However, some record-replay debuggers allow for backwards stepping as well, and are referred to by the same terms.
@@ -92,14 +94,14 @@ _Multiverse debuggers_ @torres19:multiverse emerged as a powerful technique to d
 
 Many debuggers have been developed to debug very specific domains, such as _reactive programming_ where several tailored debuggers have been proposed, which visualize the data flows in the reactive program @salvaneschi16:debugging @banken18:debugging.
 
-A recent PhD thesis @whitington24:debugging presented a novel debugger solution for _functional programming_, which allows users to inspect the behavior of OCAML programs as they are interpreted.
+Similarly, a recent PhD thesis @whitington24:debugging presented a novel debugger solution for _functional programming_, which allows users to inspect the behavior of OCAML programs as they are interpreted.
 
 Reversible debugging was very recently adapted for _graphical programming languages_, by two projects for the Scratch language @maloney10:scratch-programming-language, Blink~@strijbol24:blink and NuzzleBug~@deiner24:nuzzlebug.
 
 
 One of the most recent trends in debugger research, is to use static analysis or model checking techniques in conjunction with debuggers, such as the _abstract debugger_ by #cite(form: "prose", <holter24:abstract>) or the _symbolic debugger_ by #cite(form: "prose", <karmios23:symbolic>).
 
-The list of debugging techniques could go on for several more pages.
+The list of debugging techniques and unique domains could go on for several more pages.
 
 == What are debuggers?
 
@@ -113,37 +115,38 @@ For the purpose of this work, we define a debugger as follows.
 A debugger is a tool that enables developers to deterministically observe a program's execution, monitor its state, and control the flow of execution.
 ]
 
-By this definition, we exclude automatic debugging, but include whole range of manual debugging tools, from offline to online debuggers, from remote to local debuggers, from omniscient to reversible debuggers, and so forth.
+By this definition, we exclude automatic debugging, but include a whole range of manual debugging tools, from offline to online debuggers, from remote to local debuggers, from omniscient to reversible debuggers, and so forth.
 
 //=== Debuggers in all shapes and sizes
 
 == Why debuggers matter
 
 While we have admitted that manual debugging is very difficult, and developers have a tendency to avoid it, one might wonder why we should even care about this kind of debugging.
-However, this is exactly why we should care.
+We argue that this is exactly why we should care.
 Improvements in programming languages, model checking, automatic debugging, intelligent code assistants, and other tools can only reduce the need for manual debugging, but never eliminate it---as they can never eliminate all bugs @larus09:foreword.
+Debugging is unavoidable, you might as well have good tools.
 
 === Debugging without debuggers
 
 Even when programmers avoid debuggers, they do still debug their code.
-Instead developers turn to print statement debugging, which is often seen as faster and easier, but often leads to a slow and painful trial by error process.
+Instead developers turn to print statement debugging, which is often seen as faster and easier at first, but can quickly lead to a slow and painful trial by error process.
 
 Another interesting debugger-less debugging technique, is called _rubber duck debugging_, where programmers try and explain their code---possibly to a rubber duck---to help them understand the problem better @hunt99:pragmatic.
 
-While not without merit, given the complexity of the debugging task, debugging without the use of debuggers is often far too cumbersome. // todo citation?
+While not without merit, given the complexity of the debugging task, debugging without the use of debuggers is often far too cumbersome, and can only get you so far. // todo citation?
 Especially, print statement debugging, despite its popularity, should be considered bad practice for any serious debugging task.
-Even in the 1950s, programming languages already included debug macros that improve on print statement debugging by allowing the programmer to print out the values of variables in a more structured way @hanford60:share.
+Even in the 1950s, computer systems already included breakpoints improving on print statement debugging by allowing programmers to debug live programs @smith58:design.
 Since then, debuggers have come a long way.
 
 === Debugging with debuggers
 
 Clearly not all errors, faults, or bugs can be found easily, let alone, automatically detected and fixed.
 Many bugs are unpredictable, non-deterministic, and only emerge under specific conditions.
-This is especially true for software running on embedded systems.
+This is especially true for software running on embedded systems, think of microcontrollers for hobbyist such as Arduino's, or internet-of-things devices, such as smart thermostats, and fitness trackers.
 Here, bugs can be caused not just by pure mistakes in the programming logic, but also by unexpected interactions with the hardware, specific timings, or unexpected behavior from the physical world.
-To track down the causes of such failures, we need direct access to the system’s behavior---to stop execution, inspect memory, walk through the precise state transitions that led to failure.
+To track down the causes of such failures, we need direct access to the system’s behavior---to stop execution, inspect memory, and walk through the precise state transitions that led to failure.
 
-This is what debuggers give us.
+This is what debuggers can give us.
 They provide precise, and deterministic mechanisms for controlling and examining program execution, essential for diagnosing subtle bugs, concurrency issues, performance bottlenecks, and hardware-specific behavior.
 
 While automatic tools such as static analyzers, model checkers, and type systems can catch many classes of errors, they are limited by what they are designed to check. They work when you know the kinds of mistakes you’re guarding against. But when a system fails and you don’t know why, and have no predefined property to verify, you need debuggers that let you observe the system directly.
@@ -152,7 +155,7 @@ While automatic tools such as static analyzers, model checkers, and type systems
 // even when you detect an error automatically, often debugging is part of the process for fixing that mistake
 
 Despite the rapid rise of large language models (LLMs) in software engineering, debuggers remain critical for program understanding, and finding mistakes.
-While LLMs can assist in bug detection or code generation, they operate as probabilistic tools without direct connection to runtime state, offering suggestions rather than guarantees.
+While LLMs can assist in debugging and code generation, they operate as probabilistic tools without direct connection to runtime state, offering suggestions rather than guarantees.
 
 Debuggers, by contrast, are deterministic and precise, providing direct access to program execution and memory state.
 Ongoing debugger research not only enhances these capabilities but also drives advances in program analysis, visualization, security, and education.
@@ -160,23 +163,21 @@ In fact, since more and more code is generated probabilistically with LLMs, ther
 
 === Debugging constrained devices
 
-Debuggers are especially useful in the domain of embedded systems, think of microcontrollers for hobbyist such as Arduino's, or internet-of-things devices, such as smart thermostats, and fitness trackers.
-Software on embedded devices interact heavily with hardware, and the physical world, easily leading to non-deterministic bugs that depend on specific input values, or other interactions with the environments.
+Debuggers are especially useful in the domain of embedded systems, where software interacts heavily with hardware, and the physical world.
+These real-world interactions can lead to non-deterministic bugs that depend on specific input values, or other interactions with the environment.
 Additionally, embedded software is often written in an _interrupt-driven_ manner, where the program is interrupted by hardware events, such as a timer or an external signal, and the program must respond to these events in real-time.
-Such code can be difficult to debug, as the program's state may change unexpectedly due to hardware events, and the timing of these events can be unpredictable.
+Such code can be difficult to debug, as the program's state may change unexpectedly due to hardware interrupts, and the timing of these events can be unpredictable.
 Moreover, interrupt-driven code can lead to unpredictable bugs that depend on the order or timing of events, making them difficult to reproduce and diagnose.
 
-Unfortunately, debuggers for embedded devices are often limited by the constraints of the devices themselves, rely on hardware debugging interfaces, making them hard to setup, lag behind recent advances in debugger technique, and only support the most basic debugging operations invented in the 60s, and are often slow and cumbersome to use.
-
 Unfortunately, debuggers for embedded software are often constrained by the very limitations of the hardware they target.
-They typically rely on specialized hardware debugging interfaces, which can be difficult to configure and require additional--sometimes expensive---equipment.
+They typically rely on specialized hardware debugging interfaces, which can be difficult to configure and require additional---sometimes expensive---equipment.
 This undoubtedly contributed to the fact that debuggers for embedded devices still lag behind advances in modern debugging techniques, offering only the most basic operations, often limited only to simple breakpoints, stepping forward, and inspecting local variables---techniques that have been around since the 1960s.
 Consequently, debugging on embedded systems is frequently slow, cumbersome, and far less powerful than the tools available for general-purpose computing.
 
 == The need for novel debugging techniques
 
 There is a clear need for novel debugging techniques that can address the unique challenges of debugging embedded systems.
-In this dissertation, we present a novel virtual machine for programming embedded devices, called _WARDuino_, on top of which we develop two novel debuggers for addressing the specific challenges of debugging embedded systems.
+In this dissertation, we present a novel virtual machine for programming embedded devices, called _WARDuino_, on top of which we develop three novel debuggers for addressing the specific challenges of debugging embedded systems.
 These challenges can be split into four main categories:
 
 / C1: Embedded software development is characterized by a _slow development cycle_, partly because reflashing the device after each change is time-consuming, and setting up typical hardware debuggers is cumbersome.
@@ -199,14 +200,14 @@ Finally, we address the fourth challenge by adopting the multiverse debugging te
 
 == Open-source prototype and usability
 
-An major goal throughout this research has been to develop usable prototypes of our novel debugging techniques, which can in fact be used to debug real-world embedded software.
+A major goal throughout this research has been to develop usable prototypes of our novel debugging techniques, which can in fact be used to debug real-world embedded software.
 This is important for showing the feasibility of our techniques, and to increase the changes of their adoption in practice.
-Towards this end, all our prototypes are open-source, and available on GitHub, along side an dedicated documentation website.
+Towards this end, all our prototypes are open-source, and available on GitHub, along side a dedicated documentation website.
 
 No software can be considered usable---even as a prototype for other researchers---without proper testing.
-Unfortunately, typical regression testing as part of continuous integrations, as is now standard practice, is not common in the embedded systems domain.
+Unfortunately, typical regression testing as part of continuous integrations, as is now standard practice, is not common in embedded software development.
 Furthermore testing frameworks are rarely adapted for testing embedded software, and suffer from many of the same limitations as debuggers due to the resource constraints of the target devices.
-Additionally, testing debuggers comes with some specific requirements, not met by typical testing frameworks.
+Additionally, testing debuggers comes with its own challenges and specific requirements, not met by typical testing frameworks.
 
 In other words, while developing our novel debugger prototypes, we increasingly found ourselves in need of a new, dedicated testing framework for embedded software.
 Therefore, we developed our own testing framework for large-scale testing on constrained devices, called _Latch_, which implements a novel testing approach we call _managed testing_.
@@ -218,8 +219,8 @@ A large part of this dissertation is dedicated to defining the formal models of 
 
 The importance of formal foundations is well established in other domains of computer science.
 Debugging, despite its centrality to programming, has not benefited from the same level of formal attention.
-Though a formal foundation for debugging techniques is undeniably useful. //essential to advancing our understanding and practice of debugging.
-Just as formal semantics for programming languages have enabled precise reasoning about program behavior, a principled understanding of debugging can provide clearer insight into novel debugging techniques, and allow for more principled comparisons of different approaches.
+Although a formal foundation for debugging techniques is undeniably useful. //essential to advancing our understanding and practice of debugging.
+Just as formal semantics for programming languages have enabled precise reasoning about program behavior, a principled understanding of debuggers can provide clearer insight into novel debugging techniques, and allow for more principled comparisons of different approaches.
 //Establishing formal foundations for debugging not only enhances tool development but also supports deeper theoretical insights, reproducibility, and the integration of debugging with other formal methods in software engineering.
 //Without such foundations, debugging remains largely ad hoc---guided by experience, intuition, and trial-and-error---making it difficult to assess the correctness, completeness, or generality of debugging strategies.
 //A formal framework allows us to characterize debugging operations, reason about their soundness, and systematically compare different approaches.
