@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 243.7 288.9">
+  <!-- Generator: Adobe Illustrator 29.2.1, SVG Export Plug-In . SVG Version: 2.1.0 Build 116)  -->
+  <defs>
+    <style>
+      .st0, .st1, .st2, .st3, .st4 {
+        font-family: CMUSerif-Bold, 'CMU Serif';
+        font-weight: 700;
+      }
+
+      .st0, .st1, .st5, .st3, .st6 {
+        fill: #010101;
+      }
+
+      .st0, .st7, .st4 {
+        font-size: 6px;
+      }
+
+      .st8 {
+        stroke-dasharray: 6.5 4.3;
+      }
+
+      .st8, .st9, .st10, .st11, .st12 {
+        stroke: #010101;
+      }
+
+      .st8, .st9, .st10, .st11, .st12, .st13 {
+        fill: none;
+        stroke-miterlimit: 10;
+        stroke-width: .5px;
+      }
+
+      .st14 {
+        fill: #fff;
+      }
+
+      .st15 {
+        fill: #ec2026;
+      }
+
+      .st16 {
+        fill: #4368b1;
+      }
+
+      .st1 {
+        font-size: 11px;
+      }
+
+      .st2, .st3 {
+        font-size: 8px;
+      }
+
+      .st10 {
+        stroke-dasharray: 5.9 4;
+      }
+
+      .st5 {
+        font-size: 5px;
+      }
+
+      .st5, .st7 {
+        font-family: CMUSerif-Italic, 'CMU Serif';
+        font-style: italic;
+      }
+
+      .st11 {
+        stroke-dasharray: 5.8 3.9;
+      }
+
+      .st17 {
+        fill: #b7bcdf;
+      }
+
+      .st18 {
+        fill: #eb2428;
+      }
+
+      .st4 {
+        fill: #eb242b;
+      }
+
+      .st12 {
+        stroke-dasharray: 6.4 4.3;
+      }
+
+      .st19 {
+        fill: #f2c2c6;
+      }
+
+      .st13 {
+        stroke: #eb2428;
+      }
+    </style>
+  </defs>
+  <g>
+    <g>
+      <rect class="st17" x="8.5" y="9.8" width="226.8" height="145.2"/>
+      <path class="st16" d="M234.8,10.3v144.2H9V10.3h225.8M235.8,9.3H8v146.2h227.8V9.3h0Z"/>
+    </g>
+    <text class="st1" transform="translate(17.1 27.3)"><tspan x="0" y="0">Microcontroller</tspan></text>
+  </g>
+  <g>
+    <rect class="st14" x="15.1" y="91.4" width="213.5" height="56.9"/>
+    <path d="M228.2,91.8v56.2H15.5v-56.2h212.7M229,91H14.8v57.7h214.2v-57.7h0Z"/>
+  </g>
+  <text class="st3" transform="translate(48.5 111.7)"><tspan x="0" y="0">Runtime</tspan></text>
+  <g>
+    <g>
+      <rect class="st14" x="14.8" y="224.3" width="42.9" height="25.7"/>
+      <path d="M57.4,224.6v25.2H15v-25.2h42.4M57.9,224.1H14.5v26.2h43.4v-26.2h0Z"/>
+    </g>
+    <text class="st0" transform="translate(29.2 239.1)"><tspan x="0" y="0">LED</tspan></text>
+  </g>
+  <g>
+    <polyline class="st9" points="235.8 276.6 235.8 279.6 232.8 279.6"/>
+    <line class="st10" x1="228.8" y1="279.6" x2="13" y2="279.6"/>
+    <polyline class="st9" points="11 279.6 8 279.6 8 276.6"/>
+    <line class="st8" x1="8" y1="272.3" x2="8" y2="220.6"/>
+    <polyline class="st9" points="8 218.4 8 215.4 11 215.4"/>
+    <line class="st10" x1="14.9" y1="215.4" x2="230.8" y2="215.4"/>
+    <polyline class="st9" points="232.8 215.4 235.8 215.4 235.8 218.4"/>
+    <line class="st8" x1="235.8" y1="222.7" x2="235.8" y2="274.4"/>
+  </g>
+  <text class="st3" transform="translate(67.3 272)"><tspan x="0" y="0">Non-transferable resources</tspan></text>
+  <g>
+    <g>
+      <rect class="st14" x="64.8" y="224.3" width="42.9" height="25.7"/>
+      <path d="M107.4,224.6v25.2h-42.4v-25.2h42.4M107.9,224.1h-43.4v26.2h43.4v-26.2h0Z"/>
+    </g>
+    <text class="st0" transform="translate(76.3 239.1)"><tspan x="0" y="0">Sensor</tspan></text>
+  </g>
+  <g>
+    <g>
+      <rect class="st14" x="114.8" y="224.3" width="42.9" height="25.7"/>
+      <path d="M157.4,224.6v25.2h-42.4v-25.2h42.4M157.9,224.1h-43.4v26.2h43.4v-26.2h0Z"/>
+    </g>
+    <text class="st0" transform="translate(125.5 239.1)"><tspan x="0" y="0">Button</tspan></text>
+  </g>
+  <g>
+    <g>
+      <rect class="st19" x="164.8" y="224.3" width="42.9" height="25.7"/>
+      <path class="st15" d="M207.4,224.6v25.2h-42.4v-25.2h42.4M207.9,224.1h-43.4v26.2h43.4v-26.2h0Z"/>
+    </g>
+    <text class="st0" transform="translate(175.6 235.1)"><tspan x="0" y="0">MQTT</tspan><tspan x="2.4" y="7.2">client</tspan></text>
+  </g>
+  <text class="st3" transform="translate(217.2 238.1)"><tspan x="0" y="0">...</tspan></text>
+  <path class="st6" d="M107.2,44.7h-6v.5h6v-.5h0ZM97.2,44.7h-6v.5h6v-.5h0ZM87.2,44.7h-6v.5h6v-.5h0ZM77.2,44.7h-6v.5h6v-.5h0ZM67.2,44.7h-6v.5h6v-.5h0ZM57.2,44.7h-6v.5h6v-.5h0ZM47.2,44.7h-6v.5h6v-.5h0ZM37.2,44.7h-6v.5h6v-.5h0ZM27.2,44.7h-6v.5h6v-.5h0ZM17.2,44.7h-2.5v.5h0v3h.5v-3h2v-.5h0ZM15.3,52.2h-.5v6h.5v-6h0ZM15.3,62.2h-.5v6h.5v-6h0ZM15.3,72.2h-.5v6h.5v-6h0ZM15.3,82.2h-.5v2.5h3.5v-.5h-3v-2h0ZM28.3,84.2h-6v.5h6v-.5h0ZM38.3,84.2h-6v.5h6v-.5h0ZM48.3,84.2h-6v.5h6v-.5h0ZM58.3,84.2h-6v.5h6v-.5h0ZM68.3,84.2h-6v.5h6v-.5h0ZM78.3,84.2h-6v.5h6v-.5h0ZM88.3,84.2h-6v.5h6v-.5h0ZM98.3,84.2h-6v.5h6v-.5h0ZM108.3,84.2h-6v.5h6v-.5h0ZM117.2,83.7h-.5v.5h-4.5v.5h5v-1h0ZM117.2,73.7h-.5v6h.5v-6h0ZM117.2,63.7h-.5v6h.5v-6h0ZM117.2,53.7h-.5v6h.5v-6h0ZM117.2,44.7h-6v.5h5.5v4.5h.5v-5h0Z"/>
+  <text class="st3" transform="translate(44.3 66.4)"><tspan x="0" y="0">Program</tspan></text>
+  <g>
+    <rect class="st14" x="126.9" y="45.1" width="101.7" height="39.3"/>
+    <path d="M228.2,45.4v38.5h-101v-38.5h101M229,44.7h-102.5v40h102.5v-40h0Z"/>
+  </g>
+  <text class="st6" transform="translate(159.8 66.4)"><tspan class="st2"><tspan x="0" y="0">Libraries</tspan></tspan><tspan class="st7"><tspan x="-7.2" y="8">warduino/assembly</tspan></tspan></text>
+  <g>
+    <line class="st9" x1="186.2" y1="79.2" x2="186.2" y2="108.4"/>
+    <path class="st6" d="M184.5,79.3c0-.9.8-1.7,1.7-1.7s1.7.8,1.7,1.7-.8,1.7-1.7,1.7-1.7-.8-1.7-1.7Z"/>
+    <polygon class="st6" points="186.2 111.1 184.7 107.3 186.2 108.2 187.7 107.3 186.2 111.1"/>
+  </g>
+  <g>
+    <line class="st9" x1="100.8" y1="64.7" x2="141.9" y2="64.7"/>
+    <path class="st6" d="M100.9,66.4c-.9,0-1.7-.8-1.7-1.7s.8-1.7,1.7-1.7,1.7.8,1.7,1.7-.8,1.7-1.7,1.7Z"/>
+    <polygon class="st6" points="144.5 64.7 140.8 66.2 141.7 64.7 140.8 63.2 144.5 64.7"/>
+  </g>
+  <g>
+    <polyline class="st9" points="221.9 137.4 221.9 140.4 218.9 140.4"/>
+    <line class="st11" x1="215" y1="140.4" x2="129.4" y2="140.4"/>
+    <polyline class="st9" points="127.5 140.4 124.5 140.4 124.5 137.4"/>
+    <line class="st12" x1="124.5" y1="133.2" x2="124.5" y2="103.3"/>
+    <polyline class="st9" points="124.5 101.2 124.5 98.2 127.5 98.2"/>
+    <line class="st11" x1="131.4" y1="98.2" x2="216.9" y2="98.2"/>
+    <polyline class="st9" points="218.9 98.2 221.9 98.2 221.9 101.2"/>
+    <line class="st12" x1="221.9" y1="105.5" x2="221.9" y2="135.3"/>
+  </g>
+  <text class="st3" transform="translate(162.5 121.7)"><tspan x="0" y="0">Actions</tspan></text>
+  <g>
+    <line class="st13" x1="186.2" y1="131.7" x2="186.2" y2="220.2"/>
+    <polygon class="st18" points="186.2 129 184.7 132.8 186.2 131.9 187.7 132.8 186.2 129"/>
+    <path class="st18" d="M184.5,220.1c0,.9.8,1.7,1.7,1.7s1.7-.8,1.7-1.7-.8-1.7-1.7-1.7-1.7.8-1.7,1.7Z"/>
+  </g>
+  <text class="st0" transform="translate(133.9 181.3)"><tspan x="0" y="0">Receive MQTT</tspan><tspan x="22.6" y="7.2">message</tspan></text>
+  <g>
+    <line class="st13" x1="105" y1="129" x2="145" y2="129"/>
+    <polygon class="st18" points="102.4 129 106.1 130.6 105.2 129 106.1 127.5 102.4 129"/>
+    <circle class="st18" cx="144.9" cy="129" r="1.7"/>
+  </g>
+  <text transform="translate(51.7 130.6)"><tspan class="st4"><tspan x="0" y="0">Trigger callback</tspan></tspan><tspan class="st5"><tspan x="8.3" y="8">log(topic, payload)</tspan></tspan></text>
+</svg>
