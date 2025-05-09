@@ -1,13 +1,13 @@
-#import "../../lib/class.typ": small, note, theorem, proof, example, lemma
+#import "../../lib/class.typ": note, theorem, proof, example, lemma
 #import "../../lib/util.typ": semantics
-#import "../../lib/fonts.typ": sans
+#import "../../lib/fonts.typ": sans, small
 
 #import "figures/semantics.typ": *
 
 A central concern of this dissertation is the design of debuggers, and what makes a good debugger.
 To understand and answer this question, there are currently few formal foundations to build upon.
 Any such foundation must answer the fundamental question of what constitutes correctness for debuggers.
-Over the course of writing this dissertation, several correctness criteria for debuggers emerged, the essence of which we distill in this chapter into a general definition of correctness for debuggers.
+Over the course of writing this dissertation, several correctness criteria for our debuggers emerged, the essence of which we distill in this chapter into two fundamental correctness criteria for the operations of manual online debuggers.
 
 == Semantics of debuggers
 
@@ -15,6 +15,10 @@ Before we can begin to reason about the correctness of debuggers, we need to est
 Unfortunately, defining the semantics of debuggers has always received less attention than formalizations for programming languages or compilers @da-silva92:correctness.
 This lack of interest, has resulted in quite a sparse collection of existing semantics, which focus on very different aspects, and are defined in very different ways.
 To this day, there is no clear consensus on what constitutes correctness for debuggers, or even, which are the essential aspects for a tool to fall under the broad category of debuggers.
+
+Whether or not such a consensus is possible, is an interesting question in itself.
+This is not the focus of this dissertation, but we are interested in what constitutes correctness for the operations of manual debuggers.
+We believe that the soundness and completeness criteria we define in this chapter are a good starting point for defining correctness for such debuggers.
 
 //When examining recent works in debuggers, there does appear to be an emerging consensus on how to define the semantics of debuggers, where the operations of the debugger are defined in terms of an underlying language semantics.
 
@@ -130,12 +134,12 @@ The complete set of syntax, evaluation, and typing rules for booleans and natura
 Because the debuggers we discuss in this dissertation are each debuggers for distributed systems, and therefore remote debuggers of a kind, we start with a simple remote debugger.
 However, the easiest way to define such a debugger is to start from a local debugger, and simply add a messaging system on top of it.//---which is the way in which we will present the debugger in this section.
 
-The rules for our tiny remote debugger are shown in @fig:stlc.debugger#sym.dash.em#[these] rules define the operation of the debugger backend.
-Typically, a debugger will also have a frontend for users to interact with the debugger, but this is beyond the scope of the semantics.
-The rules therefore only model the interface between the backend and the frontend as a simple messaging system.
+The rules for our tiny remote debugger are shown in @fig:stlc.debugger#sym.dash.em#[these] rules define the remote debugger as a distributed system with a _client_ and a _server_; respectively, modeling the debugger frontend and backend.
+In the remote debugger, the only role of the client is to supply input from the user, and displaying the output from the debugger.
+We model these interactions with the outside world through a simple messaging system, where messages arrive in order, one by one, in a message box.
+The server communicates with the client through an identical message box system, and is responsible for performing the debug commands it receives.
 
-The evaluation rules in @fig:stlc.debugger are split into two sets, the internal debugging steps (#oparrow) with #operation the debugging operation, and the remote debugging steps ($dbgarrow$), which wraps the former steps.
-The rules specific to the remote debugger are highlighted in the figure, without them, the remaining rules define a tiny local debugger.
+The evaluation rules in @fig:stlc.debugger are split into three sets, the server debugging steps (#serverarrow), the client steps (#clientarrow), and the global steps of the remote debugger ($dbgarrow$), which wraps the former steps.
 
 === The syntax rules of the #remotedbg debugger
 
@@ -192,8 +196,8 @@ Debugger soundness demands that for any debug session that begins at the start o
 In the theorem, we use the shorthand notation $t_delta$ to denote the current term of a debugging configuration $delta$.
 
 #theorem("Debugger soundness")[
-  Let $delta_"start"$ be the initial configuration of the debugger for some program $t$. Then:
-  $ forall space delta space . space ( delta_"start" multi(dbgarrow) delta ) arrow.r.double.long ( t multi(arrow.r.long) t_delta ) $
+  Let $delta_"start"$ be the initial configuration of the debugger for some well-typed program $t$. Then:
+  $ forall space delta space . space ( delta_"start" multi(dbgarrow) delta ) arrow.r.double.long ( t multi(arrow.r.long) t_delta ) and t_delta in delta $
 ]
 #proof[
   The proof proceeds by induction on the number of steps taken in the debugger.
@@ -278,7 +282,7 @@ We will apply the same _soundness_ and _completeness_ criteria to the convention
 ]
 
 The proof for completeness is identical to the proof given for the tiny remote debugger, since we do not need to introduce any breakpoints in the debugging session. The rules _E-Remote_ and _E-Step_ can still faithfully re-execute the path $t multi(arrow.r.long) t'$.
-,
+
 == #reversibledbg: A reversible debugger for #stlc
 
 Another interesting extension to the tiny remote debugger, is to turn it into a reversible debugger @engblom12:review.

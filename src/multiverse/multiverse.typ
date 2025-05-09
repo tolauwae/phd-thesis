@@ -1348,7 +1348,7 @@ One of the earliest works, the Igor debugger~@feldman88:igor, featured so-called
 This is one of the first attempts at dealing with external state, however, the solution was purely ad-hoc, and required significant user intervention; for instance, supplying the name, mode, and file pointer for each file currently opened during execution.
 Additionally, dealing with I/O in a structured way through the prestart routines was still too costly at the time.
 There is also no proof of soundness, or any characterization of which prestart routines lead to correct debugging behavior.
-#emph[Omniscient debuggers]~@lewis03:debugging@pothier07:scalable, on the other hand record the entire execution of a program, allowing free offline exploration of the entire history, and enabling advanced queries on causal relationships in the execution~@pothier07:scalable.
+#emph[Omniscient debuggers]~@lewis03:debugging@pothier07:scalable, on the other hand record the entire execution of a program, allowing free offline exploration of the entire history, and enabling advanced queries on causal relationships in the execution @pothier09:back.
 A third approach is based on #emph[reversible programming languages]~@giachino14:causal-consistent-reversible-debugging@lanese18:cauder@lanese18:from.
 While not applicable in all scenarios, since it requires a fully reversible language, this approach can enable more advanced features, such as reversing only parts of a concurrent process, while still remaining consistent with the forwards execution~@lanese18:from.
 The reversible LISP debugger by #cite(form: "prose", <lieberman97:zstep>) not only redraws the graphical output, but also links graphics with their responsible source code.

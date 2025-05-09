@@ -1,5 +1,6 @@
 #import "../../../lib/util.typ": semantics, lineWidth, headHeight, tablehead, highlight, boxed
-#import "../../../lib/class.typ": small, note
+#import "../../../lib/class.typ": note
+#import "../../../lib/fonts.typ": small
 
 #import "@preview/curryst:0.5.0": rule, prooftree
 
@@ -18,10 +19,11 @@
 
 // Definitions
 
-#let internal = "d"
-#let remote = $delta$
-#let message = $m$
-#let operation = "c" // $kappa.alt$
+#let remote = $d$
+#let server = $s$
+#let client = $c$
+#let message = $m_s$
+#let operation = $m_c$ // $kappa.alt$
 #let dbgarrow = $attach(arrow.r.long, br: text(size: small, DD))$ // $harpoon.rt$
 #let multi(step) = $attach(step, tr: "*")$ // $harpoon.rt$
 
@@ -121,23 +123,35 @@
             ])
 ]
 
+#let serverarrow = $attach(arrow.r.long, br: server)$
+#let clientarrow = $attach(arrow.r.long, br: client)$
+
+#let separator = $space;$
+
+#let serverrule(i, o, t) = $angle.l #i, #o separator #t angle.r$
+#let snap(it) = $"snap" it$
+
 #let debugger = [
     #show table.cell: set text(style: "italic")
     #set table.cell(align: horizon)
 
-    #grid(columns: (5fr, 7fr), stroke: none, align: top,
+    #grid(columns: (5fr, 8.5fr), stroke: none, align: top,
         table(columns: (1fr), align: (left), stroke: none,
             tablehead("Syntax"),
-            definition(internal, "(internal debugger)",
-                ($t bar.v boxed(message)$,),
+            definition(remote, "(remote debugger)",
+                ($client bar.v server$,),
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
 
-            definition(remote, highlight(silver, "(remote debugger)"),
-                (highlight(silver, $boxed(operation) bar.v d$),),
+            definition(server, highlight(silver, "(server)"),
+                ($boxed(operation) , boxed(message) separator t$,),
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
 
-            definition("m", "(output)",
-                ($nothing$, "t", [ack #operation],),
+            definition(client, highlight(silver, "(client)"),
+                ($boxed(operation) , boxed(message)$,),
+                ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
+
+            definition(message, "(server messages)",
+                ($nothing$, $snap(t)$, [ack #operation],),
                 ("nothing", "term", "acknowledgement"), division: (1.0em, 1.5em, 4fr, 9fr)),
 
             definition(operation, "(debug commands)",
@@ -147,17 +161,38 @@
 
         grid.vline(stroke: lineWidth),
 
+
         [
             #set table(align: (x, y) => if x == 1 { right } else { center })
             #set table(inset: (left: 0.3em))
 
-            #table(columns: (3fr, 1.2fr), stroke: none,
-                tablehead("Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $delta dbgarrow delta'$),
-                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v boxed(nothing) attach(arrow.r.long, t: "step") t' bar.v boxed("ack step")$), $t arrow.r.long t'$)), "(E-Step)",
-                prooftree(rule(rect(height: 2em, stroke: none, $v bar.v boxed(nothing) attach(arrow.r.long, t: "step") v bar.v boxed("ack" nothing)$))), "(E-Fallback)",
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v boxed(nothing) attach(arrow.r.long, t: "inspect") t bar.v boxed(t)$)))), "(E-Inspect)",
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v boxed(message) attach(arrow.r.long, t: nothing) t bar.v boxed(nothing)$)))), "(E-Read)",
-                highlight(silver, prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $boxed(operation) bar.v d dbgarrow boxed(nothing) bar.v d'$)), $d attach(arrow.r.long, t: operation) d'$))), highlight(silver, "(E-remote)"),
+            #table(columns: (3.2fr, 1.0fr), stroke: none,
+                tablehead("Server evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $server serverarrow server'$),
+
+
+                prooftree(rule(rect(height: 2em, stroke: none, $serverrule(boxed("step") , boxed(nothing), t) serverarrow serverrule(boxed(nothing) , boxed("ack step"), t')$), $t arrow.r.long t'$)), "(Step)",
+
+
+                prooftree(rule(rect(height: 2em, stroke: none, $boxed("step") , boxed(nothing) separator v serverarrow boxed(nothing) , boxed("ack" nothing) separator v$))), "(Fallback)",
+
+
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $boxed("inspect") , boxed(nothing) separator t serverarrow boxed(nothing) , boxed(snap(t)) separator t$)))), "(Inspect)",
+
+                tablehead("Client evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $client clientarrow client'$),
+
+                prooftree(rule($boxed(operation) , boxed(message) clientarrow boxed(operation) , boxed(nothing)$)), "(Process)", // todo output from whose perspective?
+            )
+
+            #table(columns: (3.0fr, 1.5fr), stroke: none,
+                tablehead("Global evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $d dbgarrow d'$),
+
+                prooftree(rule(rect(height: 3em, stroke: none, $boxed(operation) , boxed(nothing) bar.v boxed(nothing) , boxed(nothing) separator t \ dbgarrow boxed(nothing) , boxed(nothing) bar.v boxed(operation) , boxed(nothing) separator t$,))), "(Input)",
+                
+                prooftree(rule(rect(height: 3em, stroke: none, $boxed(operation) , boxed(nothing) bar.v boxed(nothing) , boxed(message) separator t \ dbgarrow boxed(operation) , boxed(message) bar.v boxed(nothing) , boxed(nothing) separator t$,))), "(Output)",
+
+                prooftree(rule($client bar.v server dbgarrow client' bar.v server$, $client clientarrow client'$)), highlight(silver, "(Client)"),
+
+                prooftree(rule($client bar.v server dbgarrow client bar.v server'$, $server serverarrow server'$)), highlight(silver, "(Server)"),
             // todo: gray background for messages
             // rect(fill: blue, width: auto, height: auto, text(top-edge: "ascender", "ack step"))
             )
@@ -180,8 +215,8 @@
     #grid(columns: (5fr, 5fr), stroke: none, align: top,
         table(columns: (1fr), align: (left), stroke: none,
             tablehead("New syntactic forms"),
-            definition(internal, "(internal debugger)",
-                ($t bar.v highlight(#silver, #[#programcounter, #executionstate, #breakpoints]), boxed(message)$,),
+            definition(remote, "(remote debugger)",
+                ($boxed(operation), boxed(message), highlight(#silver, #[#programcounter, #executionstate, #breakpoints])separator t$,),
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
 
             definition(executionstate, "(execution state)",
@@ -198,7 +233,7 @@
 
         table(columns: (1fr), align: (left), stroke: none,
             tablehead(""),
-            definition("m", "(output)",
+            definition(message, "(output)",
                 ($...$, [hit n],),
                 ("", "breakpoint hit"), division: (1.0em, 1.5em, 4fr, 9fr)),
 
@@ -232,27 +267,27 @@
             #let outset = (top: 0.7mm, bottom: 1.0mm)
 
             #table(columns: (3fr, 1.2fr), stroke: none,
-                tablehead("Internal Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.4em), $d attach(arrow.r.long, t: operation) d'$),
+                tablehead("Server evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $server serverarrow server'$),
 
-                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v highlight(#silver, #neb, inset: #inset, outset: #outset) boxed(nothing) attach(arrow.r.long, t: "step") t' bar.v highlight(#silver, #incremented, inset: #inset, outset: #outset) boxed("ack step")$), highlight(silver, $executionstate = "paused"$), $t arrow.r.long t'$)), highlight(silver, "(E-Step)"),
+                prooftree(rule(rect(height: 2em, stroke: none, $boxed("step"), boxed(nothing) , highlight(#silver, #neb, inset: #inset, outset: #outset) separator t serverarrow boxed(nothing), boxed("ack step"), highlight(#silver, #incremented, inset: #inset, outset: #outset) separator t'$), highlight(silver, $executionstate = "paused"$), $t arrow.r.long t'$)), highlight(silver, "(Step)"),
 
-                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v programcounter, executionstate, breakpoints, boxed(nothing) attach(arrow.r.long, t: "step") t bar.v programcounter, executionstate, breakpoints, boxed("ack" nothing)$), $e eq.not "paused"$)), "(E-Fallback2)",
+                prooftree(rule(rect(height: 2em, stroke: none, $boxed("step"), boxed(nothing) , programcounter, executionstate, breakpoints separator t serverarrow boxed(nothing), boxed("ack" nothing), programcounter, executionstate, breakpoints separator t$), $e eq.not "paused"$)), "(Fallback2)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v programcounter, executionstate, breakpoints, boxed(nothing) attach(arrow.r.long, t: "pause") t bar.v programcounter, "paused", breakpoints, boxed(nothing)$)))), "(E-Pause)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $boxed("pause"), boxed(nothing) , programcounter, executionstate, breakpoints separator t serverarrow boxed(nothing), boxed(nothing), programcounter, "paused", breakpoints separator t$)))), "(E-Pause)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v programcounter, executionstate, breakpoints, boxed(nothing) attach(arrow.r.long, t: "play") t bar.v programcounter, "play", breakpoints, boxed(nothing)$)))), "(E-Play)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $boxed("play"), boxed(nothing) , programcounter, executionstate, breakpoints separator t serverarrow boxed(nothing), boxed(nothing), programcounter, "play", breakpoints separator t$)))), "(E-Play)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v programcounter', executionstate, breakpoints, boxed(nothing) attach(arrow.r.long, t: bpadd) t bar.v programcounter', executionstate, breakpoints', boxed(nothing)$)), $breakpoints' = n, breakpoints$)), "(E-BreakpointAdd)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $boxed(bpadd), boxed(nothing) , programcounter', executionstate, breakpoints separator t serverarrow boxed(nothing), boxed(nothing), programcounter', executionstate, breakpoints' separator t$)), $breakpoints' = n, breakpoints$)), "(E-BreakpointAdd)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $t bar.v programcounter', executionstate, breakpoints, boxed(nothing) attach(arrow.r.long, t: bpremove) t bar.v programcounter', executionstate, breakpoints', boxed(nothing)$)), $breakpoints' = breakpoints without n$)), "(E-BreakpointRemove)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $boxed(bpremove), boxed(nothing) , programcounter', executionstate, breakpoints separator t serverarrow boxed(nothing), boxed(nothing), programcounter', executionstate, breakpoints' separator t$)), $breakpoints' = breakpoints without n$)), "(E-BreakpointRemove)",
 
-                tablehead("Global Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $delta dbgarrow delta'$),
+                tablehead("Global evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $delta dbgarrow delta'$),
 
-                prooftree(rule(rect(height: 2em, stroke: none, $boxed(nothing) bar.v t bar.v programcounter, executionstate, breakpoints, boxed(nothing) dbgarrow boxed(nothing) bar.v t' bar.v "succ" programcounter, executionstate, breakpoints, boxed(nothing)$), $executionstate = "play"$, $t arrow.r.long t'$, $n in.not b$)), "(E-Run)",
+                prooftree(rule(rect(height: 2em, stroke: none, $boxed(nothing) separator t separator programcounter, executionstate, breakpoints, boxed(nothing) dbgarrow boxed(nothing) separator t' separator "succ" programcounter, executionstate, breakpoints, boxed(nothing)$), $executionstate = "play"$, $t arrow.r.long t'$, $n in.not b$)), "(E-Run)",
 
 // todo add E-Remote and add n not in b
 
-                prooftree(rule(rect(height: 2em, stroke: none, $boxed(c) bar.v t bar.v programcounter, "play", breakpoints, boxed(nothing) dbgarrow boxed(c) bar.v t bar.v programcounter, "paused", breakpoints, boxed("hit" n)$), $programcounter in breakpoints$)), "(E-BreakpointHit)",
+                prooftree(rule(rect(height: 2em, stroke: none, $boxed(c) separator t separator programcounter, "play", breakpoints, boxed(nothing) dbgarrow boxed(c) separator t separator programcounter, "paused", breakpoints, boxed("hit" n)$), $programcounter in breakpoints$)), "(E-BreakpointHit)",
             // todo: gray background for messages
             // rect(fill: blue, width: auto, height: auto, text(top-edge: "ascender", "ack step"))
             )
@@ -272,8 +307,8 @@
     #grid(columns: (1fr, 1fr), stroke: none, align: top,
         table(columns: (1fr), align: (left), stroke: none,
             tablehead("New syntactic forms"),
-            definition(internal, "(internal debugger)",
-                ($t bar.v programcounter, executionstate, breakpoints, highlight(#silver, #snapshots, inset: #inset), boxed(message)$,),
+            definition(remote, "(remote debugger)",
+                ($t separator programcounter, executionstate, breakpoints, highlight(#silver, #snapshots, inset: #inset), boxed(message)$,),
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
 
             definition(operation, "(debug commands)",
@@ -296,21 +331,21 @@
             #table(columns: (3fr, 1.2fr), stroke: none,
                 tablehead("Internal Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.4em), $d attach(arrow.r.long, t: operation) d'$),
 
-                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v "succ" programcounter, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t'' bar.v programcounter, executionstate, breakpoints, snapshots, boxed(#[ack #backwards])$), $snapshots = (0, t')$, $executionstate = "paused"$, $t' attach(arrow.r.long, tr: n) t''$,)), "(E-BackwardStep0)",
+                prooftree(rule(rect(height: 2em, stroke: none, $t separator "succ" programcounter, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t'' separator programcounter, executionstate, breakpoints, snapshots, boxed(#[ack #backwards])$), $snapshots = (0, t')$, $executionstate = "paused"$, $t' attach(arrow.r.long, tr: n) t''$,)), "(E-BackwardStep0)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v "succ" programcounter, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t'' bar.v programcounter, executionstate, breakpoints, snapshots, boxed(#[ack #backwards])$), $n eq.not n'$, $snapshots = ((n', t'), snapshots')$, $executionstate = "paused"$, $t' attach(arrow.r.long, tr: n-n') t''$,)), "(E-BackwardStep1)",
+                prooftree(rule(rect(height: 2em, stroke: none, $t separator "succ" programcounter, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t'' separator programcounter, executionstate, breakpoints, snapshots, boxed(#[ack #backwards])$), $n eq.not n'$, $snapshots = ((n', t'), snapshots')$, $executionstate = "paused"$, $t' attach(arrow.r.long, tr: n-n') t''$,)), "(E-BackwardStep1)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v "succ" programcounter, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t' bar.v programcounter, executionstate, breakpoints, snapshots', boxed(#[ack #backwards])$), $snapshots = ((n, t'), snapshots')$, $executionstate = "paused"$,)), "(E-BackwardStep2)",
+                prooftree(rule(rect(height: 2em, stroke: none, $t separator "succ" programcounter, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t' separator programcounter, executionstate, breakpoints, snapshots', boxed(#[ack #backwards])$), $snapshots = ((n, t'), snapshots')$, $executionstate = "paused"$,)), "(E-BackwardStep2)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t bar.v programcounter, executionstate, breakpoints, snapshots, boxed("ack" nothing)$), $e eq.not "paused"$)), "(E-BackwardFallback1)",
+                prooftree(rule(rect(height: 2em, stroke: none, $t separator programcounter, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t separator programcounter, executionstate, breakpoints, snapshots, boxed("ack" nothing)$), $e eq.not "paused"$)), "(E-BackwardFallback1)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, $t bar.v 0, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t bar.v 0, executionstate, breakpoints, snapshots, boxed("ack" nothing)$), $snapshots = (0, t)$)), "(E-BackwardFallback2)",
+                prooftree(rule(rect(height: 2em, stroke: none, $t separator 0, executionstate, breakpoints, snapshots, boxed(nothing) attach(arrow.r.long, t: backwards) t separator 0, executionstate, breakpoints, snapshots, boxed("ack" nothing)$), $snapshots = (0, t)$)), "(E-BackwardFallback2)",
 
                 tablehead("Global Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $delta dbgarrow delta'$),
 
-                prooftree(rule(rect(height: 2em, stroke: none, $boxed(nothing) bar.v t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(nothing) dbgarrow boxed(nothing) bar.v t' bar.v "succ" programcounter, executionstate, breakpoints, snapshots', boxed(nothing)$), $executionstate = "play"$, $t arrow.r.long t'$, $snapshots' = ( ("succ" n, t'), snapshots )$, $n in.not b$, $("succ" n) space % space interval = 0$)), highlight(silver, "(E-Run1)"),
+                prooftree(rule(rect(height: 2em, stroke: none, $boxed(nothing) separator t separator programcounter, executionstate, breakpoints, snapshots, boxed(nothing) dbgarrow boxed(nothing) separator t' separator "succ" programcounter, executionstate, breakpoints, snapshots', boxed(nothing)$), $executionstate = "play"$, $t arrow.r.long t'$, $snapshots' = ( ("succ" n, t'), snapshots )$, $n in.not b$, $("succ" n) space % space interval = 0$)), highlight(silver, "(E-Run1)"),
 
-                prooftree(rule(rect(height: 2em, stroke: none, $boxed(nothing) bar.v t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(nothing) dbgarrow boxed(nothing) bar.v t' bar.v "succ" programcounter, executionstate, breakpoints, snapshots, boxed(nothing)$), $executionstate = "play"$, $t arrow.r.long t'$, $n in.not b$, $("succ" n) space % space interval eq.not 0$)), highlight(silver, "(E-Run2)"),
+                prooftree(rule(rect(height: 2em, stroke: none, $boxed(nothing) separator t separator programcounter, executionstate, breakpoints, snapshots, boxed(nothing) dbgarrow boxed(nothing) separator t' separator "succ" programcounter, executionstate, breakpoints, snapshots, boxed(nothing)$), $executionstate = "play"$, $t arrow.r.long t'$, $n in.not b$, $("succ" n) space % space interval eq.not 0$)), highlight(silver, "(E-Run2)"),
             )
         ])
     )
@@ -370,7 +405,7 @@
 
             #table(columns: (4fr, 1.1fr), stroke: none,
                 tablehead("Internal Evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.4em), $d attach(arrow.r.long, t: operation) d'$),
-                prooftree(rule(grid(columns: 1, align: alignment.center, $t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(nothing)$, rect(height: 2em, stroke: none, $attach(arrow.r.long, t: subst) [t_1 arrow.r.bar t_2] space t bar.v programcounter, executionstate, breakpoints, snapshots, boxed("ack" subst)$)), $Gamma tack.r t_2 : T'$, $Gamma, t_1 : T'  tack.r t : T$)), "(E-Subst)", // todo should t_1 be a value?
+                prooftree(rule(grid(columns: 1, align: alignment.center, $t separator programcounter, executionstate, breakpoints, snapshots, boxed(nothing)$, rect(height: 2em, stroke: none, $attach(arrow.r.long, t: subst) [t_1 arrow.r.bar t_2] space t separator programcounter, executionstate, breakpoints, snapshots, boxed("ack" subst)$)), $Gamma tack.r t_2 : T'$, $Gamma, t_1 : T'  tack.r t : T$)), "(E-Subst)", // todo should t_1 be a value?
             )
         ])
 ]
