@@ -178,15 +178,50 @@ Consequently, debugging on embedded systems is frequently slow, cumbersome, and 
 
 There is a clear need for novel debugging techniques that can address the unique challenges of debugging embedded systems.
 In this dissertation, we present a novel virtual machine for programming embedded devices, called _WARDuino_, on top of which we develop three novel debuggers for addressing the specific challenges of debugging embedded systems.
-These challenges can be split into four main categories:
 
-/ C1: Embedded software development is characterized by a _slow development cycle_, partly because reflashing the device after each change is time-consuming, and setting up typical hardware debuggers is cumbersome.
+=== Challenges to debugging constrained devices
 
-/ C2: The _hardware limitations_ of embedded devices, especially limited memory and processing power, make it difficult to run traditional debuggers, and make advanced debugging techniques often infeasible.
+In each chapter of this dissertation we discuss the specific challenges we address, however, there are four main challenges that over
+These challenges can be split into four main categories.
 
-/ C3: The _debugging of interrupt-driven programs_ is challenging, since traditional debuggers no longer have full control over the flow of execution. Arbitrary interrupts can trigger at any time, leading to non-deterministic behavior and making it difficult to reproduce bugs.
+#let C1 = [
+/ C1: Embedded software development is characterized by a _slow development cycle_. //, partly because reflashing the device after each change is time-consuming, and setting up typical hardware debuggers is cumbersome.
+]
 
-/ C4: Current debuggers are not equipped to  _debug non-deterministic bugs_, yet they are common in embedded systems---but are hard to reproduce and examine using traditional techniques.
+#let C2 = [
+/ C2: The _hardware limitations_ of embedded devices, make it difficult to run debuggers alongside the target software. //traditional debuggers, and make advanced debugging techniques often infeasible.
+]
+
+#let C3 = [
+/ C3: Typical _interrupt-driven programs_ interfere with the debugging process.
+]
+
+#let C4 = [
+/ C4: Current embedded debuggers are not equipped to  _debug non-deterministic bugs_. //, yet they are common in embedded systems---but are hard to reproduce and examine using traditional techniques.
+]
+
+#C1
+
+The slow development cycle has several causes, in the first place the need to reflash the device after each change can slow down the development cycle significantly---especially, when developers use print statements to debug their code.
+Unfortunately, in case developers wish to use a debugger, they usually need to setup a hardware debugger, which can be cumbersome and time-consuming.
+Lesser challenges include the hardware limitations, bare-metal execution environments, bad portability of code over different devices, and the lack of high-level language support.
+We will discuss these challenges in more detail in @chapter:remote.
+
+#C2
+
+Especially, limited memory and processing power are a major concern for embedded devices.
+The resource constraints not only impact the embedded programs, but also any debugger stub that is run alongside it.
+
+#C3
+
+The debugging of interrupt-driven programs is challenging, since traditional debuggers no longer have full control over the flow of execution.
+Arbitrary interrupts can trigger at any time, leading to non-deterministic behavior and making it difficult to reproduce bugs.
+
+#C4
+
+Non-deterministic bugs are very common on embedded systems, but are notoriously difficult to debug, as they often depend on specific timing or order of events, or on very specific input, or environmental conditions.
+
+=== Novel techniques for debugging constrained devices
 
 To address the first challenge, we developed the WARDuino virtual machine, to reduce the need to reflash software, and to enable traditional remote debugging without the need to use a hardware debugger.
 
@@ -227,9 +262,16 @@ Just as formal semantics for programming languages have enabled precise reasonin
 
 To emphasize the importance of formal foundations and to help readers navigate the following chapters, we begin with a brief discussion of our formal framework for debugging in @chapter:foundations.
 
-
-
 //== The promise of universal bytecode interpreters
 
+== Organization of the dissertation
 
+After our introduction of the formal framework used throughout this dissertation in @chapter:foundations, we present our first contribution, the WARDuino virtual machine and its remote debugger, in @chapter:remote.
+The chapter will introduce the virtual machine in great detail, and highlight the components and design decisions that makes is suitable for the novel debugging techniques we present in the following chapters.
+@chapter:oop shows how we adapt the out-of-place debugging technique to embedded systems, and presents our novel out-of-place debugger built on top of the WARDuino virtual machine.
+The stateful out-of-place debugger already allows for some control over the order and timing of asynchronous events, however, it does not fully address the difficulties associated with non-deterministic bugs, in particular, those bugs caused by very specific conditions of the environment.
+This is addressed by our multiverse debugger for microcontrollers, _MIO_, which we present in @chap:multiverse.
+The _MIO_ debugger presents the first multiverse debugger that works on a live execution of the program, and takes into account both input and output streams.
+In @chapter:testing, we present the novel testing framework we developed for testing our debuggers, called _Latch_.
+Finally, we will conclude with some final thoughts on the contributions of this dissertation, and discuss future work in @chapter:conclusion.
 
