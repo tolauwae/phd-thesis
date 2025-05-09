@@ -1,4 +1,5 @@
 #import "fonts.typ": serif, sans, monospace, normal, small, script
+#import "colors.typ": colour
 #import "@preview/drafting:0.2.2": set-margin-note-defaults, set-page-properties, margin-note
 
 //#let inside-margin = 16.5mm
@@ -49,11 +50,7 @@
     set-margin-note-defaults(margin-outside: outside-margin, stroke: none, side: auto)
     //set-page-properties(margin-outside: note-padding)
 
-    // color scheme
-    let ugent-blue = rgb("#1E64C8")
-    let sky = rgb(4, 165, 229)
-
-    let links = sky
+    let links = color.links
 
     // general styling
 
@@ -179,12 +176,18 @@
 
     let suffix = ""
     if source != none {
-        suffix = ", " + source
+        suffix = text[, #text(style: "italic", source)] //#underline(text(style: "italic", weight: "bold", source))]
     }
     align(alignment)[
-        #block(width: 70%)[
-            #text(style: "italic", hyphenate: false, [#body]) \
-            #text([— #author])#text(style: "italic", [#suffix])
+        #block(width: 75%)[
+            #table(
+              stroke: none,
+              /*table.vline(stroke: colour.primary + 1.2pt),*/
+              table.cell(inset: (left: 0.0em))[
+                #text(style: "italic", hyphenate: false, [#body]) \
+                //#v(0.1em)
+                #text([— #author])#suffix
+              ])
             #v(spacing)
         ]
     ]
@@ -195,7 +198,7 @@
 
 #let toc() = {
     [
-        #set page(numbering: none)
+        //#set page(numbering: none)
         #set heading(outlined: false)
         = Contents <toc>
 
@@ -214,12 +217,16 @@
         ]
 
         #v(1em)
-        #outline(
-            title: none,
-            indent: auto,
-            depth: 2,
-            target: selector(heading).after(selector(label("toc")), inclusive: false).before(selector(label("appendix")), inclusive: false),
-        )
+
+        #[
+            #show outline.entry.where(level: 1): set block(above: 1.0em)
+            #outline(
+                title: none,
+                indent: auto,
+                depth: 2,
+                target: selector(heading).after(selector(label("toc")), inclusive: false).before(selector(label("appendix")), inclusive: false),
+            )
+        ]
 
         #v(1em)
 

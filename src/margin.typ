@@ -1,6 +1,6 @@
 #import "@preview/drafting:0.2.2": set-margin-note-defaults, set-page-properties, margin-note, rule-grid
 #import "@preview/codly:1.3.0": *
-#import "../lib/book.typ": is-page-empty, quote
+#import "../lib/book.typ": is-page-empty, quote, toc
 #import "../lib/class.typ": s, t, e, f, note-padding, note-gutter, note
 #import "../lib/fonts.typ": serif, sans, mathfont, monospace, small, normal, script, codefont
 
@@ -222,6 +222,59 @@
     #show raw.where(block: true): set par(leading: 0.55em)
 
 
+// Preamble
+#[
+
+#counter(page).update(1)
+
+#set page(
+    fill: none,
+    header: [
+        #set text(normal)
+    ],
+    numbering: "i",
+    )
+
+#set par(justify: true)
+#set text(
+        font: serif,
+        ligatures: true,
+        discretionary-ligatures: false,
+        size: normal,
+        lang: "en",
+        weight: 400)
+
+#show heading: it => [
+  #set align(center)
+  #set text(weight: 600)
+  #block(smallcaps(it.body))
+  #v(1.25em)
+]
+
+#set heading(numbering: none)
+
+= Lay summary
+
+#pagebreak()
+
+#include "preamble/declaration.typ"
+
+//#pagebreak(to: "odd")
+//
+//#v(30%)
+//#align(center)[
+//    #text(style: "italic")[for the apple of my eye]  // TODO end dedication with a period?
+//]
+
+#pagebreak(to: "odd")
+
+#toc()
+
+]
+
+#counter(page).update(1)
+#counter(heading).update(0)
+
 
 // Chapters
 
@@ -240,14 +293,14 @@
 #include "foundations/foundations.typ"
 
 // Chapter 3
-= A Remote Debugger for WebAssembly  // An embedded WebAssembly virtual machine
+= A Remote Debugger for WebAssembly<chapter:remote>  // An embedded WebAssembly virtual machine
 
 #quote([#text(style: "italic", [adapted from]) George Orwell], theme: theme)[Those who abjure debugging can only do so by others debugging on their behalf.]
 
 #include "remote/remote.typ"
 
 // Chapter 4
-= Stateful Out-of-place debugging // todo make title more specific?
+= Stateful Out-of-place debugging<chapter:oop> // todo make title more specific?
 
 #quote("Tony Hoare")[Some problems are better evaded than solved.]
 
@@ -263,16 +316,24 @@
 
 // Chapter 6
 
-= Managed Testing
+= Managed Testing<chapter:testing>
 
 #quote("Miyamoto Musashi", source: "The Book of Five Rings", theme: theme)[If you know the way broadly, you will see it in everything.] // TODO find a better quote
 
 #include "latch/latch.typ"
 
+// Chapter 7
+
+= Conclusion<chapter:conclusion>
+
+#quote("Terry Pratchet", source: "A Hat Full of Sky", theme: theme)[Why do you go away? So that you can come back. So that you can see the place you came from with new eyes and extra colors. And the people there see you differently, too. Coming back to where you started is not the same as never leaving.]
+//#quote("P.G. Wodehouse", source: "Jeeves Takes Charge", theme: theme)[I pressed down the mental accelerator. The old lemon throbbed fiercely. I got an idea.]
+
+#include "conclusion/conclusion.typ"
+
 // Appendices and references
 
 #[
-#counter(heading).update(1)
 #set heading(numbering: "A.1", supplement: [Appendix])
 
 #show heading: it => [
@@ -284,13 +345,24 @@
 ]
 
     #let runningheader(number, body) = [
-      #body
+      _Appendix #number._ #h(0.5em) #body // \[Chap. #number\]
     ]
+
 #set figure(placement: none)
 
 #metadata(none) <appendix>
 
-#bibliography("references.bib", style: "elsevier-harvard")<bibliography>
+#[
+  // no running header for bibliography
+  #set page(header: context {
+    if calc.even(here().page()) [
+      _Bibliography_ #h(1fr)
+      #v(0.5em)
+    ]
+  })
+  
+  #bibliography("references.bib", style: "elsevier-harvard")<bibliography>
+]
 
 #show heading: it => [
   #set align(center)
@@ -298,8 +370,51 @@
   #pagebreak()
   #block(smallcaps[#counter(heading).display(). #it.body])
   #v(1.25em)
+  #[#metadata(none) <chapter-start>]
 ]
 
+#counter(heading).update(0)
+
+    #set page(
+        header: context {
+            if is-page-empty() {
+                return
+            }
+    
+            let i = here().page()
+            if query(selector.or(<chapter-start>)).any(it => (it.location().page() == i)) {
+                return
+            }
+    
+            // Retrieve all headings in the document
+            let headings = query(heading);
+    
+            // Find the last heading before or on the current page
+            if headings.filter(h => h.level == 2).filter(h => h.location().page() <= here().page()).len() == 0 {
+                return
+            }
+
+            let last_heading = headings.filter(h => h.level == 2).filter(h => h.location().page() <= here().page()).last();
+    
+            if calc.even(here().page()) {
+                // Even pages : Chapter a. title
+                // Retrieve all level 1 headings before the current position
+                let headings = query(heading.where(level: 1).before(here()))
+    
+                // Check if there are any such headings
+                if headings.len() > 0 {
+                  [
+                    //#counter(page).display()
+                    #runningheader(counter(heading).display(), headings.last().body) #h(1fr)
+                    #v(0.5em)
+                  ]
+                } else {
+                  // Fallback content if no level 1 heading is found
+                  none
+                }
+            }
+        }
+    ) if theme == "modern"
 
 #include "foundations/appendix.typ"
 
@@ -308,4 +423,5 @@
 #include "oop/appendix.typ"
 
 #include "multiverse/appendix.typ"
+
 ]

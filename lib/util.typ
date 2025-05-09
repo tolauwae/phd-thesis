@@ -1,6 +1,7 @@
 #import "@preview/codly:1.3.0": codly
 #import "@preview/lovelace:0.3.0": pseudocode
 #import "fonts.typ": serif, monospace, normal, small, script, tiny
+#import "colors.typ": colour
 
 #let circled(body) = box(baseline: 0.24em, height: 1em, circle(stroke: 0.2mm)[
         #set align(center + horizon)
@@ -34,7 +35,7 @@
 #let code(offset: 0, body) = {
     set text(font: monospace, weight: "regular")
     codly(zebra-fill: none, offset: offset, display-name: false, radius: 0pt, fill: none, stroke: none, number-align: right + top, reference-sep: "", breakable: true,
-        number-format: (n) => text(size: script)[#str(n)])
+        number-format: (n) => text(size: tiny, baseline: 1pt, fill: colour.subtext)[#str(n)])
     body
 }
 
@@ -44,7 +45,6 @@
     set figure(placement: none)
 
     [
-
         #let cursor = 0
         #let snippets = ()
         #for (index, el) in content.enumerate() {
@@ -97,7 +97,7 @@
     ]
 }
 
-#let boxed(it) = $[| it |]$
+#let boxed(it) = $it$
 
 #let semantics(caption, content, tag) = {
     [
