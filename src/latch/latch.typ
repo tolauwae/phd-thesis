@@ -1084,7 +1084,7 @@ The way the TypeScript framework handles the interprocess communication is evide
 However, the flashing at the start remains much slower than starting a new process on the laptop, therefore the overhead of the specification test suites with the fewest steps, is dominated by the startup phase instead.
 This results in the highest overhead overall.
 
-#figure(image(height: 250pt, "../placeholder.png"), caption: [The relative runtime overhead of #latch's WebAssembly specification test suite on hardware compared to a simulator for each test suite. Runtimes are calculated as sample means of 10 runs, and the exact relative overhead is shown next to each bar. The error bars show the confidence interval for the difference between the two means (normalized to the relative overhead) based on the Welch's t-test. The number of steps for each test suite is listed next to its name.])<fig:overhead>
+#figure(image(width: 100%, "figures/benchmarks.svg"), caption: [The relative runtime overhead of #latch's WebAssembly specification test suite on hardware compared to a simulator for each test suite. Runtimes are calculated as sample means of 10 runs, and the exact relative overhead is shown next to each bar. The error bars show the confidence interval for the difference between the two means (normalized to the relative overhead) based on the Welch's t-test. The number of steps for each test suite is listed next to its name.])<fig:overhead>
 
 The specification test suites taken separately in @fig:overhead, shows that fewer test steps results in higher overhead, because the execution time becomes dominated by the flashing process.
 This shows how important it is to prevent unnecessary flashing by using the #emph[upload module] command.

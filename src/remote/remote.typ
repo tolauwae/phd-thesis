@@ -1272,7 +1272,7 @@ For example, as a Raspberry Pi has a full-fledged operating system, it is trivia
 ==== Espruino
 
 // todo paste tikz plots as svg here
-#figure(espruino, caption: [The execution times of WARDuino and Espruino. #emph[Top Left]: absolute execution times for the benchmarks. #emph[Top Right]: sizes of the programs uploaded to the VM. #emph[Bottom Left]: execution time normalized to native C execution time. #emph[Bottom Right] execution times normalized to the WARDuino execution time.])<fig:espruino>  // todo
+#figure(image(width: 100%, "figures/espruino.svg"), caption: [The execution times of WARDuino and Espruino. #emph[Top Left]: absolute execution times for the benchmarks. #emph[Top Right]: sizes of the programs uploaded to the VM. #emph[Bottom Left]: execution time normalized to native C execution time. #emph[Bottom Right] execution times normalized to the WARDuino execution time.])<fig:espruino>  // todo
 
 @fig:espruino shows the results of the benchmarks for Espruino and WARDuino.
 In each graph the green (right) bars indicate the measurements for Espruino, the red (left) bars show the results for WARDuino.
@@ -1292,7 +1292,7 @@ This is not surprising, as WebAssembly programs are saved in a binary format, an
 
 ==== WASM3
 
-#figure(image(height: 15em, "../placeholder.png"), caption: [The benchmark execution times of WARDuino and WASM3. #emph[Left]: absolute execution times. #emph[Right]: execution times normalized to WASM3 execution time.])<fig:wasm3>  // todo
+#figure(image(width: 100%, "figures/wasm3.svg"), caption: [The benchmark execution times of WARDuino and WASM3. #emph[Left]: absolute execution times. #emph[Right]: execution times normalized to WASM3 execution time.])<fig:wasm3>  // todo
 
 @fig:wasm3 compares the performance of WASM3 and WARDuino.
 The graph on the right side shows the overhead of the WARDuino virtual machine relative to the WASM3 runtime.
