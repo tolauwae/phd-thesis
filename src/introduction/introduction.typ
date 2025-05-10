@@ -269,5 +269,5 @@ We will discuss this framework in detail at the end of the dissertation in @chap
 == Structure of the dissertation
 
 We have already summarized the contributions of this dissertation, and the chapters in which we discuss them.
-However, before we dive into the details, we will first present the general formal framework we use throughout the dissertation in @chapter:foundations. We hope this will help the reader to better understand the formal proofs we present in the following chapters.
-In the following four chapters, we will discuss the main contributions, before concluding with a summary of the dissertation, and a discussion of future work in @chapter:conclusion.
+However, before we dive into the details, we will first present the general formal framework we use throughout the dissertation in @chapter:foundations. We hope this will help the reader to better understand the formal proofs we present in the later chapters.
+In the subsequent four chapters, we will discuss the main contributions, before concluding with a summary of the dissertation, and a discussion of future work in @chapter:conclusion.
