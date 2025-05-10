@@ -198,7 +198,6 @@
 
 #let toc() = {
     [
-        //#set page(numbering: none)
         #set heading(outlined: false)
         = Contents <toc>
 
@@ -211,7 +210,7 @@
               emph(it)
             }
 
-            #outline(title: none,
+            #outline(title: none, depth: 1,
                 target: selector(heading).before(selector(label("toc")), inclusive: false),
             )
         ]

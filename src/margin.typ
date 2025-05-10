@@ -4,6 +4,8 @@
 #import "../lib/class.typ": s, t, e, f, note-padding, note-gutter, note
 #import "../lib/fonts.typ": serif, sans, mathfont, monospace, small, normal, script, codefont
 
+#import "preamble/titlepage.typ": titlepage
+
 #import "@preview/ctheorems:1.1.3": *
 #show: thmrules.with(qed-symbol: text(size: small, $space square$))
 
@@ -222,6 +224,13 @@
     #show raw.where(block: true): set par(leading: 0.55em)
 
 
+#[
+    #set page(numbering: none, footer: none)
+
+    #titlepage(maintitle, subtitle: subtitle)
+    #pagebreak(to: "odd")
+]
+
 // Preamble
 #[
 
@@ -244,19 +253,26 @@
         lang: "en",
         weight: 400)
 
-#show heading: it => [
+#show heading.where(level: 1): it => [
   #set align(center)
   #set text(weight: 600)
   #block(smallcaps(it.body))
   #v(1.25em)
 ]
 
+#show heading.where(level: 2): it => [
+  #set text(weight: 800, size: normal)
+  #it
+]
+
 #set heading(numbering: none)
 
-= Lay summary
+#include "preamble/samenvatting.typ"
 
 #pagebreak()
+#include "preamble/summary.typ"
 
+#pagebreak()
 #include "preamble/declaration.typ"
 
 //#pagebreak(to: "odd")
