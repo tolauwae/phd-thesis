@@ -4,7 +4,7 @@
 
 // Daniel hillerström has this kind of declaration in his thesis:
 // I declare that this thesis is composed by myself, that the work contained herein is my own except where explicitly stated otherwise in the text, and that this work has not been submitted for any other degree or professional qualification except as specified. 
-This thesis was written in the period from 2021 to 2025, and the works therein have been published or submitted for publication at peer-reviewed conferences and journals, and have been represented at various conferences and workshops.
+This dissertation was written in the period from 2021 to 2025, and the works therein have been published or submitted for publication at peer-reviewed conferences and journals, and have been represented at various conferences and workshops.
 
 == Published works
 
@@ -25,9 +25,9 @@ At the time of writing, the following prominently featured works were submitted 
 
 == Demonstrations and other presentations
 
-We list here the more formal demonstrations not listed before.
+We list here the more formal presentations, and demonstrations not listed before. We have left out poster presentations and talks outside of international conferences.
 
-- *Tom Lauwaerts*, Carlos Rojas Castillo, Elisa Gonzalez Boix, Christophe Scholliers. _Demo: Debugging Constraint Devices with EDWARD_. In MobiSys '23, pages 602-603. ACM, 2023.
+- *Tom Lauwaerts*, Carlos Rojas Castillo, Elisa Gonzalez Boix, Christophe Scholliers. _Demo: Debugging Constraint Devices with EDWARD_. In MobiSys'23, pages 602-603. ACM, 2023.
 - *Tom Lauwaerts*, Carlos Rojas Castillo, Elisa Gonzalez Boix, and Christophe Scholliers. _Out-of-Place Debugging on Constraint Devices with the EDWARD Debugger (Demo)_. In DEBT'23, pages 3-4. ACM, 2023.
 - *Tom Lauwaerts*. _Out-of-place Multiverse Debugging for Constraint Device_. At the ACM Student Research Competition (SRC) at ECOOP/ISSTA. 3rd place. ACM, 2023.
 == Remainder

@@ -1,8 +1,9 @@
 #import "../introduction/introduction.typ": C1, C2, C3, C4
+#import "../../lib/class.typ": note
 
-This dissertation introduced several new ways of debugging embedded systems, based on a virtual machine approach with sound, and complete debugging semantics.
+This dissertation introduced three new ways of debugging embedded systems, based on a virtual machine approach with sound, and complete debugging semantics.
 While we have discussed the conclusions for each of the contributions in their respective chapters, we now consider the bigger picture one last time.
-In this final chapter, we sum up again the overarching challenges we set out to address, and briefly summarize our contributions in relation to these challenges, and discuss some possible future directions.
+In this final chapter, we sum up the overarching challenges we set out to address, and briefly summarize our contributions in relation to these challenges, and discuss possible future directions.
 
 == Remote debugging for WebAssembly
 
@@ -56,7 +57,7 @@ Of course, since we work with a real-world environment, we cannot guarantee that
 However, we can guarantee that the debugger will reverse the I/O actions support by the virtual machine.
 These I/O actions are designed to be _deterministically compensable_ by the virtual machine, meaning that the virtual machine can always reverse them.
 
-Our formal model of the _MIO_ debugger allows us to clearly show exactly how actions are reversed, and to proof that our debugger is still sound an complete even when reversing action, or sliding to new universes.
+Our formal model of the _MIO_ debugger allows us to clearly show exactly how actions are reversed, and to proof that our debugger is still sound a complete even when reversing action, or sliding to new universes.
 
 By introducing a sparse snapshotting strategy, we achieve practical performance on resource-constrained devices.
 This work demonstrates that multiverse debugging can work as an online debugger, and be made viable for real-world embedded systems.
@@ -73,13 +74,14 @@ Coupled with our novel managed testing approach, which allows developers to inte
 The debuggers that are the subject of this dissertation are all manual online debuggers, for which we define soundness as the property that the debugger observes all possible behavior of the program being debugged, and does not deviate from it.
 
 Like many conventional debuggers, our remote debugger---while complete---is not sound, since it can update the code of the program being debugged during the debugging session.
-However, through significant efforts we were able to provide an entirely new class of out-of-place and multiverse debuggers, which are both sound.
+However, we without the live code updates, we were able to prove soundness for the remote debugging.
+Through significant efforts we were likewise able to design an entirely new class of out-of-place and multiverse debuggers, which are both sound and complete.
 This gives developers greater confidence in the reliability of their observations, especially when debugging non-deterministic bugs.
-
 
 The formal soundness of our debuggers is necessarily limited to certain assumptions, since we can never fully eliminate the probe effect of online debuggers, or discount the possible noise of the real-world environment in which embedded devices operate.
 In the case of our multiverse debugger, we assume in the formalization that I/O operations do not influence each other. In the implementation we have some early support for defining predictable dependencies between I/O operations, but this is not yet formalized.
 An interesting future direction would be to extend our formalization to capture more of the possible dependencies between I/O operations, and to provide a formal soundness proof for this extended model.
+// todo In fact, we have already made a first step in this direction using concolic execution#note[This work is currently under submission at the Onward! conference.], which can allow us to 
 
 Similarly for the stateful out-of-place debugger, we assume that there is a known partial order of the possible asynchronous events of a program.
 This is a reasonable assumption for many programs, but does present a very naive model.

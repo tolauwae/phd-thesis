@@ -1,9 +1,9 @@
 #import "../../lib/class.typ": note, definition
 // todo the very first sentence should say something about bugs
 
-As surely as computers will continue to run software, so will software continue to have bugs and mistakes.
+As long as people write programs for computers, so will software continue to have bugs and mistakes.
 That is not pessimism; it is reality. After all we live in an imperfect world.
-No formal method, nor static checker, or machine learning model can ever eliminate all mistakes---especially, for software which interacts with this imperfect, and unpredictable world.
+No formal method, nor model checker, or type system can ever eliminate all mistakes---especially, for software which interacts with this imperfect, and unpredictable world.
 This is where debuggers---inevitably---come in.
 
 == The nature of programming mistakes
@@ -56,7 +56,7 @@ Wilkes' description still sums up the need for debugging perfectly today.
 During the early days of computer programming in the 1950s, most debugging was necessarily done with print statements, added to the punch cards used in those days @backus57:fortran.
 One of the first improvements on this system, was to add new macros specific for debugging, which help improve traces of the program, such as those added in the _share_ operating system for the IBM 709 @hanford60:share.
 These kind of macros can be considered the first iterations of so called _offline debuggers_, which are debuggers used to analyze a program after it terminated, usually through traces of the program's execution.
-Early on they were often called _post-mortem debuggers_ @green60:ipl-v, however, today post-mortem refers to a specific type of offline#note[The terms _offline_ and _post-mortem_ still often get conflated.] debugger, which analyzes the program after it has crashed.
+Early on they were often called _post-mortem debuggers_ @green60:ipl-v, however, today post-mortem refers to a specific type of offline#note[The terms _offline_ and _post-mortem_ still often get conflated.] debugger, which analyzes the program after it has crashed @pacheco11:postmortem.
 
 During the same decade, the first _online debuggers_ were developed as well, which in contrast enable interactive inspection, control, and modification of a program’s execution state while the program is running.
 One of the earliest examples is the RCA 501 system @smith58:design, which included six breakpoint switches, and a paper tape reader and monitor printer for debugging.
@@ -121,7 +121,7 @@ During the following decades, debugging was proven to indeed help with all these
 Still, debuggers have always remained somewhat in the shadows, with developers having a long tradition of avoiding debugging during software development.
 Many researchers have tried to understand why debuggers are avoided so much, and unsurprisingly, the causes are varied.
 The cognitive load of debugging is undeniable, and while it is by no means trivial to learn, few programmers are formally trained in debugging @mccauley08:debugging @perscheid17:studying.
-Many programmers are overconfident in the correctness of their code @chattopadhyay22:cognitive, which leads to an unwillingness to examine their programs with the needed level of scrutiny.
+Many programmers are overconfident in the correctness of their code @chattopadhyay22:cognitive, which leads to an unwillingness to examine their programs with the needed level of scrutiny @calikli10:analysis.
 Laziness cannot be discounted either, as debuggers are often---perhaps rightly---perceived as hard to set up @beller18:on.
 In many cases programmers feel it is not worth the time to use debuggers for mistakes---they perceive as small or easy to diagnose @mccauley08:debugging.
 
@@ -180,7 +180,7 @@ They typically rely on specialized hardware debugging interfaces, which can be d
 This undoubtedly contributed to the fact that debuggers for embedded devices still lag behind advances in modern debugging techniques, offering only the most basic operations, often limited only to simple breakpoints, stepping forward, and inspecting local variables---techniques that have been around since the 1960s.
 Consequently, debugging on embedded systems is frequently slow, cumbersome, and far less powerful than the tools available for general-purpose computing.
 
-== The need for novel debugging techniques
+== Roadmap
 
 There is a clear need for novel debugging techniques that can address the unique challenges of debugging embedded systems.
 In this dissertation, we present a novel virtual machine for programming embedded devices, called _WARDuino_, on top of which we develop three novel debuggers for addressing the specific challenges of debugging embedded systems.
@@ -210,7 +210,7 @@ In each chapter of this dissertation we discuss the specific challenges we addre
 The slow development cycle has several causes, in the first place the need to reflash the device after each change can slow down the development cycle significantly---especially, when developers use print statements to debug their code.
 Unfortunately, in case developers wish to use a debugger, they usually need to setup a hardware debugger, which can be cumbersome and time-consuming.
 //Lesser challenges include the hardware limitations, bare-metal execution environments, bad portability of code over different devices, and the lack of high-level language support.
-We will discuss these, and other lesser challenges underlying the slow development cycle in more detail in @chapter:remote.
+We will discuss these, and other lesser challenges underlying the slow development cycle in more detail in @chapter:remote,.
 
 #C2
 
@@ -220,13 +220,13 @@ The resource constraints not only impact the embedded programs, but also any deb
 #C3
 
 The debugging of interrupt-driven programs is challenging, since traditional debuggers no longer have full control over the flow of execution.
-Arbitrary interrupts can trigger at any time, leading to non-deterministic behavior and making it difficult to reproduce bugs.
-
+Specific interleaving executions of interrupts can cause concurrency bugs, which are difficult to reproduce and debug @li23:empirical-study.
+More generally, arbitrary interrupts can trigger at any time, leading to non-deterministic behavior, and making it difficult to reproduce bugs.
 #C4
 
 Non-deterministic bugs are very common on embedded systems, but are notoriously difficult to debug, as they often depend on specific timing or order of events, or on very specific input, or environmental conditions.
 
-=== Novel techniques for debugging constrained devices
+=== Contributions //Novel techniques for debugging constrained devices
 
 Our first contribution is a novel WebAssembly-based virtual machine for embedded devices, called _WARDuino_, which is designed to address the first challenge (*C1*).
 We present the virtual machine in @chapter:remote, and show how it reduces the need to reflash software, and enables traditional remote debugging without the need to use a hardware debugger.
@@ -251,7 +251,7 @@ The _MIO_ debugger presents the first multiverse debugger that works on a live e
 The technique is unique in another way, as it allows for the debugger to reverse the programs execution as it explores the multiverse, while remaining sound and complete.
 Again, we prove the soundness and completeness of our multiverse debugger, particularly in @mult:correctness.
 
-== Open-source prototype and usability
+=== Open-source prototype and usability
 
 A major goal throughout this research has been to develop usable prototypes of our novel debugging techniques.
 Prototypes which can debug real-world embedded software, thereby showing the feasibility of our techniques, and increasing the changes of their adoption.
@@ -266,7 +266,7 @@ In other words, while developing our novel debugger prototypes, we increasingly 
 Therefore, we developed our own testing framework for large-scale testing on constrained devices, called _Latch_, which implements a novel testing approach we call _managed testing_.
 We will discuss this framework in detail at the end of the dissertation in @chapter:testing.
 
-== Structure of the dissertation
+=== Structure of the dissertation
 
 We have already summarized the contributions of this dissertation, and the chapters in which we discuss them.
 However, before we dive into the details, we will first present the general formal framework we use throughout the dissertation in @chapter:foundations. We hope this will help the reader to better understand the formal proofs we present in the later chapters.

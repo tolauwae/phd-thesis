@@ -51,9 +51,9 @@
     
     #grid(
       columns: (1fr, 1fr),
-      align(center)[#image("../topl.png", width: 5cm)],
+      align(center)[#image("../ugent.png", width: 5cm)],
       grid.vline(stroke: white),
-      align(center)[#image("../ugent.png", width: 5cm)]
+      align(center)[#image("../topl.png", width: 5cm)]
     )
 ]
 

@@ -1,4 +1,4 @@
-#import "../../lib/util.typ": code, snippet, algorithm, semantics, lineWidth, headHeight, tablehead, highlight, boxed
+#import "../../lib/util.typ": code, snippet, algorithm, semantics, lineWidth, headHeight, tablehead, highlight, boxed, circled
 #import "../../lib/class.typ": note, theorem, proofsketch, proof, example, lemma
 #import "../../lib/fonts.typ": sans, script, serif
 
@@ -410,7 +410,7 @@ The closure consists of the code which performs the action over the non-transfer
  We refer to elements of named tuples, such as the transfer function as $a_(transfer)$.
 
 The execution of a WebAssembly program is defined by a small-step reduction relation over the configuration $\{s;v^*;e^*\}$, denoted as #wasmarrow, where  $i$ refers to the index of the currently executing module as shown in figure @oop:fig:invoking. The WebAssembly semantics makes use of administrative operators to deal with control constructs, for example $call i$ denotes a call to a function with index $i$ . To mark the extend of an active control struct, expressions are wrapped into labels. 
-Evaluation context $L^k$ are used in the #smallcaps("Label") rule to unravel the nesting of $k$ labels, allowing to focuses on the currently evaluation expressions $e*$.  
+Evaluation context $L^k$ are used in the _Label_ rule to unravel the nesting of $k$ labels, allowing to focuses on the currently evaluation expressions $e*$.  
 This rule, as defined in the WebAssembly semantics, is important for defining the out-of-place debugger semantics because it allows capturing the current continuation, (i.e. $L^k [ ]$) , just before invoking a remote call. 
 //To accommodate the semantics of the out-of-place debugger, we make a small modification to the semantics of WebAssembly, by adding a special label $Inv$ for invoking a series of WebAssembly instructions.
 
@@ -543,7 +543,7 @@ The process is split into three steps, corresponding to four evaluation rules, f
 
     / invoke-end: When invocation ends, there is only a single value $v$ left on the stack on the client $C$.
         At this point, the client makes use of the $a_{transfer^{-1}}$ function of the action to compute which state needs to be synchronised. 
-        This difference is then transferred back to the server in a #smallcaps("sync") message, along with the return value $v$ of the action.
+        This difference is then transferred back to the server in a _sync_ message, along with the return value $v$ of the action.
 
 == Modeling Asynchronous Non-transferable Resources<oop:Asynchronous>
 
@@ -637,12 +637,26 @@ In stateful out-of-place debugging, the update of the callback system by an acti
 However, whenever the client receives MQTT messages, it places these in the event queue of the callback handling system.
 This is a clear example of asynchronous desynchronization, which needs to be handled differently.
 
+=== Accessing event-driven non-transferable resources
+
+In order to support event-driven access to non-transferable resources, the out-of-place debugger hijacks the event system of the virtual machine.
+Rather than directly executing the callback function whenever an event is received, the event is send from the server to the client, and removed from the event queue in the server.
+
+// todo update text to new figure
+@oop:forwardevents shows a schematic of how the out-of-place debugger handles events in the event system.
+The client stores the forwarded events in a local event queue, mirroring the event queue on the server #circled("D").
+Events received by the client are not automatically handled.
+Instead, they are forwarded to the frontend, to be shown in a dedicated view.
+Events will be manually resolved upon the developer's request.
+When the client receives such a request from the frontend, it will only process the specified event if the partial ordering of events is maintained.
+This way, the developer can choose at what point in the code an event should be handled, enabling the reproduction of multiple situations.
+
 === The Callback System in Out-of-place Debugging
 
 We revisit the semantics of stateful out-of-place debugging entirely, since the current semantics have no way of dealing with events produced by non-transferable resources.
 We will define a new semantics $attach(dbgarrow, tr: alpha)$ that encapsulates the previous syntax and evaluation rules, but adds support for synchronization and control of event-driven non-transferable resources.
 
-Our callback system adds two instructions to WebAssembly, which can change the callback map in the global store, #smallcaps("deregister") and #smallcaps("register").
+Our callback system adds two instructions to WebAssembly, which can change the callback map in the global store, _deregister_ and _register_.
 As our example with MQTT subscribe illustrates, actions can use the instructions to change the map on the server.
 It is crucial to have these changes reflected on the client, since it has sole control of the callback system.
 However, these changes are still synchronous, so can be dealt with through the invocation rules already presented in @oop:invocation.
@@ -681,7 +695,7 @@ However, some events cannot occur before other events, the most straightforward 
 In such cases, reordering the events may result in execution paths that are impossible without the interference of the debugger.
 To prevent the debugger from causing such impossible scenario's, the semantics assumes there is a partial order relation $<$ for the events in the queue.
 At any point in the debugging session, an event can only be dispatched if there is no undispatched event that is smaller under this relation.
-The #smallcaps("transfer-events") rule describes how the client sends events to the server, as soon as the events are received.
+The _transfer-events_ rule describes how the client sends events to the server, as soon as the events are received.
 Since the event queue is an extension of the WebAssembly state, the same synchronization and updating mechanism is used as before.
 We provide a summary of each rule below.
 
@@ -702,9 +716,9 @@ Before we give the proofs of general correctness for our debugger, we first proo
 Specifically, we proof that given the execution of an action in the non-debugger semantics, there must exist a path in the debugger semantics that moves the client from the same starting state to the same end state. 
 
 #lemma("Invoking completeness")[
-    The remote invoking of an action in the debugger semantics is _complete_, when for every debugging configuration $dbg$ with $K$ in $S$ and, where the next instruction in $K$ is a call to an action $a$, and $K'$ the result of that action ($K #wasmarrow K'$), the following holds:
+    The remote invoking of an action in the debugger semantics is _complete_, when for every debugging configuration $dbg$ with $K$ in $C$ and, where the next instruction in $K$ is a call to an action $a$, and $K'$ the result of that action ($K #wasmarrow K'$), the following holds:
     $ exists dbg' : dbg attach(dbgarrow, tr: alpha comma *) dbg' and (K' in S "of" dbg') $
-]<theorem:invoking>
+]<theorem:invoking-completeness>
 #proof($bold("Invoking completeness for" attach(dbgarrow, tr: alpha comma ast))$)[
     Since we know that $K wasmarrow K'$ exists, we can construct a path in the debugger semantics that brings the client to the same state. The sequence is as follows:
 
@@ -723,11 +737,11 @@ Specifically, we proof that given the execution of an action in the non-debugger
     By definition, after _invoke-start_, $K''$ is equivalent to the client’s original state $K$ with respect to the semantics of the action $a$. Therefore, the execution $K'' wasmarrow K'''$ mirrors the direct semantics $K wasmarrow K'$. Since the forward transfer function transmits all changes to the program state, we have $K''''$ on the client equivalent to $K'$ under the underlying language semantics.
 
 //    Given $K arrow.r.hook/g_i K'$, we can clearly construct a path in the debugging semantics by following the invocation rules from \cref{sem:events}.
-//    Since we know that the next step in $arrow.r.hook/g_i$ for $K$ is #smallcaps("action"), we also know that for any debugging with the running state can use the #smallcaps("run-client") rule.
-//    After this, it follows that the #smallcaps("invoke-start") and #smallcaps("invoke-run") rules can be applied successively, and we know that the latter will use $arrow.r.hook/g_i$ to perform the same action, and step to a state $K''$.
-//    We know that the step in $arrow.r.hook/g_d$ has the same effect as $K \hookrightarrow_i K'$, since the previous #smallcaps("run-client") rule sends exactly all relevant state thanks to $a_{transfer}(v^n, s)$.
-//    Similarly, the following step in $arrow.r.hook/g_d$, #smallcaps("invoke-end"), will send exactly all effects on the state back to the server with $a_{transfer^{-1}}(v^n, s)$.
-//    This means that in the #smallcaps("sync") rule, $K$ is updated with precisely the effects of $K arrow.r.hook/g_i K'$.
+//    Since we know that the next step in $arrow.r.hook/g_i$ for $K$ is _action_, we also know that for any debugging with the running state can use the _run-client_ rule.
+//    After this, it follows that the _invoke-start_ and _invoke-run_ rules can be applied successively, and we know that the latter will use $arrow.r.hook/g_i$ to perform the same action, and step to a state $K''$.
+//    We know that the step in $arrow.r.hook/g_d$ has the same effect as $K \hookrightarrow_i K'$, since the previous _run-client_ rule sends exactly all relevant state thanks to $a_{transfer}(v^n, s)$.
+//    Similarly, the following step in $arrow.r.hook/g_d$, _invoke-end_, will send exactly all effects on the state back to the server with $a_{transfer^{-1}}(v^n, s)$.
+//    This means that in the _sync_ rule, $K$ is updated with precisely the effects of $K arrow.r.hook/g_i K'$.
 //    This means that we now have $K'$ in the server for the debugging configuration, and the lemma holds.
 ]
 
@@ -745,14 +759,14 @@ The invoking of actions is sound when for any action invocation that takes $dbg$
     Then:
 
     $ exists K' : K wasmarrow K' and K' in C "of" dbg_n $
-]<theorem:invoking>
+]<theorem:invoking-soundness>
 
 The precise formulation is quite involved, but informally, the lemma states that given any sequence $dbg attach(dbgarrow, tr: alpha comma ast) dbg'$ that starts from the call of an action $a$ in the program state $k$ of the client $C$, and ends in the first state $dbg'$ where this program state has been changed, we there must exist a sequence of steps in the underlying language semantics that takes $K$ to $K'$ (the new program state in $dbg'$).
 The proof follows from the construction of the debugging semantics.
 
 #proof[
     Consider the initial debugger state $dbg$ with program state $K$.
-    To reach a state $dbg'$ where the client’s program state has changed, the sequence of steps in the debug semantics, must eventually apply either the _step-invoke_ or _run-invoke_ rule (by construction of the semantics; see supporting lemma in @app:oop).
+    To reach a state $dbg'$ where the client’s program state has changed, the sequence of steps in the debug semantics, must eventually apply either the _step-invoke_ or _run-invoke_ rule (by construction of the semantics; see supporting @theorem:uniqueness in @app:oop).
 
     Once step-invoke or run-invoke are applied, the only possible sequence of rules is again:
 
@@ -772,75 +786,61 @@ The proof follows from the construction of the debugging semantics.
   Thus, a step $K wasmarrow K'$ exists, with $K'$ in $C$ of $dbg_n$.
 ]
 
-// todo add paragraph
-
-Since debuggers are used to inspect a programs execution to find the causes of errors, we define the correctness of the debugger semantic in terms of its observation of the underlying language semantics.
-We consider a debugger to be correct if it can observe any execution that can be observed by the underlying language semantics, and conversely, that any execution observed by the debugger semantics can be observed by the language semantics.
-We call these two properties respectively soundness and completeness.
-
-////\begin{lemma}[Callback Neutrality]@theorem:invoking
-////    % todo lemma shows that if K -> K' and you do a callback step in K -> K'' then K'' -> K'''
-////    % todo K' and K'''  can be different if callbacks can change internal state
-////    % todo actually it doesn't matter for the debugger, these are still paths 
-////
-////    % todo mayeb another lemma that could be useful is, that a callback can execute at any time in the program, and that the program can continue after the callback (different but nondeterminism is not a problem we care about in this paper)
-////\end{lemma}
-//
-//// todo ...
-//
-//// todo for the following theorems we assume that we get the same event queue in the same order and at the same time
+//Since debuggers are used to inspect a programs execution to find the causes of errors, we define the correctness of the debugger semantic in terms of its observation of the underlying language semantics.The 
+//We consider a debugger to be correct if it can observe any execution that can be observed by the underlying language semantics, and conversely, that any execution observed by the debugger semantics can be observed by the language semantics.
+//We call these two properties respectively soundness and completeness.
 
 #let theoremdebuggersoundness = [
-    Let $K$ be the start WebAssembly configuration, and $dbg$ the debugging configuration, where $S$ contains the WebAssembly configuration $K'$.
+    Let $K$ be the start WebAssembly configuration, and $dbg$ the debugging configuration, where $C$ contains the WebAssembly configuration $K'$.
     Let the debugger steps $attach(dbgarrow, tr: alpha comma ast)$ be the result of a series of debugging messages. Then:
     $ forall dbg : dbg_start attach(dbgarrow, tr: alpha comma ast) dbg arrow.double.r.long K multi(wasmarrow) K' $
 ]
 
 #theorem("Debugger soundness")[#theoremdebuggersoundness]<theorem:debugger-soundness>
 #proof[
-//\begin{proof}
-//    The proof proceeds by induction on the steps in the debugging session. % todo before one message was one step, but now there are also internal messages -> 
-//    In the base case, only a few cases need to be considered, since all other steps must be preceded by at least one step in the debugger semantics.
-//    The following rules do not change the state $K$ in $S$, #smallcaps("play"), #smallcaps("pause"), #smallcaps("step-client"), #smallcaps("run-client"), and #smallcaps("pass-trigger").
-//    At any point in a debugging session asynchronous events can arrive in the event queue of the client $C$.
-//    This means that the first step in a debugging session can be the #smallcaps("transfer-events") rule, which also does not change the state of $K$ in $S$.
-//    All other rules need at least one preceding step.
-//
-//    In the inductive step, the proof proceeds very similarly.
-//    The following rules do not change the state $K$ in $S$, #smallcaps("play"), #smallcaps("pause"), #smallcaps("step-client"), #smallcaps("run-client"), #smallcaps("invoke-start"), #smallcaps("invoke-run"), #smallcaps("invoke-end"), #smallcaps("pass-trigger"), #smallcaps("trigger-invalid"), and #smallcaps("transfer-events").
-//    The cases #smallcaps("step-server") and #smallcaps("run-server") simply take a step in the underlying semantics.
-//    The interesting cases are, #smallcaps("sync"), #smallcaps("sync-events"), and #smallcaps("trigger").
-//    The #smallcaps("sync") rule either handles a message produced by the #smallcaps("invoke-end") or #smallcaps("transfer-events") rules.
-//    In the #smallcaps("sync") case, we get the changes from the invocation of an action produced by a previous #smallcaps("invoke-end") step.
-//    However, by \cref{theorem:invoking} we know that the changes are the same as if the action was invoked on the server.
-//    In the #smallcaps("sync-events") case, we get the changes from the event queue, which is the same as if the events were dispatched on the server.
-//    Since we assume that any interleaving of events is possible, there must always be an analogous path in $arrow.r.hook/g_i$.
-//    For the final case, the #smallcaps("trigger") rule handles the dispatching of events in the exact same manner as if the events were dispatched on the server.
-//\end{proof}
+    The proof proceeds by induction on the steps in the debugging session. // todo before one message was one step, but now there are also internal messages -> 
+    In the base case, only a few cases need to be considered. //, since all other steps must be preceded by at least one step in the debugger semantics.
+    The following rules do not change the state $K$ in $C$, _play_, _pause_, _step-client_, _run-client_, and _pass-trigger_.
+    At any point in a debugging session asynchronous events can arrive in the event queue of the server $S$.
+    This means that the first step in a debugging session can be the _transfer-events_ rule, which also does not change the state of $K$ in $C$.
+    All other rules need at least one preceding step.
+
+    In the inductive step, the proof proceeds very similarly.
+    The following rules do not change the state $K$ in $C$, _play_, _pause_, _step-client_, _run-client_, _invoke-start_, _invoke-run_, _invoke-end_, _pass-trigger_, _trigger-invalid_, and _transfer-events_.
+    The cases _step-server_ and _run-server_ simply take a step in the underlying semantics.
+    The interesting cases are, _sync_, _sync-events_, and _trigger_.
+    The _sync_ rule either handles a message produced by the _invoke-end_ or _transfer-events_ rules.
+    In the _sync_ case, we get the changes from the invocation of an action produced by a previous _invoke-end_ step. // todo by lemma uniqueness from the appendix
+    However, by @theorem:invoking-soundness we know that the changes are the same as if the action was invoked on the server.
+    In the _sync-events_ case, we get the changes from the event queue, which is the same as if the events were dispatched on the server. // todo add axiom?
+    Since we assume that any interleaving of events is possible, there must always be an analogous path in #wasmarrow. //$attach(dbgarrow, tr: alpha comma ast)$.
+    For the final case, the _trigger_ rule handles the dispatching of events in the exact same manner as if the events were dispatched on the server.
 ]
 
 
 #let theoremdebuggercompleteness = [
-    Let $K$ be the start WebAssembly configuration for which there exists a series of transition $arrow.r.hook/g^*_i$ to another configuration $K'$, and $dbg_start$ the corresponding starting debugger configuration with $K$ in $S$. Let the debugging configuration with $K'$ be $dbg$.
+    Let $K$ be the start WebAssembly configuration for which there exists a series of transition $attach(dbgarrow, tr: alpha comma ast)$ to another configuration $K'$, and $dbg_start$ the corresponding starting debugger configuration with $K$ in $C$. Let the debugging configuration with $K'$ be $dbg$.
     Then:
 $ forall K' : K multi(wasmarrow) K' arrow.double.r.long dbg_start attach(dbgarrow, tr: alpha comma ast) dbg $
 ]
 
 #theorem("Debugger completeness")[#theoremdebuggercompleteness]<theorem:debugger-completeness>
 #proof[
-//    The proof for completeness follows almost directly from the fact that for every transition in the underlying language semantics, the debugger can take a corresponding step.
-//    For steps that can be taken out-of-place, the debugger gets to the same state with the #smallcaps("step-server") rule.
-//    For steps that cannot be taken out-of-place, the debugger uses the invoke mechanism. However, \cref{theorem:invoking} exactly shows that an analogous path in $arrow.r.hook/g_d$ exists.
-//    Lastly, at any point in the execution in $arrow.r.hook/g_i$, the event queue may not be empty, leading to the #smallcaps("interrupt") rule.
-//    During debugging the same can happen on the client $C$, which leads to the #smallcaps("transfer-events") rule.
-//    After the #smallcaps("sync") step, the state $K$ in $S$ is the same as at the start of the #smallcaps("interrupt") rule during normal execution.
-//    This means that the same callback can be triggered with the #smallcaps("trigger") rule at the exact same place in the program.
-//\end{proof}
+    The proof for completeness follows almost directly from the fact that for every transition in the underlying language semantics, the debugger can take a corresponding step.
+    For steps that can be taken out-of-place, the debugger gets to the same state with the _step-client_ rule.
+    For steps that cannot be taken out-of-place, the debugger uses the invoke mechanism. However, @theorem:invoking-completeness exactly shows that an analogous path in $attach(dbgarrow, tr: alpha)$ exists.
+    Lastly, at any point in the execution in #wasmarrow, the event queue may not be empty, leading to the _interrupt_ rule.
+    During debugging the same can happen on the client $C$, which leads to the _transfer-events_ rule.
+    After the _sync_ step, the state $K$ in $C$ is the same as at the start of the _interrupt_ rule during normal execution.
+    This means that the same callback can be triggered with the _trigger_ rule at the exact same place in the program.
 ]
 
 //// the event based aspect introduces more complexity
 //
 //// todo conclude
+
+Given the proofs of completeness and soundness, we can conclude that the out-of-place debugger is correct. // under certain assumptions.
+It is important to acknowledge again, that the correctness of the debugger is based on the following assumptions; the underlying language semantics is sound, the control flow of the program is only influenced by the order of events and not their concrete timing, and events can arrive at any time under the given partial order of events.
 
 == Implementation<oop:implementation>
 
@@ -1113,15 +1113,15 @@ If contact bouncing causes the function to be triggered an even number of times,
 // remain the same to the human observer.
 It is not trivial to deduce the underlying contact bouncing problem by only stepping through the program. //without any extra information.
 
-#strong[Bugfixing with #smallcaps("Edward").] Let us now revisit the scenario using out-of-place debugging.
-With #smallcaps("Edward"), developers can pull an out-of-place debug session from the remote device, and begin debugging locally at their machine.
-#smallcaps("Edward") provides the developer with a dedicated view on the event queue with all asynchronous events that happen at the remote device, and the ability to choose when the next event happens.
-When the developer pushes the physical button once during debugging, they will immediately notice that #smallcaps("Edward")'s events view suddenly contains multiple identical events for a single button press, as shown in \cref{fig:manyevents}.
+#strong[Bugfixing with _Edward_.] Let us now revisit the scenario using out-of-place debugging.
+With _Edward_, developers can pull an out-of-place debug session from the remote device, and begin debugging locally at their machine.
+_Edward_ provides the developer with a dedicated view on the event queue with all asynchronous events that happen at the remote device, and the ability to choose when the next event happens.
+When the developer pushes the physical button once during debugging, they will immediately notice that _Edward_'s events view suddenly contains multiple identical events for a single button press, as shown in \cref{fig:manyevents}.
 This information enables the developer to more easily detect the contact bouncing issue. // without even having to step through the code.
 
 If the developer has not yet deduced the root cause of the bug, they could use stepping through the code in a similar way than when using the remote debugger.
 However, this time, stepping through the code is fast as debugging happens locally without incurring in network communication.
-Moreover, #smallcaps("Edward") allows debugging the program backwards.
+Moreover, _Edward_ allows debugging the program backwards.
 This means that during debugging when the LED does not turn on, the developer can step back to the previous step to diagnose what exactly went wrong during the execution.
 There is no need to restart the program and try to guess what the right conditions for the bug were.
 
@@ -1141,75 +1141,77 @@ There is no need to restart the program and try to guess what the right conditio
 \end{figure}
 
 #strong("Conclusion.") This example illustrates that using out-of-place debugging makes a difference when debugging device issues compared to a remote debugger.
-Since #smallcaps("Edward") captures all non-transferable resources and provides a view on the event queue with all asynchronous events that happened at the remote device, developers can more easily diagnose device issues.
+Since _Edward_ captures all non-transferable resources and provides a view on the event queue with all asynchronous events that happened at the remote device, developers can more easily diagnose device issues.
 For those cases where stepping is still needed, this happens with low latency.
-#smallcaps("Edward") also allows developers to step backwards, potentially reducing the debugging time as applications may not need to be restarted to reproduce the conditions for the bug to appear.
+_Edward_ also allows developers to step backwards, potentially reducing the debugging time as applications may not need to be restarted to reproduce the conditions for the bug to appear.
 
 //%We believe our example illustrates that even with remote debugging this is not always trivial.
 //%Certainly, in more complex problems the developer cannot exclude the possibility of software issues without extensive debugging and testing.
 //%This is where using out-of-place makes a significant difference.
 
 
-=== Quantitative Evaluation<oop:quantative>
+// todo
 
-// todo rework + add random generated programs
-// todo forward reference to latch (as the framework for testing the implementation)
-
-We now present some preliminary quantitative evaluation of #smallcaps("Edward"), to underscore the potential of our approach to reduce performance impact while debugging IoT devices.
-//%to reduce the performance impact of debugging IoT devices.
-//%\Oop debugging avoids as much as possible network communication to the IoT device during an out-of-place debug session, reducing latency while debugging and network overhead.
-//%\Oop reduces the performance impact primarily by avoiding as much as possible the main bottleneck of remote debugging, accessing the device.
-
-\begin{figure}
-\begin{tabular}{ lrr }
-                      & \#Instructions &  \\
- Location independent & 2092 & 99.15\% \\
- \Nt                  &   18 & 0.85\% \\
- \hline
- Total                & 2110 & 100\% \\
-\end{tabular}
-\caption{Labeling of Wasm instructions for a smart lamp application (\cref{app:concurrency} in \cref{subsec:concurrency}).}
-\label{tab:colouring}
-\end{figure}
-
-\paragraph{Code Analysis.} To analyze the potential communication needed between debugger and remote device, consider the smart lamp application written in AssemblyScript allowing users to control the brightness of an LED (cf. \cref{app:concurrency} in \cref{subsec:concurrency}).
-
-While remote debugging requires network communication between debugger and the remote device for \emph{all} debugging operations and all types of instructions,
-\oop debugging only requires network communication for those instructions that access \nt resources.
-In order to get an estimate of the amount of instructions which are location dependent compared to the non-transferable instruction we labeled each of the Wasm instructions of the smart lamp application's code as a location-independent instruction, or an instruction that accesses a \nt resource. The results shown in \cref{tab:colouring} confirm our suspicion that location-independent instructions outweigh instructions accessing \nt resources.
-
-%Our benchmarks were conducted using an ESP32-DevKitC V4 board\footnote{\url{https://docs.espressif.com/projects/esp-idf/en/latest/esp32/hw-reference/esp32/get-started-devkitc.html}} connected with a dell xps 9310 laptop through a local network. This board features an ESP32 WROVER IE chip that operates at 240 MHz, with 520 KiB SRAM, 4 MB SPI flash and 8 MB PSRAM.
-
-\paragraph{Network Overhead.}
-In order to get an estimate of the difference in network overhead between remote debugging and \oop debugging we benchmarked the (debugging) network overhead of the smart lamp application. 
-Our benchmarks were performed on a M5StickC~\cite{m5stickc} connected to a MacBook Pro with an Apple M1 Pro chip operating at 3.2 GHz CPU and 32GiB of RAM, through a local network.
-
- \Cref{fig:remote_debugging_overhead} plots the network overhead of stepping through the application with a remote debugging session. As we can see, there are small step-wise fluctuations caused by the changing amount of local variables in the program. The network overhead for each debugging step is approximately 2.2 kB.  
-
-For \oop debugging, we benchmarked the network overhead of taking a full snapshot at each remote stepping operation, i.e. the network overhead involved with starting an out-of-place debugging session. Note that in practice the developer needs to perform this operation only once.
-\Cref{fig:remote_snapshot_overhead} shows the results of taking a snapshot at each stepping operation of the smart-lamp application. 
-As expected, the network overhead involved with taking a full snapshot is much higher than a single debugging step, each full snapshot takes approximately 130 kB. 
-
-The significant difference in network overhead between a remote debugging step and a full snapshot is expected and is mostly because the snapshot captures the stack and a full memory dump of the running application.
-
-Luckily, once a snapshot has been taken the debugging session can be executed locally and the subsequent debugging  session will be much faster. Avoiding access to the remote device reduces network overhead and lowers debugging latency. The network overhead for proxied calls is much smaller than a normal debugging step and takes at most 10 bytes per remote call with an additional 4 bytes per argument. More importantly the network overhead for stepping through each of the location independent instructions is zero.
-
-\paragraph{Latency.}
-Finally, we also benchmarked the difference in latency between local debugging steps and remote debugging steps. When stepping through the smart-lamp application with \oop debugging, we find that local steps take on average approximately 5ms while a remote \emph{proxy call} takes approximately 500ms. 
-
-In practice this means that the developer using \oop debugging will perceive almost instantaneously local debugging steps interleaved with remote calls which are perceived slower. As these non-transferable instructions make up less than  1\% of the code, most debugging steps will be able to be executed fast.
-
- \begin{figure}[t]
-\begin{center}
-		\includegraphics[width=1\columnwidth]{figures/remote_step_overhead}
-                \caption{Network communication overhead of 30 step operations using remote debugging.
-                         Note that the overhead axis starts at 2kB.}
-                //%     \robbert{Graph should start at 0, maybe results from \cref{fig:remote_snapshot_overhead} should also be included here}
-                //%     \robbert{A graph of \oop debugging would also be nice, with a giant spike at index 0 and almost nothing for the rest}
-                //%     \robbert{Could the raw data be placed in the repo?}
-		\label{fig:remote_debugging_overhead}
-\end{center}
-\end{figure}
+//=== Quantitative Evaluation<oop:quantative>
+//
+//// todo rework + add random generated programs
+//// todo forward reference to latch (as the framework for testing the implementation)
+//
+//We now present some preliminary quantitative evaluation of _Edward_, to underscore the potential of our approach to reduce performance impact while debugging IoT devices.
+////%to reduce the performance impact of debugging IoT devices.
+////%\Oop debugging avoids as much as possible network communication to the IoT device during an out-of-place debug session, reducing latency while debugging and network overhead.
+////%\Oop reduces the performance impact primarily by avoiding as much as possible the main bottleneck of remote debugging, accessing the device.
+//
+//\begin{figure}
+//\begin{tabular}{ lrr }
+//                      & \#Instructions &  \\
+// Location independent & 2092 & 99.15\% \\
+// \Nt                  &   18 & 0.85\% \\
+// \hline
+// Total                & 2110 & 100\% \\
+//\end{tabular}
+//\caption{Labeling of Wasm instructions for a smart lamp application (\cref{app:concurrency} in \cref{subsec:concurrency}).}
+//\label{tab:colouring}
+//\end{figure}
+//
+//\paragraph{Code Analysis.} To analyze the potential communication needed between debugger and remote device, consider the smart lamp application written in AssemblyScript allowing users to control the brightness of an LED (cf. \cref{app:concurrency} in \cref{subsec:concurrency}).
+//
+//While remote debugging requires network communication between debugger and the remote device for \emph{all} debugging operations and all types of instructions,
+//\oop debugging only requires network communication for those instructions that access \nt resources.
+//In order to get an estimate of the amount of instructions which are location dependent compared to the non-transferable instruction we labeled each of the Wasm instructions of the smart lamp application's code as a location-independent instruction, or an instruction that accesses a \nt resource. The results shown in \cref{tab:colouring} confirm our suspicion that location-independent instructions outweigh instructions accessing \nt resources.
+//
+//%Our benchmarks were conducted using an ESP32-DevKitC V4 board\footnote{\url{https://docs.espressif.com/projects/esp-idf/en/latest/esp32/hw-reference/esp32/get-started-devkitc.html}} connected with a dell xps 9310 laptop through a local network. This board features an ESP32 WROVER IE chip that operates at 240 MHz, with 520 KiB SRAM, 4 MB SPI flash and 8 MB PSRAM.
+//
+//\paragraph{Network Overhead.}
+//In order to get an estimate of the difference in network overhead between remote debugging and \oop debugging we benchmarked the (debugging) network overhead of the smart lamp application. 
+//Our benchmarks were performed on a M5StickC~\cite{m5stickc} connected to a MacBook Pro with an Apple M1 Pro chip operating at 3.2 GHz CPU and 32GiB of RAM, through a local network.
+//
+// \Cref{fig:remote_debugging_overhead} plots the network overhead of stepping through the application with a remote debugging session. As we can see, there are small step-wise fluctuations caused by the changing amount of local variables in the program. The network overhead for each debugging step is approximately 2.2 kB.  
+//
+//For \oop debugging, we benchmarked the network overhead of taking a full snapshot at each remote stepping operation, i.e. the network overhead involved with starting an out-of-place debugging session. Note that in practice the developer needs to perform this operation only once.
+//\Cref{fig:remote_snapshot_overhead} shows the results of taking a snapshot at each stepping operation of the smart-lamp application. 
+//As expected, the network overhead involved with taking a full snapshot is much higher than a single debugging step, each full snapshot takes approximately 130 kB. 
+//
+//The significant difference in network overhead between a remote debugging step and a full snapshot is expected and is mostly because the snapshot captures the stack and a full memory dump of the running application.
+//
+//Luckily, once a snapshot has been taken the debugging session can be executed locally and the subsequent debugging  session will be much faster. Avoiding access to the remote device reduces network overhead and lowers debugging latency. The network overhead for proxied calls is much smaller than a normal debugging step and takes at most 10 bytes per remote call with an additional 4 bytes per argument. More importantly the network overhead for stepping through each of the location independent instructions is zero.
+//
+//\paragraph{Latency.}
+//Finally, we also benchmarked the difference in latency between local debugging steps and remote debugging steps. When stepping through the smart-lamp application with \oop debugging, we find that local steps take on average approximately 5ms while a remote \emph{proxy call} takes approximately 500ms. 
+//
+//In practice this means that the developer using \oop debugging will perceive almost instantaneously local debugging steps interleaved with remote calls which are perceived slower. As these non-transferable instructions make up less than  1\% of the code, most debugging steps will be able to be executed fast.
+//
+// \begin{figure}[t]
+//\begin{center}
+//		\includegraphics[width=1\columnwidth]{figures/remote_step_overhead}
+//                \caption{Network communication overhead of 30 step operations using remote debugging.
+//                         Note that the overhead axis starts at 2kB.}
+//                //%     \robbert{Graph should start at 0, maybe results from \cref{fig:remote_snapshot_overhead} should also be included here}
+//                //%     \robbert{A graph of \oop debugging would also be nice, with a giant spike at index 0 and almost nothing for the rest}
+//                //%     \robbert{Could the raw data be placed in the repo?}
+//		\label{fig:remote_debugging_overhead}
+//\end{center}
+//\end{figure}
 
 
 == Discussion<oop:discussion>

@@ -1,5 +1,5 @@
-#import "../../lib/util.typ": code, snippet, algorithm, semantics, lineWidth, headHeight, tablehead, highlight, boxed
-#import "../../lib/class.typ": note
+#import "../../lib/util.typ": code, snippet, line, algorithm, semantics, lineWidth, headHeight, tablehead, highlight, boxed
+#import "../../lib/class.typ": note, definition, theorem
 #import "./figures/semantics.typ": *
 #import "../semantics/arrows.typ": *
 
@@ -294,46 +294,7 @@ In the next section, we discuss how the multiverse debugger can explore the exec
 
 === Backwards Exploration with Checkpointing<mult:backwards>
 
-//\begin{figure}
-//\begin{tikzpicture}
-//    % Nodes (Top Row)
-//    \node (start) at (-5,0) {$\cdots$};
-//    \node[draw, circle, fill=black, inner sep=1pt] (A) at (-4,0) {};
-//    \node[draw, circle, fill=black, inner sep=1pt, label=above:{$K_{n}, r$}] (B) at (-1,0) {};
-//    \node (C) at (1,0) {$\cdots$};
-//    \node[draw, circle, fill=black, inner sep=1pt] (D) at (3,0) {};
-//    \node[draw, circle, fill=black, inner sep=1pt, label=above:{$K_m, r'$}] (E) at (6,0) {};
-//
-//    % Nodes (Bottom Row)
-//    \node[draw, circle, inner sep=1pt] (F1) at (-1,-1.00) {};
-//    \node[draw, circle, inner sep=1pt] (F2) at (-1,-1.5) {};
-//    \node[draw, circle, inner sep=1pt] (G1) at (6,-1.00) {};
-//    \node (M) at (1,-1.5) {$\cdots$};
-//    \node[draw, circle, fill=black, inner sep=1pt] (G2) at (3,-1.5) {};
-//
-//    % Paths (Top Row) with custom Stealth arrows
-//    \draw[-farrow] (start) -- (A);
-//    \draw[-farrow] (A) -- node[below] {_step-prim-out_} (B);
-//    \draw[-] (B) -- (C);
-//    \draw[-farrow] (C) -- (D);
-//    \draw[-farrow] (D) -- node[below] {_step-prim-out_} (E);
-//
-//    % Parallel paths (Bottom Row)
-//    \draw[farrow-, dashed] (F1) -- node[above] {$r'()$} (G1);
-//    \draw[-] (F2) -- (M);
-//    \draw[-farrow] (M) -- (G2);
-//
-//    % Snapshot lists
-//    \node[draw, rectangle] at (6,1.5) {$S^* \cdot \{K_n , r\} \cdot \{K_m , r'\}$};
-//    \node[draw, rectangle] at (6,-1.5) {$S^* \cdot \{K_n , r\}$};
-//
-//\end{tikzpicture}
-//\caption{Schematic of how the _step-back-compensate_ rule works.
-//    Starting from state $K_m$, the dotted arrow shows how the debugger jumps to the previous state $K_n$, and compensates the output primitive with $r'()$, while the full arrows show the normal execution.
-//    Top right: the snapshots before. Top left: the snapshots after.}
-//<schematic:backwards>
-//\end{figure}
-#figure(image("../placeholder.png", height: 30%),
+#figure(image("figures/compensate.svg", width: 90%),
     caption: [Schematic of how the _step-back-compensate_ rule works.
     Starting from state $K_m$, the dotted arrow shows how the debugger jumps to the previous state $K_n$, and compensates the output primitive with $r'()$, while the full arrows show the normal execution.
     Top right: the snapshots before. Top left: the snapshots after.],
@@ -360,33 +321,35 @@ Instead, the debugger will immediately restore the virtual machine state to $K_n
 In this case, none of the snapshots will be removed.
 This enables the debugger to continue stepping back in time.
 
-//\begin{figure}
-//	\begin{mathpar}
-//                \inferrule[(_step-back_)]
-//       	            {
-//                        K_n wasmarrow^{m-n-1} K_{m-1} \\
-//                        m > n \\
-//                    }
-//                    { \langle #pause, step back, mocks, K_m \; | \; S^* \cdot \{K_{n} , r\} \} \rangle
-//                      dbgarrow
-//                  \langle #pause, \varnothing, mocks, K_{m-1} \; | \; S^* \cdot \{K_{n} , r\} \rangle }
-//
-//                \inferrule[(_step-back-compensate_)]
-//       	            {
-//                        \textsf{first }  r'() \textsf{ then } K_n wasmarrow^{m-n-1} K_{m-1} \\
-//                    }
-//                    { \langle #pause, step back, mocks, K_m \; | \; S^* \cdot \{K_{n} , r\} \cdot \{K_{m} , r'\} \rangle
-//                      dbgarrow
-//                  \langle #pause, \varnothing, mocks, K_{m-1} \; | \; S^* \cdot \{K_{n} , r\} \rangle }
-//	\end{mathpar}
-//        \caption{The small-step reduction rule for stepping backwards in the multiverse debugger.}
-//	<fig:backwards>
-//\end{figure}
+#semantics(
+  [The small-step reduction rule for stepping backwards in the multiverse debugger.],
+  [
+    #table(columns: (2.0fr, 1fr), stroke: none, gutter: 1.0em,
+      tablehead("Step-Back Semantics"), "",
+      table.cell(colspan: 2, table(columns: (1fr), stroke: none,
+        [(#smallcaps("step-back"))#h(1fr)],
+        prooftree(rule(
+          $
+          ⟨ "pause", "step back", mocks, K_m bar.v S^* ⋅ {K_n, r} ⟩ dbgarrow ⟨ "pause", nothing, mocks, K_(m-1) bar.v S^* ⋅ {K_n, r} ⟩
+          $,
+          $
+          K_n attach(wasmarrow, tr: m-n-1) K_(m-1)$, $m > n$
+        )),
+        [(#smallcaps("step-back-compensate"))#h(1fr)],
+        prooftree(rule(
+          $
+          ⟨ "pause", "step back", mocks, K_m bar.v S^* ⋅ {K_n, r} ⋅ {K_m, r'} ⟩ dbgarrow ⟨ "pause", nothing, mocks, K_(m-1) bar.v S^* ⋅ {K_n, r} ⟩
+          $,
+          $
+          "first" r'() "then" K_n attach(wasmarrow, tr: m-n-1) K_(m-1)
+          $
+        ))
 
-#figure(image("../placeholder.png", height: 30%),
-    caption: [The small-step reduction rule for stepping backwards in the multiverse debugger.],
-)<fig:backwards>
-
+      )),
+    )
+  ],
+  "fig:backwards"
+)
 
 Each of the two outlined scenarios correspond with a rule in the multiverse debugger semantics, shown in @fig:backwards.
 The first scenario where the effects of an output primitive is reversed, is described by the _step-back-compensate_ rule.
@@ -410,51 +373,52 @@ Specifically, the _step-back_ rule is not be applicable, since $m$ and $n$ are b
 
 === Instrumenting Non-deterministic Input in Multiverse Debuggers<mult:mocking>
 
-//\begin{figure}
-//	\begin{mathpar}
-//                \inferrule[(_register-mock_)]
-//       	            {
-//                        msg = mock(j, v^ast, v) \\
-//                        P(j) = p \\
-//                        p \in P^{In} \\
-//                        v \in \lfloor p \rfloor \\
-//                        %p_{code} = (\textsf{func} \; a^n \rightarrow v \; \textsf{local} \; t^* e^*) \\
-//                        mocks' = mocks, (j,v^ast) \mapsto v \\
-//                    }
-//                    { \langle rs, msg, mocks, K_n \; | \; S^ast \rangle
-//                      dbgarrow
-//                      \langle rs, \varnothing, mocks', K_n \; | \; S^ast \rangle }
-//
-//                \inferrule[(_unregister-mock_)]
-//       	            {
-//                        msg = unmock(j, v^ast) \\
-//                        %p_{code} = (\textsf{func} \; a^n \rightarrow v \; \textsf{local} \; t^ast e^ast) \\
-//                        mocks' = mocks \setminus (j,v^ast) \mapsto v \\
-//                    }
-//                    { \langle rs, msg, mocks, K_n \; | \; S^ast \rangle
-//                      dbgarrow
-//                      \langle rs, \varnothing, mocks', K_n \; | \; S^ast \rangle }
-//
-//                \inferrule[(_step-mock_)]
-//       	            { 
-//                        K_n = \{ s ;v^ast; v^ast_0 (call \; j) \} \\
-//                        P(j) = p \\
-//                        p \in P^{In} \\
-//                        mocks(j, v^ast_0) = v \\
-//                        K'_{n+1} = \{ s';v'^ast;v \} \\
-//                    }
-//                    { \langle #pause, step, mocks, K_n \; | \; S^ast \rangle
-//                      dbgarrow
-//                  \langle #pause, \varnothing, mocks, K'_{n+1} \; | \; S^ast \cdot \{K'_{n+1}, r_{nop}\} \rangle }
-//	\end{mathpar}
-//        \caption{The small-step rule for mocking input in the MIO debugger, only including the step rule. The analogous rule for when the debugger is not paused (_run-mock_) is shown in @app:rules.}
-//	<fig:mocking>
-//\end{figure}
-#figure(image("../placeholder.png", height: 30%),
-    caption: [The small-step rule for mocking input in the MIO debugger, only including the step rule. The analogous rule for when the debugger is not paused (_run-mock_) is shown in @app:rules.],
-)<fig:mocking>
+#let rs = $"es"$
+#let In = $"In"$
 
+#semantics(
+  [The small-step rule for mocking input in the MIO debugger, only including the step rule. The analogous rule for when the debugger is not paused (_run-mock_) is shown in @app:rules.],
+  [
+    #table(columns: (2.0fr, 1fr), stroke: none, gutter: 1.0em,
+      tablehead("Mocking Semantics"), "",
+      table.cell(colspan: 2, table(columns: (1fr), stroke: none,
+        [(#smallcaps("register-mock"))#h(1fr)],
+        prooftree(rule(
+          $
+          ⟨ rs, msg, mocks, K_n \mid S^* ⟩ dbgarrow ⟨ rs, nothing, mocks', K_n \mid S^ast ⟩
+          $,
+          $
+          msg = mock(j, v^*, v)$,$P(j) = p$,$p in P^(In)$,$v in floor.l p floor.r$,$
+          mocks' = mocks, (j, v^*) arrow.r.bar v
+          $,
+        )),
 
+        [(#smallcaps("unregister-mock"))#h(1fr)],
+        prooftree(rule(
+          $
+          ⟨ rs, msg, mocks, K_n \mid S^* ⟩ dbgarrow ⟨ rs, nothing, mocks', K_n \mid S^ast ⟩
+          $,
+          $
+          msg = unmock(j, v^*)$,$mocks' = mocks \ −\ (j, v^*) arrow.r.bar v
+          $,
+        )),
+
+        [(#smallcaps("step-mock"))#h(1fr)],
+        prooftree(rule(
+          $
+          ⟨ "pause", "step", mocks, K_n bar.v S^ast ⟩ dbgarrow ⟨ "pause", nothing, mocks, K'_(n+1) bar.v S^ast ⋅ {K'_{n+1}, r_nop} ⟩
+          $,
+          $
+          K_n = {s; v^*; v^*_0 (call j)}$, $P(j) = p$, $p in P^(In)$, $
+          mocks(j, v^*_0) = v$, $K'_{n+1} = {s'; v'^*; v}
+          $,
+        ))
+
+      )),
+    )
+  ],
+  "fig:mocking"
+)
 
 In order to replay execution paths in the multiverse tree accurately, the multiverse debugger needs to be able to override the input to the program.
 Mocking of input happens through the key value map $mocks$ shown in @fig:mult:configurations.
@@ -493,79 +457,7 @@ In the final step of the algorithm, execution is replayed from the join to $K_n$
   + $dbg_"current" arrow.l dbg_"next"$
 ], "alg:jumping")
 
-//\begin{figure}
-//    \centering
-//    \begin{tikzpicture} %[label/.style={draw,rectangle,fill=white}]
-//        % primitives labels
-//        \node at (3,1.30) {_input_};
-//        \node at (5,1.30) {_input_};
-//        \node at (7,1.30) {_output_};
-//
-//        % trunk
-//        \node[draw, circle, fill=black, inner sep=1pt] (1) at (0,0) {};
-//        \node[below=0.1 of 1, fill=white, text=black, inner sep=1pt] {$K_{0},r_{nop}$};
-//
-//        \node[draw, circle, fill=color2, draw=color2, inner sep=1pt] (2) at (2,0) {};
-//        \node[below=0.1 of 2, fill=white, text=color2, inner sep=1pt] {\underline{$K_{1}$}};
-//
-//        % top branch
-//        \node[draw, circle, fill=black, inner sep=1pt] (5) at (4,1) {};
-//        \node[below=0.1 of 5, fill=white, text=black, inner sep=1pt] {$K'_{2},r_{nop}$};
-//
-//        \node[draw, circle, fill=black, inner sep=1pt] (6) at (6,1) {};
-//        \node[below=0.1 of 6, fill=white, text=black, inner sep=1pt] {$K'_{3},r_{nop}$};
-//
-//        \node[draw, circle, fill=black, inner sep=1pt] (T) at (8,1) {};
-//        \node[below=0.1 of T, fill=white, text=black, inner sep=1pt] {$K'_{4},r'$};
-//
-//        \node[draw, circle, fill=black, inner sep=1pt] (10) at (10,1) {};
-//
-//        % middle branch
-//        \node[draw, circle, fill=black, inner sep=1pt] (3) at (4,0) {};
-//        \node[below=0.1 of 3, fill=white, text=black, inner sep=1pt] {$K_{2},r_{nop}$};
-//
-//        \node[draw, circle, fill=black, inner sep=1pt] (4) at (6,0) {};
-//        \node[below=0.1 of 4, fill=white, text=black, inner sep=1pt] {$K''_{3},r_{nop}$};
-//
-//        % bottom branch
-//        \node[draw, circle, fill=black, inner sep=1pt] (7) at (6,-1) {};
-//        \node[below=0.1 of 7, fill=white, text=black, inner sep=1pt] {$K_{3},r_{nop}$};
-//
-//        \node[draw, circle, fill=black, inner sep=1pt] (8) at (8,-1) {};
-//        \node[below=0.1 of 8, fill=white, text=black, inner sep=1pt] {$K_{4},r$};
-//
-//        \node[draw, circle, fill=black, inner sep=1pt] (9) at (10,-1) {};
-//        \node[below=0.1 of 9, fill=white, text=black, inner sep=1pt] {$K_{5}$};
-//
-//        % label for snapshots
-//        \node[draw, align=left] at (9,2.0) {$S_5: \{ K_0 , r_{nop} \} \cdot \{K_2, r_{nop}\} \cdot \{K_3, r_{nop}\} \cdot \{K_4,r\}$};
-//
-//        %\draw[-farrow] (start) -- (1);
-//        \draw[-farrow] (1) -- (2);
-//        \draw[farrow-, draw=color2] (2) -- (3);
-//        \draw[-farrow, draw=color2] (2) to [out=0,in=180] (5);
-//        \draw[-farrow, draw=color2] (5) -- (6);
-//        \draw[-farrow, draw=color2] (6) -- (T);
-//        \draw[-farrow] (T) -- (10);
-//        \draw[-farrow] (3) -- (4);
-//        \draw[farrow-, draw=color2] (3) to [out=0,in=180](7);
-//        \draw[farrow-, draw=color2] (7) -- (8);
-//        \draw[farrow-, draw=color2] (8) -- (9);
-//
-//        % step back
-//        \draw[dashed,-farrow, draw=color0] (9) to [out=95,in=0] node[near start, above right] {_arbitrary jump_} (T);
-//
-//        % path
-//        \node at (6,-2.0) {\small \textcolor{color2}{$K_5 revarrow K_4 revarrow K_3 revarrow K_2 revarrow K_1 dbgarrow K'_2 dbgarrow K'_3 dbgarrow K'_4$}};
-//    \end{tikzpicture}
-//    \caption{Schematic of how the multiverse debugger can jump to any arbitrary state in the past, using the _step-back_ and _step-mock_ rules.
-//    For the arbitrary jump from state $K_5$ to $K_4'$, the join $K_1$ is underlined and shown in blue.
-//    Top right: the list of snapshots before the arbitrary jump. Bottom: the execution path from $K_5$ to $K_4'$.
-//    Steps with the _step-back_ and _step-back-compensate_ rules are shown as $\hookrightarrow_r$.}
-//    <schematic:arbitrary-jump>
-//\end{figure}
-
-#figure(image("../placeholder.png", height: 30%),
+#figure(image("figures/slide.svg", width: 90%),
     caption: [Schematic of how the multiverse debugger can jump to any arbitrary state in the past, using the _step-back_ and _step-mock_ rules.
     For the arbitrary jump from state $K_5$ to $K_4'$, the join $K_1$ is underlined and shown in blue.
     Top right: the list of snapshots before the arbitrary jump. Bottom: the execution path from $K_5$ to $K_4'$.
@@ -594,30 +486,28 @@ The completeness of the debugger means that the debugger can always find a path 
 Together, these properties ensure that the debugger is correct in terms of its observation of the underlying language, and will never observe any inaccessible states.
 For brevity, we only provide a sketch of the proofs here, but the full proofs can be found in @app:proofs.
 
-//\newcommand{\theoremdebuggersoundness}{%
-//    Let $K_0$ be the start WebAssembly configuration, and $dbg$ the debugging configuration containing the WebAssembly configuration $K_n$.
-//    Let the debugger steps $\hookrightarrow^*_{d,i}$ be the result of a series of debugging messages, where $msg$ is the last message.
-//    Then:
-//    $$\forall dbg : dbg_{start} \hookrightarrow^*_{d,i} dbg \Rightarrow K_{0} \hookrightarrow^*_i K_n$$
-//}
+#let start = $"start"$
 
-//\begin{theorem}[Debugger soundness]<theorem:debugger-soundness>
-//    \theoremdebuggersoundness
-//\end{theorem}
+#let theoremdebuggersoundness = [
+    Let $K_0$ be the start WebAssembly configuration, and $dbg$ the debugging configuration containing the WebAssembly configuration $K_n$.
+    Let the debugger steps $multi(dbgarrow)$ be the result of a series of debugging messages, where $msg$ is the last message.
+    Then:
+    $ forall dbg : dbg_start multi(dbgarrow) dbg arrow.r K_0 multi(wasmarrow)K_n $
+]
+
+#theorem("Debugger soundness")[#theoremdebuggersoundness]<theorem:debugger-soundness>
 
 The proof for debugger soundness proceeds by induction over the number of steps in the debugging session.
 In the base case, where the debugging session consists of a single step, the proof is trivial since the step starts from the initial state.
 In the inductive case, the proof proceeds very similarly, the only non-trivial cases are those for stepping backwards and mocking.
 
-//\newcommand{\theoremdebuggercompleteness}{%
-//    Let $K_{0}$ be the start WebAssembly configuration for which there exists a series of transition $\hookrightarrow^*_i$ to another configuration $K_n$. Let the debugging configuration with $K_n$ be dbg.
-//    Then:
-//    $$\forall K_n : K_{0} \hookrightarrow^*_i K_n \Rightarrow dbg_{start} \hookrightarrow^*_{d,i} dbg$$
-//}
-//
-//\begin{theorem}[Debugger completeness]<theorem:debugger-completeness>
-//    \theoremdebuggercompleteness
-//\end{theorem}
+#let theoremdebuggercompleteness = [
+    Let $K_0$ be the start WebAssembly configuration for which there exists a series of transition $multi(wasmarrow)$ to another configuration $K_n$. Let the debugging configuration with $K_n$ be dbg.
+    Then:
+    $ forall K_n : K_0 multi(wasmarrow) K_n arrow.r dbg_start multi(dbgarrow) dbg $
+]
+
+#theorem("Debugger completeness")[#theoremdebuggercompleteness]<theorem:debugger-completeness>
 
 The proof for completeness follows almost directly from the fact that for every transition in the underlying language semantics, the debugger can take a corresponding step. For non-deterministic input primitives, we can step to the same state with the _register-mock_ and _step-mock_ rules.
 
@@ -626,29 +516,27 @@ However, it gives us no guarantees about the correctness of the compensating act
 Due to the way effects on the external environment are presented in the MIO debugger semantics, we can define the entire effect of a debugging session of regular execution, both as ordered lists of steps that have external effects.
 There are only two options, the output primitive rules, and the rule that applies the compensating action.
 
-//\begin{definition}[External state effects]
-//    The function $external$ returns the steps affecting external state for any series of rules in the debugging or underlying language semantics.
-//    $$external(p) = \left\{\begin{array}{ll}
-//            (s \text{ for } s \text{ in } p \text{ where } s = _step-prim-out_ & \text{if } p = dbg \hookrightarrow^*_{d,i} dbg' \\
-//                                        \vee \; s = _ step-back-compensate_)      & \\
-//            (s \text{ for } s \text{ in } p \text{ where } s = _output-prim_ ) & \text{if } p = K \hookrightarrow^*_{i} K' \\
-//    \end{array}\right.
-//    $$
-//\end{definition}
-//
-//Using this definition, we can prove that the external effects of any debugging session ending in a certain state, are the same as the effects of the regular execution of the program ending in that same state.
-//The definition for the equivalence of external effects ($\equiv$) is given in @app:proofs.
-//
-//\newcommand{\theoremcompensatesoundness}{%
-//        Let $K_0$ be the start WebAssembly configuration, and $dbg$ the debugging configuration containing the WebAssembly configuration $K_n$.
-//    Let the debugger steps $\hookrightarrow^*_{d,i}$ be the result of a series of debugging messages.
-//    Then:
-//    $$\forall dbg : external(dbg_{start} \hookrightarrow^*_{d,i} dbg) \equiv external(K_{0} \hookrightarrow^*_i K_n)$$
-//}
-//
-//\begin{theorem}[Compensation soundness]<theorem:compensate-soundness>
-//    \theoremcompensatesoundness
-//\end{theorem}
+#let external = $"external"$
+
+#definition("External state effects")[
+    The function $external$ returns the steps affecting external state for any series of rules in the debugging or underlying language semantics.
+    $ external(p) = cases(
+            #[#h(0.4em)] s "for" s "in" p "where" s = "step-prim-out" #[#h(1em)] & "if" p = dbg multi(dbgarrow) dbg',
+            #[#h(0.4em)] or s = "step-back-compensate",
+            #[#h(0.4em)] s "for" s "in" p "where" s = "output-prim" & "if" p = K multi(wasmarrow) K') $
+]
+
+Using this definition, we can prove that the external effects of any debugging session ending in a certain state, are the same as the effects of the regular execution of the program ending in that same state.
+The definition for the equivalence of external effects ($eq.triple$) is given in @app:proofs.
+
+#let theoremcompensationsoundness = [
+    Let $K_0$ be the start WebAssembly configuration, and $dbg$ the debugging configuration containing the WebAssembly configuration $K_n$.
+    Let the debugger steps $multi(dbgarrow)$ be the result of a series of debugging messages.
+    Then:
+    $ forall dbg : external(dbg_(start) multi(dbgarrow) dbg) eq.triple external(K_0 multi(wasmarrow) K_n) $
+]
+
+#theorem("Compensation soundness")[#theoremcompensationsoundness]<theorem:compensate-soundness>
 
 The proof of this theorem is based on the fact that our multiverse debugger is a rooted acyclic graph, and a debugging session is a walk in this tree starting from the root, which can include the same edge several times.
 Any such walk in a tree can be constructed by adding any number of random closed walks to the path from the root to the final node.
@@ -673,60 +561,24 @@ In order to implement reversible primitives, we have extended the existing macro
 When stepping back over a primitive, the compensating action looks at the state captured after the previous primitive call, and restores this external state.
 This is the same as undoing the effects of the last primitive call.
 
-\definecolor{mRed}{rgb}{1,0.4,0.4}
-\definecolor{mBlue}{rgb}{0.4,0.4,1}
-\definecolor{mGreenGraph}{RGB}{102,255,110}
-\definecolor{mGreen}{rgb}{0,0.6,0}
-\definecolor{mGray}{rgb}{0.5,0.5,0.5}
-\definecolor{mDarkGray}{rgb}{0.2,0.2,0.4}
-\definecolor{mPurple}{rgb}{0.58,0,0.82}
-\definecolor{backgroundColour}{rgb}{1,1,1}
-
-\lstdefinestyle{CStyle}%
-{     basicstyle=\footnotesize\ttfamily\linespread{0.7}%
-, captionpos=b%
-, identifierstyle=%
-, backgroundcolor=\color{backgroundColour}
-, commentstyle=\color{mGray}
-, keywordstyle=\bfseries\color{black}
-, numberstyle=\tiny\ttfamily\color{mGray}
-, stringstyle=\color{mRed}
-, keywordstyle=\color{mBlue}\bfseries% reserved keywords
-, keywordstyle=[2]\color{mRed}% traits
-, keywordstyle=[3]\color{mBlue}% primitive types
-, keywordstyle=[4]\color{mRed}% type and value constructors
-, keywordstyle=[5]\color{mBlue}% macros
-, columns=spaceflexible%
-, keepspaces=true%
-, showspaces=false%
-, showtabs=false%
-, showstringspaces=false%
-, numbers=left%
-, numbersep=5pt%
-}
-
-\begin{figure}
-    \begin{minipage}[t]{.44\textwidth}
-        \begin{lstlisting}[language=C++, style=CStyle,escapechar=']
+#snippet("fig:motor-impl", [#emph[Left:] The implementation of the #emph[rotate] primitive. #emph[Right:] The implementation of the compensating action for the #emph[rotate] primitive, in the MIO debugger.], columns: (10fr, 13fr), continuous: false,
+        (```cpp
 def_prim(rotate, threeToNoneU32) {
   int32_t speed = arg0.int32;
   int32_t degrees = arg1.int32;
   int32_t motor = arg2.int32;
   pop_args(3);
   auto encoder = encoders[motor];
-  encoder->set_angle('<line:encode>'
-    encoder->get_angle() + degrees'<line:relative>'
+  encoder->set_angle(
+    encoder->get_angle() + degrees
   );
-  return drive(motor, encoder, speed);'<line:drive>'
-}\end{lstlisting}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[t]{.50\textwidth}
-        \begin{lstlisting}[language=C++, style=CStyle,escapechar=',firstnumber=10]
+  return drive(motor, encoder, speed);
+}
+```, ```cpp
 def_prim_serialize(rotate) {
   for (int m = 0; m < MOTORS; i++) {
     external_states.push_back(
-    new MotorState(m, encoders[m]->angle()));'<line:serialize>'
+    new MotorState(m, encoders[m]->angle()));
 }}
 
 def_prim_reverse(rotate) {
@@ -734,33 +586,34 @@ def_prim_reverse(rotate) {
     if (isMotorState(s)) {
       int motor = stoi(s.key);
       auto encoder = encoders[motor];
-      encoder->set_angle(s.degrees);'<line:set-angle>'
+      encoder->set_angle(s.degrees);
       drive(motor, encoder, STD_SPEED);
-}}}\end{lstlisting}
-    \end{minipage}
-    \caption{}
-    \label[listing]{fig:motor-impl}
-\end{figure}
+}}}
+```
+),)
 
-#figure(image("../placeholder.png", height: 30%),
-    caption: [#emph[Left:] The implementation of the #emph[rotate] primitive. #emph[Right:] The implementation of the compensating action for the #emph[rotate] primitive, in the MIO debugger.],
-)<fig:motor-impl>
-
+#[
+#let encode = "lst.program.0:7"
+#let relative   = "lst.program.0:8"
+#let drive    = "lst.program.0:10"
+#let serialize    = "lst.program.1:4"
+#let set-angle      = "lst.program.1:12"
 
 To illustrate the implementation of reversible primitives, we will use the example of the #emph[rotate] primitive, which rotates a servo motor for a given number of degrees.
 The forwards implementation is shown on the left side of @fig:motor-impl.
 //The servo motors are controlled by pulse-width modulation (PWM) signals.
-To move the motor a given number of degrees the primitive first sets the target angle of the motor encoder, this happens on line~\ref{line:encode}.
+To move the motor a given number of degrees the primitive first sets the target angle of the motor encoder, this happens on #line(encode).
 The motor encoder is used to track the current motor angle, as well as the absolute target angle, which can be set with the #emph[set\_angle] method.
-To rotate the motor a number of degrees relative to its current position, the primitive adds the degrees to the current motor angle (line~\ref{line:relative}).
-Once the target angle is set, the primitive drives the motor to that angle using the #emph[drive] method, as shown on line~\ref{line:drive}.
+To rotate the motor a number of degrees relative to its current position, the primitive adds the degrees to the current motor angle (#line(relative)).
+Once the target angle is set, the primitive drives the motor to that angle using the #emph[drive] method, as shown on #line(drive).
 
 The implementation of the compensating action for the #emph[rotate] primitive is shown on the right side of @fig:motor-impl.
 First, the #emph[def\_prim\_serialize] macro captures the external state.
-For each motor, the current angle of the motor is stored along with its index, as shown on line~\ref{line:serialize}.
+For each motor, the current angle of the motor is stored along with its index, as shown on #line(serialize).
 Second, the #emph[def\_prim\_reverse] macro compensates the primitive by moving all motors back to the angles captured in the previous snapshot.
-The angles captured by the #emph[def\_prim\_serialize] macro are absolute target angles. The compensating action moves the motors back to these angles by first setting the target angle, as shown on line~\ref{line:set-angle}.
+The angles captured by the #emph[def\_prim\_serialize] macro are absolute target angles. The compensating action moves the motors back to these angles by first setting the target angle, as shown on #line(set-angle).
 It then uses the same #emph[drive] function to move the motor.
+]
 
 === Input: mocking of primitives
 
@@ -785,8 +638,8 @@ To further reduce the performance impact on the microcontroller, snapshots are r
 To have minimal traffic between the debugger backend and frontend, snapshots after primitive calls are sent automatically to the frontend.
 Alternatively, the debugger frontend can request snapshots at will through the remote debugger interface.
 
-//% remote debugger
-//% checkpointing zoals in de semantiek
+// remote debugger
+// checkpointing zoals in de semantiek
 
 == Evaluation<mult:evaluation>
 
@@ -794,314 +647,7 @@ To validate that our checkpointing strategy is performant enough for apply multi
 All experiments were performed on an STM32L496ZG microcontroller running at 80 MHz.
 This microcontroller was connected to a laptop running the MIO debugger frontend that communicates with the microcontroller.
 
-//\begin{figure}
-//    \centering
-//    \begin{tikzpicture}
-//        \begin{groupplot}[
-//            group style={
-//            group size=2 by 1, % Two plots side by side
-//            horizontal sep=0.06\textwidth, % Space between plots
-//            },
-//            width=0.42\textwidth, % Width of each plot
-//            xlabel={Instructions executed}, 
-//            ylabel={Overhead (rel. #emph[no snapshotting])},
-//            table/col sep=comma,
-//            xmin=250, xmax=1250,
-//            xtick={250, 500, 750, 1000, 1250},
-//            tick label style={font=\scriptsize},
-//            label style={font=\small},
-//            ymin=0,
-//            scale only axis,
-//            grid=major,
-//            legend to name={sharedlegend},
-//            legend columns=3,
-//            legend style={font=\small}
-//            ]
-//
-//            % First plot with all policies
-//            \nextgroupplot[
-//            ]
-//            % Define the baseline (x-axis at y=0) for the fill
-//            \path[name path=axis] (axis cs:250,0) -- (axis cs:1250,0);
-//
-//            \addplot[
-//            color=color0,
-//            mark=*,
-//            mark options={scale=0.7, fill=color0, draw=none},
-//            smooth,
-//            name path=1,
-//            ] 
-//            table[
-//            x={Instructions executed},
-//            y expr=\thisrow{Overhead},
-//            col sep=comma,
-//            restrict expr to domain={\thisrow{Interval}}{0:0}
-//            ] {benchmarks/forward-execution-checkpointing.csv};
-//
-//            \addplot[
-//            color=color1,
-//            mark=*,
-//            mark options={scale=0.7, fill=color1, draw=none},
-//            smooth,
-//            name path=2,
-//            ] 
-//            table[
-//            x={Instructions executed},
-//            y expr=\thisrow{Overhead},
-//            col sep=comma,
-//            restrict expr to domain={\thisrow{Interval}}{1:1}
-//            ] {benchmarks/forward-execution-checkpointing.csv};
-//            \addlegendentry{every instruction}
-//
-//            \addplot[
-//            color=color2,
-//            mark=*,
-//            mark options={scale=0.7, fill=color2, draw=none},
-//            smooth,
-//            name path=3,
-//            ] 
-//            table[
-//            x={Instructions executed},
-//            y expr=\thisrow{Overhead},
-//            col sep=comma,
-//            restrict expr to domain={\thisrow{Interval}}{5:5}
-//            ] {benchmarks/forward-execution-checkpointing.csv};
-//
-//            \addplot[
-//            color=color3,
-//            mark=*,
-//            mark options={scale=0.7, fill=color3, draw=none},
-//            smooth,
-//            name path=4,
-//            ] 
-//            table[
-//            x={Instructions executed},
-//            y expr=\thisrow{Overhead},
-//            col sep=comma,
-//            restrict expr to domain={\thisrow{Interval}}{10:10}
-//            ] {benchmarks/forward-execution-checkpointing.csv};
-//
-//            \addplot[
-//            color=color4,
-//            mark=*,
-//            mark options={scale=0.7, fill=color4, draw=none},
-//            smooth,
-//            name path=5,
-//            ] 
-//            table[
-//            x={Instructions executed},
-//            y expr=\thisrow{Overhead},
-//            col sep=comma,
-//            restrict expr to domain={\thisrow{Interval}}{50:50}
-//            ] {benchmarks/forward-execution-checkpointing.csv};
-//
-//            \addplot[
-//            color=color5,
-//            mark=*,
-//            mark options={scale=0.7, fill=color5, draw=none},
-//            smooth,
-//            name path=6,
-//            ] 
-//            table[
-//            x={Instructions executed},
-//            y expr=\thisrow{Overhead},
-//            col sep=comma,
-//            restrict expr to domain={\thisrow{Interval}}{100:100}
-//            ] {benchmarks/forward-execution-checkpointing.csv};
-//
-//            \addplot [
-//            color0,
-//            fill opacity=0.6,
-//            smooth,
-//            forget plot,       % No legend entry for the fill
-//            ] fill between [
-//            of = {1 and axis},
-//            ];
-//
-//            \addplot [
-//            color1,
-//            fill opacity=0.6,
-//            smooth,
-//            forget plot,       % No legend entry for the fill
-//            ] fill between [
-//            of = {2 and 3},
-//            ];
-//
-//            \addplot [
-//            color2,
-//            fill opacity=0.6,
-//            smooth,
-//            forget plot,       % No legend entry for the fill
-//            ] fill between [
-//            of = {3 and 4},
-//            ];
-//
-//            \addplot [
-//            color3,
-//            fill opacity=0.4,
-//            smooth,
-//            forget plot,       % No legend entry for the fill
-//            ] fill between [
-//            of = {4 and 5},
-//            ];
-//
-//            \addplot [
-//            color4,
-//            fill opacity=0.4,
-//            smooth,
-//            forget plot,       % No legend entry for the fill
-//            ] fill between [
-//            of = {5 and 6},
-//            ];
-//
-//            % Second plot (excluding "Snapshot at every instruction")
-//            \nextgroupplot[
-//            ylabel={},
-//            ]
-//            % Define the baseline (x-axis at y=0) for the fill
-//            \path[name path=axis] (axis cs:250,0) -- (axis cs:1250,0);
-//
-//            \addplot[
-//            color=color0,
-//            mark=*,
-//            mark options={scale=0.7, fill=color0, draw=none},
-//            smooth,
-//            name path=7,
-//            ] 
-//            table[
-//            x={Instructions executed},
-//            y expr=\thisrow{Overhead},
-//            col sep=comma,
-//            restrict expr to domain={\thisrow{Interval}}{0:0}
-//            ] {benchmarks/forward-execution-checkpointing.csv};
-//            \addlegendentry{no snapshotting}
-//
-//            \addplot[
-//            color=color1,
-//            mark=*,
-//            mark options={scale=0.7, fill=color1, draw=none},
-//            smooth,
-//            name path=2,
-//            ] coordinates {(0,0) (0,0)};
-//            \addlegendentry{every instruction}
-//
-//            \addplot[
-//            color=color2,
-//            mark=*,
-//            mark options={scale=0.7, fill=color2, draw=none},
-//            smooth,
-//            name path=8,
-//            ] 
-//            table[
-//            x={Instructions executed},
-//            y expr=\thisrow{Overhead},
-//            col sep=comma,
-//            restrict expr to domain={\thisrow{Interval}}{5:5}
-//            ] {benchmarks/forward-execution-checkpointing.csv};
-//            \addlegendentry{5 instructions}
-//
-//            \addplot[
-//            color=color3,
-//            mark=*,
-//            mark options={scale=0.7, fill=color3, draw=none},
-//            smooth,
-//            name path=9,
-//            ] 
-//            table[
-//            x={Instructions executed},
-//            y expr=\thisrow{Overhead},
-//            col sep=comma,
-//            restrict expr to domain={\thisrow{Interval}}{10:10}
-//            ] {benchmarks/forward-execution-checkpointing.csv};
-//            \addlegendentry{10 instructions}
-//
-//            \addplot[
-//            color=color4,
-//            mark=*,
-//            mark options={scale=0.7, fill=color4, draw=none},
-//            smooth,
-//            name path=10,
-//            ] 
-//            table[
-//            x={Instructions executed},
-//            y expr=\thisrow{Overhead},
-//            col sep=comma,
-//            restrict expr to domain={\thisrow{Interval}}{50:50}
-//            ] {benchmarks/forward-execution-checkpointing.csv};
-//            \addlegendentry{50 instructions}
-//
-//            \addplot[
-//            color=color5,
-//            mark=*,
-//            mark options={scale=0.7, fill=color5, draw=none},
-//            smooth,
-//            name path=11,
-//            ] 
-//            table[
-//            x={Instructions executed},
-//            y expr=\thisrow{Overhead},
-//            col sep=comma,
-//            restrict expr to domain={\thisrow{Interval}}{100:100}
-//            ] {benchmarks/forward-execution-checkpointing.csv};
-//            \addlegendentry{100 instructions}
-//
-//            \addplot [
-//            color0,
-//            fill opacity=0.6,
-//            smooth,
-//            forget plot,       % No legend entry for the fill
-//            ] fill between [
-//            of = {7 and axis},
-//            ];
-//
-//            \addplot [
-//            color2,
-//            fill opacity=0.6,
-//            smooth,
-//            forget plot,       % No legend entry for the fill
-//            ] fill between [
-//            of = {8 and 9},
-//            ];
-//
-//            \addplot [
-//            color3,
-//            fill opacity=0.6,
-//            smooth,
-//            forget plot,       % No legend entry for the fill
-//            ] fill between [
-//            of = {9 and 10},
-//            ];
-//
-//            \addplot [
-//            color4,
-//            fill opacity=0.4,
-//            smooth,
-//            forget plot,       % No legend entry for the fill
-//            ] fill between [
-//            of = {10 and 11},
-//            ];
-//
-//            \addplot [
-//            color5,
-//            fill opacity=0.4,
-//            smooth,
-//            forget plot,       % No legend entry for the fill
-//            ] fill between [
-//            of = {11 and 7},
-//            ];
-//        \end{groupplot}
-//
-//        \coordinate (c) at (current bounding box.north);
-//        \node at (c) [anchor=south] {\pgfplotslegendfromname{sharedlegend}};
-//    \end{tikzpicture}
-//    \caption{Comparison of execution time of _no snapshotting_ with _snapshotting for every instructions_, and different checkpointing intervals; _every 5, 10, 50, and 100 instructions_.
-//        The performance overhead is shown as execution time relative to the execution time when taking no snapshots.
-//    Left: Comparison of all checkpointing policies, snapshotting, and no snapshotting.
-//    Right: Comparison of all checkpointing policies with no snapshotting. The averages are taken over 10 runs of the same program.}
-//    <fig:snapshotting-performance>
-//\end{figure}
-
-#figure(image("../placeholder.png", height: 30%),
+#figure(image("figures/benchmark.svg", width: 100%),
     caption: [Comparison of execution time of _no snapshotting_ with _snapshotting for every instructions_, and different checkpointing intervals; _every 5, 10, 50, and 100 instructions_.
         The performance overhead is shown as execution time relative to the execution time when taking no snapshots.
     Left: Comparison of all checkpointing policies, snapshotting, and no snapshotting.
@@ -1142,71 +688,11 @@ The example we highlight later in @mult:usecase, requires on average snapshot ev
 This reduces overhead sufficiently to have a responsive debugging experience for users.
 Additionally, the I/O operations by comparison typically take much longer to execute, a single action easily taking several seconds.
 
-//%An initial analysis of our own example programs, showed that on average there were 16 instructions between each primitive call, which would still result in notable overhead.
-//%However, we believe that 16 instructions, in practice, is an extreme lower bound since our example programs are made to highlight the reversible primitives of MIO, and perform very little computation and have very simple logic.
-//%Subsequently, we expect that for more complex programs the checkpointing will take snapshots far less frequently, resulting in much lower overhead.
+//An initial analysis of our own example programs, showed that on average there were 16 instructions between each primitive call, which would still result in notable overhead.
+//However, we believe that 16 instructions, in practice, is an extreme lower bound since our example programs are made to highlight the reversible primitives of MIO, and perform very little computation and have very simple logic.
+//Subsequently, we expect that for more complex programs the checkpointing will take snapshots far less frequently, resulting in much lower overhead.
 
-//\begin{figure}
-//    \centering
-//    \begin{tikzpicture}
-//        \begin{axis}[
-//            xlabel={Amount of re-executed instructions},
-//            ylabel={Average time to step back (ms)},
-//            table/col sep=comma,
-//            xmin=0, xmax=30000,
-//            ymin=0, ymax=1200,
-//            xtick={0,5000,10000,15000,20000,25000,30000},
-//            axis lines=box,
-//            xtick pos=bottom,
-//            ytick pos=left,
-//            axis line style={-},
-//            tick align=inside,
-//            scaled x ticks=base 10:-3,
-//            ytick={0,100,200,300,400,500,600,700,800,900,1000},
-//            legend pos=south east,
-//            grid=both,
-//            height=7cm,
-//            ]
-//
-//            % Define the baseline (x-axis at y=0) for the fill
-//            \path[name path=axis] (axis cs:0,0) -- (axis cs:30000,0);
-//
-//            \addplot[
-//            color=color2,
-//            mark=*,
-//            mark options={scale=0.7, fill=color2, draw=none},
-//            name path=chart,
-//            ]
-//            table[
-//                x=t, y=avg_time
-//            ] {benchmarks/step-back-reexecute.csv};
-//
-//            \addplot [
-//            color2,
-//            fill opacity=0.4,
-//            smooth,
-//            forget plot,       % No legend entry for the fill
-//            ] fill between [
-//            of = {chart and axis},
-//            ];
-//
-//            \addplot[
-//            dashed,
-//            color=color2,
-//            forget plot
-//            ]
-//            coordinates {(0, 468.0) (30000, 468.0)};
-//
-//            %\addplot[domain=0:30000, samples=2, color=red] {692.63 + 0.0110867486 * x}; % show linear increase
-//
-//            \node at (axis cs:28500, 468) [anchor=south] {\scriptsize 468 ms};
-//        \end{axis}
-//    \end{tikzpicture}
-//    \caption{Plot showing the average time to step back as the number of instructions requiring re-execution increases in increments of one thousand. Averages are calculated over 10 runs of the same program.}
-//    <fig:stepping-back-performance>
-//\end{figure}
-
-#figure(image("../placeholder.png", height: 30%),
+#figure(image("figures/reexecution.svg", width: 90%),
     caption: [Plot showing the average time to step back as the number of instructions requiring re-execution increases in increments of one thousand. Averages are calculated over 10 runs of the same program.],
 )<fig:stepping-back-performance>
 
@@ -1265,7 +751,7 @@ The relative amount that the needle needs to move is calculated by taking the di
 
 #figure(
   grid(columns: (1.0fr, 1.3fr),
-    image(height: 6cm, "./figures/color_gauge.jpg"),
+    rect(inset: 0mm, image(height: 6cm, "./figures/color_gauge.jpg")),
 snippet("app:robot",
     columns: 2,
     headless: true,

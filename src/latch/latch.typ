@@ -217,7 +217,7 @@ The left-hand side shows the tester, which runs the #latch #emph[interpreter] an
 The interpreter component is responsible for interpreting the test suites, which are written in the #emph[test specification language], while the test execution platform sends each instruction in a test step-by-step to the testee device over the available communication medium.
 The test execution platform also parses the result, and handles all other aspects of communication with the testee device.
 
-#figure(image(width: 100%, "../placeholder.png"), // "figures/overview.pdf"), 
+#figure(image(width: 100%, "figures/overview.svg"), // "figures/overview.pdf"), 
   caption: [Schematic overview of the interaction between components in #latch during a test.])<fig:overview>
 
 
@@ -665,14 +665,39 @@ After the trees are found, the algorithm will append their tests breadth-first t
 Within the same depth the tests are sorted alphabetically based on the program's name, to minimize the number of times the tester needs to upload code.
 The resulting list of tests, is ordered in such a way that trees are executed one after the other, and no test is ever run before any test it depends on.
 
+#let suite = $"suite"$
+#let schedule = $"schedule"$
+#let trees = $"trees"$
+#let tree = $"tree"$
+#let accumulator = $"accumulator"$
+#let levels = $"levels"$
+#let index = $"index"$
+#let level = $"level"$
+#let acc = $"acc"$
+
 #figure(grid(columns: 2,
-    algorithm([The default scheduling algorithm in #latch.], pseudocode-list[
-
-  ], "alg:hybridschedule"),
+    algorithm([The default scheduling algorithm in #latch.], [#pseudocode-list[
+    + #strong[Require] list of tests $suite$
+    + $schedule arrow.l [ ]$
+    + #line-label(<alg:hybridschedule:graphs>) $trees arrow.l "findDependencyGraphs"(suite)$
+    + *for* $tree \in trees$ *do*
+      + #emph[append] $schedule$ #emph[with] breadth-first($tree$)
+    + *end*
+    + #strong[return] $schedule$
+  ]#v(4.372em)], "alg:hybridschedule"),
     algorithm([The optimistic scheduling algorithm to minimizing program uploads.], pseudocode-list[
-
+    + #strong[Require] list of tests $suite$
+    + $accumulator arrow.l$ [ ][ ]
+    + $trees arrow.l "findDependencyGraphs"(suite)$
+    + *for* $tree \in trees$ *do*
+      + $levels arrow.l "groupSiblings"(tree)$
+      + #line-label(<alg:priorityschedule:levels>) *for* $index$, $level \in levels$
+        + #emph[append] $acc[index]$ #emph[with] $level$
+      + *end*
+    + *end*
+    + #strong[Return] flatten($accumulator$)
   ], "alg:priorityschedule")
-), caption: [The two scheduling algorithms provided by #latch.])
+))
 
 //\begin{minipage}[t]{0.47\textwidth}
 //\begin{algorithm}[H]
