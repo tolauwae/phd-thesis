@@ -1,5 +1,5 @@
 #import "../../lib/util.typ": code, snippet, algorithm, semantics, lineWidth, headHeight, tablehead, highlight, boxed, circled
-#import "../../lib/class.typ": note, theorem, proofsketch, proof, example, lemma
+#import "../../lib/class.typ": note, theorem, proofsketch, proof, example, lemma, axiom
 #import "../../lib/fonts.typ": sans, script, serif
 
 #import "./figures/cetz/led.typ": ledcetz
@@ -506,7 +506,7 @@ For fullness, @oop:sem:stepping already contains the rule for handling the forwa
 //The _update_ function updates the store $s$ with the difference $\Delta$. % , its results is equal to $\Delta$ after $s$.
 
 
-    / step-invoke: #[When during stepping, the next instruction is a call to an action, the execution is transferred to the server device.
+    / step-transfer: #[When during stepping, the next instruction is a call to an action, the execution is transferred to the server device.
       The transfer function $a_transfer$ calculates the state $s'$ required to execute the action on the client. 
       This state is passed to the server through the _invoke_ message, along with the arguments of the call $v^n$, and the function id $i$ to call.
 
@@ -514,8 +514,8 @@ For fullness, @oop:sem:stepping already contains the rule for handling the forwa
 	  Before executing code on the server, we must remember that the execution was $halted$ to restore it after the call. 
 	  This is crucial because execution on the server can be triggered both while the client is halted and while it is running.]
 
-    / run-invoke: When the client is in the running state and the next instruction is a call to an action, the execution is transferred to the server device.
-      This rule is entirely analogous to the step-invoke rule, with that difference that the server will transition to the  $invoked(running)$ state. 
+    / run-transfer: When the client is in the running state and the next instruction is a call to an action, the execution is transferred to the server device.
+      This rule is entirely analogous to the step-transfer rule, with that difference that the server will transition to the  $invoked(running)$ state. 
       This is important to be able to restore the $running$ state after the call. 
 
     / sync: The synchronization rule updates the state of the client, with the difference received from the server after an invocation.
@@ -531,18 +531,14 @@ For fullness, @oop:sem:stepping already contains the rule for handling the forwa
 )
 
 @oop:sem:invoking shows how the _invoke_ message is handled by the debugger stub on the server side.
-The process is split into three steps, corresponding to four evaluation rules, first the server synchronizes the state based on the backward transfer and prepares the action call, second the action is performed, and finally the changes in state are transferred back to the client.
+The process is split into three parts, (1) the server synchronizes the state based on the backward transfer and prepares the action call, (2) the action is performed, and (3) the changes to the WebAssembly state are transferred back to the client.
 
-    / invoke-start:
-       When the client receives an invoke message, it updates the local state $s$ with the snapshot $s'$ of the _invoke_ message.
+    / invoke:
+        When the client receives an invoke message, it updates the local state $s$ with the snapshot $s'$ of the _invoke_ message.
         The _update_ function simply overrides the current state $s$ with those parts that are present in $s'$.
-        To keep track that the client device is invoking an action, the execution state of the client is set to _invoking_.
-        The status also stores which action $a$, is  currently being executed in order to be able to get access to the transfer function after the invocation .
-
-    / invoke-run: When the client is invoking an action, it executes it simply by executing the underlying WebAssembly semantics.
-
-    / invoke-end: When invocation ends, there is only a single value $v$ left on the stack on the client $C$.
-        At this point, the client makes use of the $a_{transfer^{-1}}$ function of the action to compute which state needs to be synchronised. 
+        Subsequently, it executes the action by executing it in the underlying WebAssembly semantics.
+        There is only a single value $v$ left on the stack on the client $C$.
+        At this point, the client makes use of the $a_(transfer^(-1))$ function of the action to compute which state needs to be synchronised. 
         This difference is then transferred back to the server in a _sync_ message, along with the return value $v$ of the action.
 
 == Modeling Asynchronous Non-transferable Resources<oop:Asynchronous>
@@ -686,6 +682,7 @@ We therefore want full control over the impact that asynchronous events have on 
   "oop:sem:events"
 )
 
+#let partialorder = $<$
 
 @oop:sem:events shows the extended semantics of the out-of-place debugger for handling and controlling asynchronous events, defined as the relation ($attach(#dbgarrow, tr: alpha)$) which extends (#dbgarrow).
 To provide developers with control over the event and callback system, the out-of-place debugger disables the automatic dispatching of events, as shown at the top of @oop:sem:events.
@@ -693,7 +690,7 @@ Specifically, the debugger will never take the _interrupt_ step.
 Instead it provides a new debug message _trigger_, which takes the index of a event in the queue to be dispatched.
 However, some events cannot occur before other events, the most straightforward case is where one MQTT message is the consequence of another.
 In such cases, reordering the events may result in execution paths that are impossible without the interference of the debugger.
-To prevent the debugger from causing such impossible scenario's, the semantics assumes there is a partial order relation $<$ for the events in the queue.
+To prevent the debugger from causing such impossible scenario's, the semantics assumes there is a partial order relation #partialorder for the events in the queue.
 At any point in the debugging session, an event can only be dispatched if there is no undispatched event that is smaller under this relation.
 The _transfer-events_ rule describes how the client sends events to the server, as soon as the events are received.
 Since the event queue is an extension of the WebAssembly state, the same synchronization and updating mechanism is used as before.
@@ -710,85 +707,24 @@ We provide a summary of each rule below.
 
 == Correctness of Out-of-place Debugging<oop:soundness>
 
-Given the presented formalization of out-of-place debugging, we can now proof several interesting properties showing the soundness of the approach.
-Before we give the proofs of general correctness for our debugger, we first proof two lemmas showing that invoking a non-transferable resource from the server does not change the observable behavior of the program, compared to its normal execution on the client.
+Given the presented formalization of out-of-place debugging, we can now proof several interesting properties showing the soundness and completeness of the approach.
+Let us first restate our basic assumptions about the semantics of the out-of-place debugger.
+First, for any program the asynchronous events follow a partial order #partialorder, known to the debugger.
 
-Specifically, we proof that given the execution of an action in the non-debugger semantics, there must exist a path in the debugger semantics that moves the client from the same starting state to the same end state. 
-
-#lemma("Invoking completeness")[
-    The remote invoking of an action in the debugger semantics is _complete_, when for every debugging configuration $dbg$ with $K$ in $C$ and, where the next instruction in $K$ is a call to an action $a$, and $K'$ the result of that action ($K #wasmarrow K'$), the following holds:
-    $ exists dbg' : dbg attach(dbgarrow, tr: alpha comma *) dbg' and (K' in S "of" dbg') $
-]<theorem:invoking-completeness>
-#proof($bold("Invoking completeness for" attach(dbgarrow, tr: alpha comma ast))$)[
-    Since we know that $K wasmarrow K'$ exists, we can construct a path in the debugger semantics that brings the client to the same state. The sequence is as follows:
-
-    1. _invoke-start_ sets up the server-side execution of the action $a$, updating the server state to $K''$ using the backward transfer function.
-
-    2. _invoke-run_ performs the action $K'' wasmarrow K'''$, thereby taking the program state to $K'''$ in the server.
-
-    3. _invoke-end_ sends all changes to the program state from the server to the client using the forward transfer function, and _sync_ message.
-
-    4. _sync_ applies the data from the forward transfer function to update the client’s program state to $K''''$.
-
-  //The proof comes down to proving that the program state $K''''$ on the client, is equivalent to the program state $K'$, produced under normal execution on the server starting from $K$ (i.e., $K wasmarrow K'$).
-  //By definition of the backward transfer function that updates the program state in the server to $K''$ in the _invoke-start_ rule, we know that with regard to the step $K'' wasmarrow K'''$, the state $K''$ is equivalent to $K$ in the client.
-  //This means that the changes in the program state $K'''$ are equivalent to the changes in the program state $K'$, and since the forward function sends exactly all these changes to the client, we know that $K''''$ is equivalent to $K'$.
-
-    By definition, after _invoke-start_, $K''$ is equivalent to the client’s original state $K$ with respect to the semantics of the action $a$. Therefore, the execution $K'' wasmarrow K'''$ mirrors the direct semantics $K wasmarrow K'$. Since the forward transfer function transmits all changes to the program state, we have $K''''$ on the client equivalent to $K'$ under the underlying language semantics.
-
-//    Given $K arrow.r.hook/g_i K'$, we can clearly construct a path in the debugging semantics by following the invocation rules from \cref{sem:events}.
-//    Since we know that the next step in $arrow.r.hook/g_i$ for $K$ is _action_, we also know that for any debugging with the running state can use the _run-client_ rule.
-//    After this, it follows that the _invoke-start_ and _invoke-run_ rules can be applied successively, and we know that the latter will use $arrow.r.hook/g_i$ to perform the same action, and step to a state $K''$.
-//    We know that the step in $arrow.r.hook/g_d$ has the same effect as $K \hookrightarrow_i K'$, since the previous _run-client_ rule sends exactly all relevant state thanks to $a_{transfer}(v^n, s)$.
-//    Similarly, the following step in $arrow.r.hook/g_d$, _invoke-end_, will send exactly all effects on the state back to the server with $a_{transfer^{-1}}(v^n, s)$.
-//    This means that in the _sync_ rule, $K$ is updated with precisely the effects of $K arrow.r.hook/g_i K'$.
-//    This means that we now have $K'$ in the server for the debugging configuration, and the lemma holds.
+#let partialorderlemma = [
+  Asynchronous events can be ordered using the partial order #partialorder.
 ]
 
-This lemma shows that the state synchronization between the server and the client is correct when invoking an action.
-It is therefore crucial to proving the correctness of the debugger.
-The lemma in the other direction is likewise important.
-The invoking of actions is sound when for any action invocation that takes $dbg$ to $dbg'$, there is also a path in the underlying language semantics that takes program state $K$ to $K'$, respectively the program states in $S$ for $dbg$ and $dbg'$.
+#axiom("Event ordering")[#partialorderlemma]<axiom:partialorder>
 
-#lemma("Invoking soundness")[
-    //The remote invoking of an action in the debugger semantics is _sound_, when the following holds.
-    Given any $dbg attach(dbgarrow, tr: alpha comma ast) dbg'$, where the next instruction in $K$ of $C$ in $dbg$ is a call to an action $a$, the sequence $dbg attach(dbgarrow, tr: alpha comma ast) dbg' = dbg_0 attach(dbgarrow, tr: alpha) dots attach(dbgarrow, tr: alpha) dbg_n$ exists, and:
+Second, under this partial ordering of events, any interleaving of events in the program is possible.
+That is to say, events can follow each other instantaneously, and can occur at any point in the program as long as the partial order allows it.
 
-    $ forall i < n : K in C "of" dbg_i = K in C "of" dbg_0 $
-
-    Then:
-
-    $ exists K' : K wasmarrow K' and K' in C "of" dbg_n $
-]<theorem:invoking-soundness>
-
-The precise formulation is quite involved, but informally, the lemma states that given any sequence $dbg attach(dbgarrow, tr: alpha comma ast) dbg'$ that starts from the call of an action $a$ in the program state $k$ of the client $C$, and ends in the first state $dbg'$ where this program state has been changed, we there must exist a sequence of steps in the underlying language semantics that takes $K$ to $K'$ (the new program state in $dbg'$).
-The proof follows from the construction of the debugging semantics.
-
-#proof[
-    Consider the initial debugger state $dbg$ with program state $K$.
-    To reach a state $dbg'$ where the client’s program state has changed, the sequence of steps in the debug semantics, must eventually apply either the _step-invoke_ or _run-invoke_ rule (by construction of the semantics; see supporting @theorem:uniqueness in @app:oop).
-
-    Once step-invoke or run-invoke are applied, the only possible sequence of rules is again:
-
-    1. _invoke-start_ sets up the server-side execution of the action $a$, updating the server state to $K''$ using the backward transfer function.
-
-    2. _invoke-run_ performs the action $K'' wasmarrow K'''$, thereby taking the program state to $K'''$ in the server.
-
-    3. _invoke-end_ sends all changes to the program state from the server to the client using the forward transfer function, and _sync_ message.
-
-    4. _sync_ applies the data from the forward transfer function to update the client’s program state to $K''''$.
-
-  We know there is a step $K'' wasmarrow K'''$ in the underlying semantics, which is the result of the action $a$ on the server, but on the client the program state moves from $K$ to $K''$.
-  By definition of the backward transfer function, $K''$ is semantically equivalent to $K$ with respect to $a$.
-  Therefore, the execution $K'' \to K'''$ has the same effect on program state as the transition $K \to K'$.
-  Since the forward transfer function precisely transmits these changes back to the client, the updated client state $K''''$ is equivalent to $K'$.
-
-  Thus, a step $K wasmarrow K'$ exists, with $K'$ in $C$ of $dbg_n$.
+#let interleavings = [
+    Under the partial order #partialorder, any interleaving of events in the program is possible.
 ]
 
-//Since debuggers are used to inspect a programs execution to find the causes of errors, we define the correctness of the debugger semantic in terms of its observation of the underlying language semantics.The 
-//We consider a debugger to be correct if it can observe any execution that can be observed by the underlying language semantics, and conversely, that any execution observed by the debugger semantics can be observed by the language semantics.
-//We call these two properties respectively soundness and completeness.
+#axiom("Event interleaving")[#interleavings]<axiom:interleavings>
 
 #let theoremdebuggersoundness = [
     Let $K$ be the start WebAssembly configuration, and $dbg$ the debugging configuration, where $C$ contains the WebAssembly configuration $K'$.
@@ -796,25 +732,26 @@ The proof follows from the construction of the debugging semantics.
     $ forall dbg : dbg_start attach(dbgarrow, tr: alpha comma ast) dbg arrow.double.r.long K multi(wasmarrow) K' $
 ]
 
+With these basic assumptions in mind, we can examine soundness and completeness for the stateful out-of-place debugger.
+
 #theorem("Debugger soundness")[#theoremdebuggersoundness]<theorem:debugger-soundness>
 #proof[
     The proof proceeds by induction on the steps in the debugging session. // todo before one message was one step, but now there are also internal messages -> 
-    In the base case, only a few cases need to be considered. //, since all other steps must be preceded by at least one step in the debugger semantics.
+
+    _Base case._ Only a few cases need to be considered, since all other rules cannot be apply to $dbg_start$.
     The following rules do not change the state $K$ in $C$, _play_, _pause_, _step-client_, _run-client_, and _pass-trigger_.
     At any point in a debugging session asynchronous events can arrive in the event queue of the server $S$.
-    This means that the first step in a debugging session can be the _transfer-events_ rule, which also does not change the state of $K$ in $C$.
-    All other rules need at least one preceding step.
+    This means that the first step can be the _transfer-events_ rule, which also does not change the state of $K$ in $C$.
 
-    In the inductive step, the proof proceeds very similarly.
-    The following rules do not change the state $K$ in $C$, _play_, _pause_, _step-client_, _run-client_, _invoke-start_, _invoke-run_, _invoke-end_, _pass-trigger_, _trigger-invalid_, and _transfer-events_.
+    _Inductive case._ The following rules do not change the state $K$ in $C$, _play_, _pause_, _step-client_, _run-client_, _invoke-start_, _invoke-run_, _invoke-end_, _pass-trigger_, _trigger-invalid_, and _transfer-events_.
     The cases _step-server_ and _run-server_ simply take a step in the underlying semantics.
     The interesting cases are, _sync_, _sync-events_, and _trigger_.
-    The _sync_ rule either handles a message produced by the _invoke-end_ or _transfer-events_ rules.
-    In the _sync_ case, we get the changes from the invocation of an action produced by a previous _invoke-end_ step. // todo by lemma uniqueness from the appendix
-    However, by @theorem:invoking-soundness we know that the changes are the same as if the action was invoked on the server.
-    In the _sync-events_ case, we get the changes from the event queue, which is the same as if the events were dispatched on the server. // todo add axiom?
-    Since we assume that any interleaving of events is possible, there must always be an analogous path in #wasmarrow. //$attach(dbgarrow, tr: alpha comma ast)$.
-    For the final case, the _trigger_ rule handles the dispatching of events in the exact same manner as if the events were dispatched on the server.
+
+    1. In case of the _sync_ rule, the state $K$ is updated to $K'$. By @lemma:order we know the rule is proceeded by a _step-transfer_ or _run-transfer_ step. These in turn must be followed by an _invoke_ step. By definition of the backward transfer function, we know that the _invoke_ has the same effect, leading to $K''$. Since the forward transfer transmits all changes back to the client, the updated state after the _sync_ rule is equivalent to $K''$.
+
+    2. In the _sync-events_ case, we get the changes from the event queue, which is the same as if the events were dispatched on the server. By @axiom:interleavings, any interleaving of events is possible, thereby an analogous path in #wasmarrow must always exist. //$attach(dbgarrow, tr: alpha comma ast)$.
+
+    3. The _trigger_ rule handles the dispatching of events in the exact same manner as if the events were dispatched on the server.
 ]
 
 
@@ -827,10 +764,13 @@ $ forall K' : K multi(wasmarrow) K' arrow.double.r.long dbg_start attach(dbgarro
 #theorem("Debugger completeness")[#theoremdebuggercompleteness]<theorem:debugger-completeness>
 #proof[
     The proof for completeness follows almost directly from the fact that for every transition in the underlying language semantics, the debugger can take a corresponding step.
-    For steps that can be taken out-of-place, the debugger gets to the same state with the _step-client_ rule.
-    For steps that cannot be taken out-of-place, the debugger uses the invoke mechanism. However, @theorem:invoking-completeness exactly shows that an analogous path in $attach(dbgarrow, tr: alpha)$ exists.
+    We can construct a sequence of step commands of the exact length as the number of steps in $K multi(wasmarrow) K'$. Each step command is handled in one of two ways.
+
+    1. _For steps that can be taken out-of-place_, the debugger gets to the same state with the _step-client_ rule, which uses the underlying language semantics.
+    2. _Otherwise_, the debugger uses the invoke mechanism to get an equivalent path. We know the path will use either _step-transfer_ or _run-transfer_, followed by _invoke_ and _sync_. By definition of the backward and forward transfer functions, this gives the same $K'$ in $dbg$.
+
     Lastly, at any point in the execution in #wasmarrow, the event queue may not be empty, leading to the _interrupt_ rule.
-    During debugging the same can happen on the client $C$, which leads to the _transfer-events_ rule.
+    During debugging the same can happen on the server $S$, which leads to the _transfer-events_ rule.
     After the _sync_ step, the state $K$ in $C$ is the same as at the start of the _interrupt_ rule during normal execution.
     This means that the same callback can be triggered with the _trigger_ rule at the exact same place in the program.
 ]
@@ -839,7 +779,7 @@ $ forall K' : K multi(wasmarrow) K' arrow.double.r.long dbg_start attach(dbgarro
 //
 //// todo conclude
 
-Given the proofs of completeness and soundness, we can conclude that the out-of-place debugger is correct. // under certain assumptions.
+Given the proofs of completeness and soundness, we can conclude that the operations of the out-of-place debugger do not interfere with the underlying language semantics.
 It is important to acknowledge again, that the correctness of the debugger is based on the following assumptions; the underlying language semantics is sound, the control flow of the program is only influenced by the order of events and not their concrete timing, and events can arrive at any time under the given partial order of events.
 
 == Implementation<oop:implementation>

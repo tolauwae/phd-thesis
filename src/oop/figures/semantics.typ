@@ -1,4 +1,5 @@
 #import "../../../lib/util.typ": code, snippet, algorithm, semantics, lineWidth, headHeight, tablehead, boxed
+#import "../../../lib/class.typ": lemma
 #import "../../semantics/arrows.typ": *
 
 #import "@preview/curryst:0.5.0": rule, prooftree
@@ -140,7 +141,7 @@
           $K = \{s; v^*; L^k [v^n call i]\}$, 
           $a = A(i)$,
           $a_transfer(v^n, s) = s'$,
-          name: "step-invoke"
+          name: "step-transfer"
         )),
         prooftree(rule(
           $
@@ -151,7 +152,7 @@
           $K = \{s; v^*; L^k [v^n call i]\}$, 
           $a = A(i)$,
           $a_transfer(v^n, s) = s'$,
-          name: "run-invoke"
+          name: "run-transfer"
         )),
               prooftree(rule(
           $
@@ -336,4 +337,4 @@
         )),
       )
   ]
-  
+
