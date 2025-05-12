@@ -79,6 +79,7 @@ Therefore, we will present this thesis' approach in more detail in this chapter,
 === Four debuggers, four semantics
 
 Given the wide variety of debuggers, we will present our formal framework---for debugger semantics and their correctness---by discussing four different debuggers with each their own semantics.
+The last debugger serves as a counter example, illustrating a common type of debugger that is complete but not sound.
 Importantly, the semantics follow the same general design---presenting the overall formal framework we use in this dissertation.
 #note[While heavy in formal aspects, this chapter serves as a---hopefully somewhat gentle---introduction into the formal foundations of this dissertation.]
 
@@ -93,18 +94,19 @@ Looking slightly ahead, we will define the following four debuggers, which alway
 set text(size: small) //, font: sans)
 show table.cell.where(y: 0): set text(weight: "bold") //, font: sans)
 
-align(center, table(columns: (auto, 60mm), align: (x, y) => if x == 0 {horizon + center} else {horizon + left}, stroke: none, fill: (x, y) => if calc.odd(y) { silver },
+align(center, table(columns: (auto, 60mm), align: (x, y) => if x == 0 {horizon + center} else {horizon + left}, stroke: none, //fill: (x, y) => if calc.odd(y) { silver },
   table.header("Debugger", "Description"),
+  table.hline(stroke: lineWidth),
   remotedbg, "A tiny remote debugger, presenting a smallest working example.",
   conventionaldbg, "A remote debugger with support for the most conventional debug operations.",
   reversibledbg, "A reversible debugger, which can step backwards in time.",
-  intercessiondbg, "An intercession debugger, which can change the program at runtime."
+  intercessiondbg, [_Counterexample._ An intercession debugger, which can change the program at runtime.]
 ))
 }
 
 The four debuggers allow us to introduce different aspects of our formal framework step by step.
 The semantics in this chapter, are blueprints for the more complex semantics we discuss later in this dissertation.
-They also serve to illustrate the general correctness criteria we define for debuggers.
+They also serve to illustrate the general correctness criteria we define for our debuggers.
 
 #let stlc = $lambda^arrow.r$
 In order to present our formal framework, we need a simple yet illustrative language.
@@ -132,7 +134,7 @@ In the simply typed version, each expression is assigned a type, and functions a
 We start by defining the syntax of a tiny remote debugger for #stlc with booleans and natural numbers, defined as peano numbers @peano91:sul @kennedy74:peanos.
 The complete set of syntax, evaluation, and typing rules for booleans and natural numbers for #stlc can be found in @app:stlc.
 Because the debuggers we discuss in this dissertation are each debuggers for distributed systems, and therefore remote debuggers of a kind, we start with a simple remote debugger.
-However, the easiest way to define such a debugger is to start from a local debugger, and simply add a messaging system on top of it.//---which is the way in which we will present the debugger in this section.
+The easiest way to define such a debugger is as a distributed system with a _client_ and a _server_.// the evaluation rules can than be split into _client_, _server_, and _global_ rules.
 
 The rules for our tiny remote debugger are shown in @fig:stlc.debugger#sym.dash.em#[these] rules define the remote debugger as a distributed system with a _client_ and a _server_; respectively, modeling the debugger frontend and backend.
 In the remote debugger, the only role of the client is to supply input from the user, and displaying the output from the debugger.
@@ -144,44 +146,54 @@ The evaluation rules in @fig:stlc.debugger are split into three sets, the server
 === The syntax rules of the #remotedbg debugger
 
 #semantics(
-    [*Remote debugger semantics #remotedbg.* The syntax and evaluation rules for a simple remote debugger ($dbgarrow$) for the simply typed lambda calculus #stlc with natural numbers and booleans, defined over the internal operations (#oparrow).],
+    [*Remote debugger semantics #remotedbg.* The syntax and evaluation rules for a simple remote debugger ($dbgarrow$) for the simply typed lambda calculus #stlc with natural numbers and booleans.],
     [#debugger],
     "fig:stlc.debugger")
 
 #note[Internal in this context refers to the place where the program is running.]
-The steps of the remote debugger #dbgarrow are defined over a configuration $boxed(operation) bar.v t bar.v boxed(message)$, where we have respectively, the state of the remote debugger, the current program state, and the state of the internal debugger.
+The steps of the remote debugger #dbgarrow are defined over a configuration $client bar.v server$, where we have respectively, the state of the debugger client, and the state of the debugger server.
 
-The configuration of the internal debugger is split into two parts, (1) the current state of the program---in this case a #stlc term $t$---and (2) the output displayed by the debugger frontend, modeled as the message box $boxed(message)$.
+The configuration of the client is split into two message boxes, (1) the input from the user comprising of the _debug commands_ ($operation$), and (2) the output received from the server ($message$).
 Messages boxes are our way of modeling both inter-process and intra-process communication.
-In the case of the internal debugger, the message box is used to model the inter-process communication between the debugger backend and the debugger frontend within the same debugger process.
-Therefore, we can think of $boxed(message)$ as a high-level abstraction of the debugger frontend.
+In the case of the client, the message boxes are used to model the inter-process communication between the debugger backend and the debugger frontend. // within the same debugger process.
+//Therefore, we can think of $boxed(message)$ as a high-level abstraction of the debugger frontend.
 
 The configuration of the remote debugger is similar, but the message box $boxed(message)$ now models the intra-process communication from backend to frontend, and a second message box $boxed(operation)$ models the intra-process communication from frontend to backend.
-This corresponds, respectively, to the output returned from the debugger, and the instructions send to it.
+This corresponds, respectively, to the output returned from the debugger, and the debug commands send to it.
 
-The debugger can return as output, either nothing, a term, or an acknowledgement of a debug command.
+The debugger can return as output, either nothing, a snapshot of the program, or an acknowledgement of a debug command.
 The debug commands supported by the debugger are _step_ and _inspect_---to take a simple step in the program, and to inspect the current state of the program.
-Sometimes we also need the internal steps (#oparrow) to perform an internal step, which does not correspond to a debug command visible to the user.
-For such cases, we also provide a nothing command ($nothing$).
+When there is no next command in the message box, we write ($nothing$).
+//Sometimes we also need the internal steps (#oparrow) to perform an internal step, which does not correspond to a debug command visible to the user.
+//For such cases, we also provide a nothing command ($nothing$).
 
 === The evaluation rules of the #remotedbg debugger
 
-The entire evaluation of the debugger ($delta dbgarrow delta'$) is captured by only four rules.
-The first three steps are internal steps, which describe the operation of the internal debugger.
+The entire evaluation of the debugger ($global dbgarrow global'$) is captured by only eight rules.
+The first three steps are server steps, which describe the operation of the debugger backend.
 
-/ E-Step: When the current term $t$ can reduce to $t'$, than the debugger can take a step to $t'$, and output an acknowledgement of the successful step.
+/ Step: When the current term $t$ can reduce to $t'$, than the debugger can take a step to $t'$, and output an acknowledgement of the successful step.
 
-/ E-Fallback: This fallback rule allows the debugger to drop _step_ messages in case there is no $t arrow.r.long t'$. For the #stlc, this means that the term must be a value $v$. In this case, we output an acknowledgement of $nothing$, to indicate that the command was processed, but did not have any effects.
+/ Fallback: This fallback rule allows the debugger to drop _step_ messages in case there is no $t arrow.r.long t'$. For the #stlc, this means that the term must be a value $v$. In this case, we output an acknowledgement of $nothing$, to indicate that the command was processed, but did not have any effects.
 
-/ E-Inspect: The inspect step outputs the current term $t$.
+/ Inspect: The inspect step outputs the current term $t$.
 
-/ E-Read: The previous two steps require the output to be empty, to clear the output we introduce the _E-Read_ rule.
+To lift these server steps to describe the operation of a remote debugger, we only need to describe how they are interact with the cliend, or debugger backend.
+The rest of the rules are therefore mostly concerned with how input and output are process.
+We model the debugger frontend with a single client rule, _Process_.
 
-To lift these internal steps to describe the operation of a remote debugger, we only need to add one rule which takes the next debug command from the input message box, and takes the correct corresponding internal step.
+/ Process: The client takes the server message $message$ from its input message box, and replaces it with $nothing$, indicating that the output was used to update the user interface.
 
-/ E-Remote: The remote debugger takes the next debug command $operation$ from the input message box, and performs the corresponding internal step (#oparrow).
+The evaluation of the remote debugger is informed by the commands that arrive in the input message box, a debug session can therefore be seen as a series of remote steps ($global multi(dbgarrow) global'$) that are the result of a sequence of debug commands, which we write as ($multi(operation)$).
+The final four global rules describe how this works.
 
-The evaluation of the remote debugger is informed by the commands that arrive in the input message box, a debug session can therefore be seen as a series of remote steps ($delta multi(dbgarrow) delta'$) that are the result of a sequence of debug commands, which we write as ($multi(operation)$).
+/ Input: Whenever the client receives a $operation$ from the user, it is send to the input message box of the server, and the input message box of the client is updated to $nothing$. It is then ready to receive the next command.
+
+/ Output: Whenever the server has a $message$ in its output message box, it is end to the client, and the message is cleared from the server's message box.
+
+/ Client: Whenever a client rule applies, the client in $global$ can take a step.
+
+/ Serer: Analogously, whenever a server rule applies, the server in $global$ can take a step.
 
 Now that we have the formal semantics for a remote debugger that can step through and inspect a #stlc program, we can define what correctness means for such a debugger.
 
@@ -193,36 +205,36 @@ An intuition shared by the earliest works on debugger correctness such as #cite(
 We develop the idea into two correctness criteria, _debugger soundness_ and _debugger completeness_.
 
 Debugger soundness demands that for any debug session that begins at the start of the program, there is a path in the underlying language semantics that leads to the same final program state.
-In the theorem, we use the shorthand notation $t_delta$ to denote the current term of a debugging configuration $delta$.
+In the theorem, we use the shorthand notation $t_global$ to denote the current term of a debugging configuration $global$.
 
 #theorem("Debugger soundness")[
-  Let $delta_"start"$ be the initial configuration of the debugger for some well-typed program $t$. Then:
-  $ forall space delta space . space ( delta_"start" multi(dbgarrow) delta ) arrow.r.double.long ( t multi(arrow.r.long) t_delta ) and t_delta in delta $
+  Let $global_"start"$ be the initial configuration of the debugger for some well-typed program $t$. Then:
+  $ forall space global space . space ( global_"start" multi(dbgarrow) global ) arrow.r.double.long ( t multi(arrow.r.long) t_global ) and t_global in global $
 ]
 #proof[
   The proof proceeds by induction on the number of steps taken in the debugger.
-  Since _E-Step_ is the only rule that changes the term $t$ in the debugger configuration, and _E-Step_ uses the internal step ($arrow.r.long$); there is necessarily a path $t multi(arrow.r.long) t_delta$ in the underlying language semantics.
+  Since _Step_ is the only rule that changes the term $t$ in the debugger configuration, and _Step_ uses the internal step ($arrow.r.long$); there is necessarily a path $t multi(arrow.r.long) t_global$ in the underlying language semantics.
 ]
 
 Debugger completeness is the dual of soundness, but in the opposite direction.
 Completeness demands that any path in the underlying semantics can be observed in the debugger.
 
 #theorem("Debugger completeness")[
-  Let $t$ be a #stlc program, and $delta_"start"$ the start configuration of a debug session for this program. Then:
-  $ forall space t' space . space ( t multi(arrow.r.long) t' ) arrow.r.double.long exists space delta space . space (delta = boxed(operation) bar.v t' bar.v boxed(m)) and ( delta_"start" multi(dbgarrow) delta ) $
+  Let $t$ be a #stlc program, and $global_"start"$ the start configuration of a debug session for this program. Then:
+  $ forall space t' space . space ( t multi(arrow.r.long) t' ) arrow.r.double.long exists space global space . space (global = clientrule(nothing, nothing) bar.v serverrule(nothing, nothing, t')) and ( global_"start" multi(dbgarrow) global ) $
 ]
 #proof[
-  Given any path $t multi(arrow.r.long) t'$ in #stlc, we can construct a sequence of debug commands $multi(operation)$ to be the exact number of _step_ commands corresponding to the path in #stlc. Then the debug session starting in $delta_"start"$ with the commands $multi(operation)$ will take the exact same path by construction (see rule _E-Remote_ and _E-Step_), resulting in a configuration ($boxed(nothing) bar.v t' bar.v boxed(nothing)$).
+  Given any path $t multi(arrow.r.long) t'$ in #stlc, we can construct a sequence of debug commands $multi(operation)$ to be the exact number of _step_ commands corresponding to the path in #stlc. Then the debug session starting in $global_"start"$ with the commands $multi(operation)$ will take the exact same path by construction (see rule _Input_ and _Step_), resulting in a configuration $clientrule(nothing, nothing) bar.v serverrule(nothing, nothing, t')$.
 ]
 
 Debugger soundness and completeness together ensure that the debugger does not deviate from the semantics of the program being debugged, and that the debugger and the normal execution observe the same program behaviour.
-This is the most essential property for any type of debugger.
+This is an essential property for any type of debugger.
 
 Both theorems are trivial to prove for our tiny remote debugger #remotedbg, however, this by no means implies that they are trivial to prove for every debugger, or that they have no value.
 To illustrate the usefulness of the correctness criteria, //and show they are by no means trivial to prove for every debugger, 
 we will discuss them for a few interesting debuggers built on our tiny remote semantic.
 
-//#note[In fact, we only noticed when going over the progress proof, that the _E-Fallback_ rule was missing in the first version of #remotedbg.]Aside from these specific correctness criteria for debuggers, it is often a good idea to also proof the typical _progress_ and _preservation_ properties @pierce02:types for the debugger semantics.
+//#note[In fact, we only noticed when going over the progress proof, that the _Fallback_ rule was missing in the first version of #remotedbg.]Aside from these specific correctness criteria for debuggers, it is often a good idea to also proof the typical _progress_ and _preservation_ properties @pierce02:types for the debugger semantics.
 //Especially progress, generally serves as an important sanity check that the debugger is well-defined, and that there are no missing rules.
 //We provide the proofs for progress and preservation for our tiny remote debugger, and all other debuggers that follow in this chapter, in @app:progress.
 
@@ -248,29 +260,29 @@ The internal debugger configuration is extended with a _program counter_, a plai
 Using these three new fields $(n, e, b)$, we can define the new evaluation rules for the conventional debugger.
 @fig:stlc.conventional.evaluation shows the new evaluation rules added to or replacing the existing rules. The full set of rules for the conventional debugger are shown in @app:debuggers.
 
-Now, we can easily let the debugger stop at any point in the reduction of the #stlc program by adding a rule for normal unpaused execution (_E-Run_) and by adding two rules to change the execution state to either _paused_ or _play_.
+Now, we can easily let the debugger stop at any point in the reduction of the #stlc program by adding a rule for normal unpaused execution (_Run_) and by adding two rules to change the execution state to either _paused_ or _play_.
 For breakpoint support we need to keep track of a program counter, which for the #stlc can simply be a numerical value that counts the number of reductions.
-To increase the counter correctly, we only need to change the _E-Step_ and _E-Run_ rules to increment the counter by one for every reduction in the #stlc.
+To increase the counter correctly, we only need to change the _Step_ and _Run_ rules to increment the counter by one for every reduction in the #stlc.
 Lastly, we need to add two new rules to add and remove breakpoints from the set of breakpoints in the debugger configuration, and an extra fallback rule to handle the case where the debugger is not paused, but a step command is received.
 
 All other rules from the tiny remote debugger remain unchanged, apart from the additional fields in the configuration.
-The exact values of these fields are immaterial for those remaining rules.
+The exact values of these fields are immaterial for those remaining rules, except for any changes shown in @fig:stlc.conventional.evaluation.
 
-/ E-Step: The _E-Step_ rule now only applies when the debugger is in the paused state.
+/ Step: The _Step_ rule now only applies when the debugger is in the paused state.
 
-/ E-Fallback2: We add a second fallback rule, for when a step command is received, but the debugger is not paused. The execution state is irrelevant in the other fallback rule.
+/ Fallback2: We add a second fallback rule, for when a step command is received, but the debugger is not paused. The execution state is irrelevant in the other fallback rule.
 
-/ E-Pause: The _E-Pause_ rule changes the execution state to _paused_.
+/ Pause: The _Pause_ rule changes the execution state to _paused_.
 
-/ E-Play: The _E-Play_ rule changes the execution state to _play_.
+/ Play: The _Play_ rule changes the execution state to _play_.
 
-/ E-BreakpointAdd: The _E-BreakpointAdd_ rule adds the breakpoint $n$ from the $("bp"^+ space n)$ command to the set of breakpoints in the debugger configuration.
+/ BreakpointAdd: The _BreakpointAdd_ rule adds the breakpoint $n$ from the $("bp"^+ space n)$ command to the set of breakpoints in the debugger configuration.
 
-/ E-BreakpointRemove: The _E-BreakpointRemove_ rule removes the breakpoint $n$---specified by the $("bp"^- space n)$ command---from the set of breakpoints in the debugger configuration.
+/ BreakpointRemove: The _BreakpointRemove_ rule removes the breakpoint $n$---specified by the $("bp"^- space n)$ command---from the set of breakpoints in the debugger configuration.
 
-/ E-Run: When the execution state is _play_, and there are currently no commands in the message box of the remote debugger, nor is the current program counter $n$ an element of the breakpoints set $b$, then the debugger will take a single step in the underlying language semantics $t arrow.r.long t'$. Through this rule the debugger will continue normal execution until it reaches a breakpoint, or the program is paused, or the program is cannot be reduced anymore.
+/ Run: When the execution state is _play_, and there are currently no commands in the message box of the client or server, nor is the current program counter $n$ an element of the breakpoints set $b$, then the debugger will take a single step in the underlying language semantics $t arrow.r.long t'$. Through this rule the debugger will continue normal execution until it reaches a breakpoint, or the program is paused, or the program is cannot be reduced anymore.
 
-/ E-BreakpointHit: When the execution state is _play_, and the program counter $n$ is part of the breakpoint set $b$, the debugger pauses the program by changing the execution state to _paused_. Finally, it outputs an alert of the breakpoint hit containing the current program counter.
+/ BreakpointHit: When the execution state is _play_, and the program counter $n$ is part of the breakpoint set $b$, the debugger pauses the program by changing the execution state to _paused_. Finally, it outputs an alert of the breakpoint hit containing the current program counter.
 
 === Correctness criteria for the #conventionaldbg debugger
 
@@ -278,10 +290,10 @@ We will apply the same _soundness_ and _completeness_ criteria to the convention
 
 #proof("Debugger soundness for the conventional debugger")[
   The proof proceeds by induction on the number of steps taken in the debugger.
-  The _E-Step_ and _E-Run_ rules are the only rule that changes the term _t_ in the debugger configuration, and both use the internal step ($arrow.r.long$). This means that there is necessarily a path $t multi(arrow.r.long) t_delta$.
+  The _Step_ and _Run_ rules are the only rule that changes the term _t_ in the debugger configuration, and both use the internal step ($arrow.r.long$). This means that there is necessarily a path $t multi(arrow.r.long) t_global$.
 ]
 
-The proof for completeness is identical to the proof given for the tiny remote debugger, since we do not need to introduce any breakpoints in the debugging session. The rules _E-Remote_ and _E-Step_ can still faithfully re-execute the path $t multi(arrow.r.long) t'$.
+The proof for completeness is similar to the proof given for the tiny remote debugger, since we do not need to introduce any breakpoints in the debugging session. The rules _Remote_ and _Step_ can still faithfully re-execute the path $t multi(arrow.r.long) t'$.
 
 == #reversibledbg: A reversible debugger for #stlc
 
@@ -300,24 +312,24 @@ We list the new syntax and evaluation rules for the reversible debugger in @fig:
 
 We extend the syntax of the debugger with a list of snapshots, which are tuples of program counters and terms.
 The commands are extended with a _backwards step_ command, which takes a single step backwards in the program.
-To handle this command we need five internal rules, specifically, the _E-BackwardStep0_, _E-BackwardStep2_, and _E-BackwardStep2_ rules, along with two fallback rules.
+To handle this command we need five additional server rules, specifically, the _BackwardStep0_, _BackwardStep2_, and _BackwardStep2_ rules, along with two fallback rules.
 
-/ E-BackwardStep0: The _E-BackwardStep0_ rule applies when the program counter is not zero, but only the start snapshot is present in the snapshot list. In this case the program reduces $n$ times starting from the initial configuration, to arrive exactly one reductions before the current term $t$.
+/ BackwardStep0: The _BackwardStep0_ rule applies when the program counter is not zero, but only the start snapshot is present in the snapshot list. In this case the program reduces $n$ times starting from the initial configuration, to arrive exactly one reductions before the current term $t$.
 
-/ E-BackwardStep1: The _E-BackwardStep1_ rule applies reduces the program counter by one, and reduces the term $t'$ from the last snapshot exactly $n-n'$ times, to the term $t''$.
+/ BackwardStep1: The _BackwardStep1_ rule applies reduces the program counter by one, and reduces the term $t'$ from the last snapshot exactly $n-n'$ times, to the term $t''$.
 
-/ E-BackwardStep2: The _E-BackwardStep2_ rule applies when the program counter is exactly one higher than the program counter of the last snapshot. In this case, the debugger only restores the snapshot and removes it from the snapshot list.
+/ BackwardStep2: The _BackwardStep2_ rule applies when the program counter is exactly one higher than the program counter of the last snapshot. In this case, the debugger only restores the snapshot and removes it from the snapshot list.
 
-/ E-BackwardFallback1: The _E-BackwardFallback1_ rule applies when the execution state is not paused. Analogous to the forward step, the debugger will not step back if the program is not paused, and simply send an empty acknowledgement to indicate that nothing has changed.
+/ BackwardFallback1: The _BackwardFallback1_ rule applies when the execution state is not paused. Analogous to the forward step, the debugger will not step back if the program is not paused, and simply send an empty acknowledgement to indicate that nothing has changed.
 
-/ E-BackwardFallback2: The _E-BackwardFallback2_ rule applies when the program counter is zero, in this case, the only sensible option is to also return an empty acknowledgement, since the program cannot step back any further.
+/ BackwardFallback2: The _BackwardFallback2_ rule applies when the program counter is zero, in this case, the only sensible option is to also return an empty acknowledgement, since the program cannot step back any further.
 
-Given these internal evaluation rules, we only need to specify in the global evaluation rules how and when snapshots are created.
-Several strategies can be used to determine when to create new snapshots, for simplicity we will let the debugger create a snapshot every few steps by replacing the _E-Run_ rule by the following two rules.
+Given these server evaluation rules, we only need to specify in the global evaluation rules how and when snapshots are created.
+Several strategies can be used to determine when to create new snapshots, for simplicity we will let the debugger create a snapshot every few steps by replacing the _Run_ rule by the following two rules.
 
-/ E-Run1: We change the _E-Run_ rule to add a new snapshot to the list #snapshots whenever the program counter is a multiple of #interval, which we consider a static configuration of the debugger#note[The value of #interval could be changed through some meta-rules for the debugger.].
+/ Run1: We change the _Run_ rule to add a new snapshot to the list #snapshots whenever the program counter is a multiple of #interval, which we consider a static configuration of the debugger#note[The value of #interval could be changed through some meta-rules for the debugger.].
 
-/ E-Run2: In case the program counter is not a multiple of #interval, the _E-Run2_ rule is the same as the original _E-Run_ rule.
+/ Run2: In case the program counter is not a multiple of #interval, the _Run2_ rule is the same as the original _Run_ rule.
 
 To summarize the reversible semantics, when the reversible debugger is at a term $t$ with program counter $"succ" n$, then to step back once, it will restore the last snapshot and take exactly $n-n'$ steps where $n'$ is the program counter of the snapshot.
 
@@ -329,7 +341,7 @@ To make this easier, we will first proof two lemma about the snapshots that are 
 
 #lemma("Snapshot preservation")[
   The semantics of a reconstructing reversible debugger is said to be _snapshot preserving_ if the following holds:
-  $ forall delta space . space delta = boxed(operation) bar.v t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(message) and delta_"start" multi(dbgarrow) delta \
+  $ forall global space . space global = boxed(operation) bar.v t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(message) and global_"start" multi(dbgarrow) global \
    arrow.double.r.long \
    forall (programcounter', t') in s space . space programcounter' lt.eq.slant programcounter and t_"start" multi(arrow.r.long) t' $
 ]<snapshotpreservation>
@@ -337,7 +349,7 @@ To make this easier, we will first proof two lemma about the snapshots that are 
   The proof is straightforward by induction on steps taken in the debug session ($multi(dbgarrow)$).
   //For each case, we need to prove that all snapshots in the last debug configuration contain a program counter lower or equal to the current program counter, and that the term in the snapshot is reachable from the start term in zero or more steps.
   In the base case, this is always trivial to prove by construction.
-  //The important cases, is the new _E-Run1_ which is the only rule that adds a new snapshot to the list. This is trivial by construction.
+  //The important cases, is the new _Run1_ which is the only rule that adds a new snapshot to the list. This is trivial by construction.
   //
   In the inductive case, each case is straightforward to prove given the induction hypothesis.
 ]
@@ -346,10 +358,10 @@ Given @snapshotpreservation, we know that any snapshot list produced by the reve
 
 #proof([Debugger soundness for #reversibledbg])[
   The proof proceeds by induction over the steps taken in the debug session. Except for the new backward stepping rules, the cases proceed analogous to the proof for #conventionaldbg.
-  Given the induction hypothesis and @snapshotpreservation, the backward rules _E-BackwardStep0_, _E-BackwardStep1_, and _E-BackwardStep2_ are straightforward to prove.
+  Given the induction hypothesis and @snapshotpreservation, the backward rules _BackwardStep0_, _BackwardStep1_, and _BackwardStep2_ are straightforward to prove.
 ]
 
-== #intercessiondbg: An intercession debugger for #stlc
+== A counterexample: an intercession debugger for #stlc
 
 Our debuggers so far have only observed the execution of a program, without interceding in it.
 Even our reversible debugger, does not intercede in the control flow of the program, it only replays a previously observed execution.
@@ -385,13 +397,13 @@ We can illustrate this by the following example (@example), where we use the _su
     math.bold(content)
   }
   #align(center, prooftree(vertical-spacing: 0.55em,
-    rule(label: "E-isZero", "true : Bool", 
+    rule(label: "isZero", "true : Bool", 
 //      rule( $"isZero" 0 : "Bool"$,
-        rule(label: "E-AppAbs", $[x arrow.r.bar 0] "isZero" x : "Bool"$,
+        rule(label: "AppAbs", $[x arrow.r.bar 0] "isZero" x : "Bool"$,
 //          rule($(lambda x : "Nat" . "isZero" x) space 0 : "Bool"$,
-            rule(label: debug("E-Subst"), debug($["succ" 0 arrow.r.bar 0] space (lambda x : "Nat" . "isZero" x) space "succ" 0 : "Bool"$),
+            rule(label: debug("Subst"), debug($["succ" 0 arrow.r.bar 0] space (lambda x : "Nat" . "isZero" x) space "succ" 0 : "Bool"$),
 //              rule($(lambda x : "Nat" . "isZero" x) space "succ" 0 : "Bool"$,
-                rule(label: "E-AppAbs", $(lambda x : "Nat" . "isZero" x) space ([y arrow.r.bar 0] space ("succ" y)) : "Bool"$,
+                rule(label: "AppAbs", $(lambda x : "Nat" . "isZero" x) space ([y arrow.r.bar 0] space ("succ" y)) : "Bool"$,
                   $(lambda x : "Nat" . "isZero" x) space (lambda y : "Nat" . "succ" y) space 0 : "Bool"$))))))
 //  )))
 
@@ -403,56 +415,56 @@ To our correctness criteria, this means we designed an incorrect debugger.
 However, there are many reasons for designing a debugger that can update the program during a debugging session, allowing developers to patch code as they debug it.
 Moreover, there is nothing in the function of the debugger that would lead us to believe---on the face of it---that the debugger is incorrect.
 After all, the new program is still well typed, and the debugger observes the correct behaviour of the updated program.
-Therefore the problem is not that our debugger is incorrect, but that the correctness criteria are too strict.
-
-The solution here is rather intuitive---we consider the point where a program is updated by the debugger, as the start of a new debugger session.
-We explore this idea in the following section, where we redefine debugger soundness and completeness for intercession debuggers.
-
-=== Updating the correctness criteria for intercession debuggers
-
-Informally, the correctness of debuggers depends on their faithful observation of a program's behaviour.
-Intercession debuggers are a common type of debugger that shows this criteria is far from trivial.
-There are two major ways in which debuggers typically intercede with a program's execution, and correspondingly, two general principles those intercessions must follow.
-
-Firstly, intercession debuggers that change the behaviour of a program---often my changing control flow or throwing exceptions #cite(<alter>)---in order to be correct, may only introduce behaviour that could be observed in the underlying semantics.
-Secondly, as a general rule for intercession debuggers that change the program itself, the debugger must faithfully observe the new program from the moment the code was updated, and the updated program must remain well-typed.
-Our previous correctness criteria already cover the former rule, but the criteria are too strict for the latter class of intercession debuggers.
-We will adapt the soundness and completeness theorems to fit our second principle for debuggers that can change a program.
-
-Until now, the debugger soundness theorem mirrored the _progress_ theorem for programming languages @pierce02:types, however, since we now introduce program updates, we also need to think about _preservation_ @pierce02:types.
-For the debugger, this means that any changes to the program code must keep the program well-typed.
-
-#lemma("Debugger preservation")[
-  A debugger semantic is said to be _preserving_ if the following holds:
-  $ forall delta, delta' . delta #dbgarrow delta' and t in delta "is well-typed" arrow.double.r.long t' in delta' "is well-typed" $
-]<preserving>
-
-#let substarrow = box(height: 0.4em, $attach(arrow.r.long, t: subst)$)
-
-#proof([Preservation for #intercessiondbg])[
-  The proof proceeds by case analysis on the rules of the debugger.
-  Only the #substarrow rule is interesting, since it is the only rule that changes the program code. However, since the rule replaces $t_1$ in the well-typed program $t$ with a term of the same type $t_2$, the case is also trivially true.
-]
-
-As reader may have noticed, this lemma is very general and can be applied the previously defined debugger semantics as well---and probably most other semantics for that matter.
-However, since the previous semantics in this chapter do not change the program code, they are trivially preserving.
-That said, for other intercession debuggers the preservation property is a crucial criterion for correctness.
-
-Now we define debugger soundness, as the preservation of the program's well-typedness, and the existence of a path in the underlying language semantics starting from an arbitrary configuration $delta$---rather than the starting configuration.
-
-#theorem("Debugger soundness")[
-  A debugger semantic is said to be _sound_ if it is _preserving_ and the following holds:
-  $ forall delta, delta' . delta attach(dbgarrow, tr:*) delta' and subst in.not ( attach(dbgarrow, tr:*) ) and t "is well-typed" arrow.double.r.long t attach(arrow.r.long, tr:*) t' , $ where $t in delta$ and $t' in delta'$ and $delta_"start" multi(dbgarrow) delta'$.
-]
-#proof[
-  By @preserving, we know that #intercessiondbg is _preserving_, so we only need to prove the second part of the theorem.
-  The proof proceeds by induction on the steps in the debug session ($delta multi(dbgarrow) delta'$). Since we know that there are no substitution commands in the debug session, we can ignore the _E-Subst_ rule, and the proof is analogous to the previous proofs.
-  Only in the base case, do we not have $delta_"start"$ but an arbitrary configuration $delta$. Since it is reachable from the start configuration and it's term is well typed, this makes little difference to the proof.
-]
+Therefore the problem is not that our debugger is incorrect, but it is no longer sound.
 
 Unlike soundness, debugger completeness is not broken because of intercession.
 After all, there is no reason that any intercession commands should take place during the debugging session we construct in the proof.
-Therefore---analogous to the previous extensions to the semantics---the addition of the _E-Subst_ rule makes no difference, and the same proof for completeness holds.
+Therefore---analogous to the previous extensions to the semantics---the addition of the _Subst_ rule makes no difference, and the same proof for completeness holds.
+
+//The solution here is rather intuitive---we consider the point where a program is updated by the debugger, as the start of a new debugger session.
+//We explore this idea in the following section, where we redefine debugger soundness and completeness for intercession debuggers.
+//
+//=== Updating the correctness criteria for intercession debuggers
+//
+//Informally, the correctness of debuggers depends on their faithful observation of a program's behaviour.
+//Intercession debuggers are a common type of debugger that shows this criteria is far from trivial.
+//There are two major ways in which debuggers typically intercede with a program's execution, and correspondingly, two general principles those intercessions must follow.
+//
+//Firstly, intercession debuggers that change the behaviour of a program---often my changing control flow or throwing exceptions #cite(<alter>)---in order to be correct, may only introduce behaviour that could be observed in the underlying semantics.
+//Secondly, as a general rule for intercession debuggers that change the program itself, the debugger must faithfully observe the new program from the moment the code was updated, and the updated program must remain well-typed.
+//Our previous correctness criteria already cover the former rule, but the criteria are too strict for the latter class of intercession debuggers.
+//We will adapt the soundness and completeness theorems to fit our second principle for debuggers that can change a program.
+//
+//Until now, the debugger soundness theorem mirrored the _progress_ theorem for programming languages @pierce02:types, however, since we now introduce program updates, we also need to think about _preservation_ @pierce02:types.
+//For the debugger, this means that any changes to the program code must keep the program well-typed.
+//
+//#lemma("Debugger preservation")[
+//  A debugger semantic is said to be _preserving_ if the following holds:
+//  $ forall global, global' . global #dbgarrow global' and t in global "is well-typed" arrow.double.r.long t' in global' "is well-typed" $
+//]<preserving>
+//
+//#let substarrow = box(height: 0.4em, $attach(arrow.r.long, t: subst)$)
+//
+//#proof([Preservation for #intercessiondbg])[
+//  The proof proceeds by case analysis on the rules of the debugger.
+//  Only the #substarrow rule is interesting, since it is the only rule that changes the program code. However, since the rule replaces $t_1$ in the well-typed program $t$ with a term of the same type $t_2$, the case is also trivially true.
+//]
+//
+//As reader may have noticed, this lemma is very general and can be applied the previously defined debugger semantics as well---and probably most other semantics for that matter.
+//However, since the previous semantics in this chapter do not change the program code, they are trivially preserving.
+//That said, for other intercession debuggers the preservation property is a crucial criterion for correctness.
+//
+//Now we define debugger soundness, as the preservation of the program's well-typedness, and the existence of a path in the underlying language semantics starting from an arbitrary configuration $global$---rather than the starting configuration.
+//
+//#theorem("Debugger soundness")[
+//  A debugger semantic is said to be _sound_ if it is _preserving_ and the following holds:
+//  $ forall global, global' . global attach(dbgarrow, tr:*) global' and subst in.not ( attach(dbgarrow, tr:*) ) and t "is well-typed" arrow.double.r.long t attach(arrow.r.long, tr:*) t' , $ where $t in global$ and $t' in global'$ and $global_"start" multi(dbgarrow) global'$.
+//]
+//#proof[
+//  By @preserving, we know that #intercessiondbg is _preserving_, so we only need to prove the second part of the theorem.
+//  The proof proceeds by induction on the steps in the debug session ($global multi(dbgarrow) global'$). Since we know that there are no substitution commands in the debug session, we can ignore the _Subst_ rule, and the proof is analogous to the previous proofs.
+//  Only in the base case, do we not have $global_"start"$ but an arbitrary configuration $global$. Since it is reachable from the start configuration and it's term is well typed, this makes little difference to the proof.
+//]
 
 == Discussion: general debugger correctness
 
