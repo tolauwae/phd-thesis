@@ -11,7 +11,7 @@ Over the course of writing this dissertation, several correctness criteria for o
 
 == Semantics of debuggers
 
-Before we can begin to reason about the correctness of debuggers, we need to establish their formal semantics.
+Before we can begin to reason about the correctness of manual online debuggers, we need to establish their formal semantics.
 Unfortunately, defining the semantics of debuggers has always received less attention than formalizations for programming languages or compilers @da-silva92:correctness.
 This lack of interest, has resulted in quite a sparse collection of existing semantics, which focus on very different aspects, and are defined in very different ways.
 To this day, there is no clear consensus on what constitutes correctness for debuggers, or even, which are the essential aspects for a tool to fall under the broad category of debuggers.
@@ -81,7 +81,6 @@ Therefore, we will present this thesis' approach in more detail in this chapter,
 Given the wide variety of debuggers, we will present our formal framework---for debugger semantics and their correctness---by discussing four different debuggers with each their own semantics.
 The last debugger serves as a counter example, illustrating a common type of debugger that is complete but not sound.
 Importantly, the semantics follow the same general design---presenting the overall formal framework we use in this dissertation.
-#note[While heavy in formal aspects, this chapter serves as a---hopefully somewhat gentle---introduction into the formal foundations of this dissertation.]
 
 #let remotedbg = $lambda^ast.basic_DD$
 #let conventionaldbg = $lambda^arrow.r_DD$
@@ -104,7 +103,7 @@ align(center, table(columns: (auto, 60mm), align: (x, y) => if x == 0 {horizon +
 ))
 }
 
-The four debuggers allow us to introduce different aspects of our formal framework step by step.
+#note[While heavy in formal aspects, this chapter serves as a---hopefully somewhat gentle---introduction into the formal foundations of this dissertation.]The four debuggers allow us to introduce different aspects of our formal framework step by step.
 The semantics in this chapter, are blueprints for the more complex semantics we discuss later in this dissertation.
 They also serve to illustrate the general correctness criteria we define for our debuggers.
 
@@ -141,7 +140,7 @@ In the remote debugger, the only role of the client is to supply input from the 
 We model these interactions with the outside world through a simple messaging system, where messages arrive in order, one by one, in a message box.
 The server communicates with the client through an identical message box system, and is responsible for performing the debug commands it receives.
 
-The evaluation rules in @fig:stlc.debugger are split into three sets, the server debugging steps (#serverarrow), the client steps (#clientarrow), and the global steps of the remote debugger ($dbgarrow$), which wraps the former steps.
+The evaluation rules in @fig:stlc.debugger are split into three sets, the server debugging steps (#serverarrow), the client steps (#clientarrow), and the global steps of the remote debugger ($dbgarrow$), which wraps the server and client steps.
 
 === The syntax rules of the #remotedbg debugger
 
@@ -155,13 +154,12 @@ The steps of the remote debugger #dbgarrow are defined over a configuration $cli
 
 The configuration of the client is split into two message boxes, (1) the input from the user comprising of the _debug commands_ ($operation$), and (2) the output received from the server ($message$).
 Messages boxes are our way of modeling both inter-process and intra-process communication.
-In the case of the client, the message boxes are used to model the inter-process communication between the debugger backend and the debugger frontend. // within the same debugger process.
+In the case of the client, the message box $boxed(operation)$ models the intra-process communication from user to frontend (client), and the second message box $boxed(message)$ models the intra-process communication from backend (server) to frontend (client).
+
+The configuration of the server is similar, but now contains the current term $t$ of the program being debugged, alongside its two message boxes.
+The message boxes in the server are used to model the inter-process communication between the debugger backend and the debugger frontend. // within the same debugger process.
 //Therefore, we can think of $boxed(message)$ as a high-level abstraction of the debugger frontend.
-
-The configuration of the remote debugger is similar, but the message box $boxed(message)$ now models the intra-process communication from backend to frontend, and a second message box $boxed(operation)$ models the intra-process communication from frontend to backend.
-This corresponds, respectively, to the output returned from the debugger, and the debug commands send to it.
-
-The debugger can return as output, either nothing, a snapshot of the program, or an acknowledgement of a debug command.
+The debugger server can return as output to the client, either a snapshot of the program, or an acknowledgement of a debug command, otherwise the box is empty ($nothing$).
 The debug commands supported by the debugger are _step_ and _inspect_---to take a simple step in the program, and to inspect the current state of the program.
 When there is no next command in the message box, we write ($nothing$).
 //Sometimes we also need the internal steps (#oparrow) to perform an internal step, which does not correspond to a debug command visible to the user.
@@ -174,11 +172,11 @@ The first three steps are server steps, which describe the operation of the debu
 
 / Step: When the current term $t$ can reduce to $t'$, than the debugger can take a step to $t'$, and output an acknowledgement of the successful step.
 
-/ Fallback: This fallback rule allows the debugger to drop _step_ messages in case there is no $t arrow.r.long t'$. For the #stlc, this means that the term must be a value $v$. In this case, we output an acknowledgement of $nothing$, to indicate that the command was processed, but did not have any effects.
+/ Fallback: This fallback rule allows the debugger to drop _step_ messages in case there is no $t arrow.r.long t'$. For the #stlc, this means that the term must be a value $v$. In this case, we output an empty acknowledgement, to indicate that the command was processed, but did not have any effects.
 
-/ Inspect: The inspect step outputs the current term $t$.
+/ Inspect: The inspect step outputs a snapshot of the current term $t$.
 
-To lift these server steps to describe the operation of a remote debugger, we only need to describe how they are interact with the cliend, or debugger backend.
+To lift these server steps to describe the operation of a remote debugger, we only need to describe how they are interact with the client, or debugger backend.
 The rest of the rules are therefore mostly concerned with how input and output are process.
 We model the debugger frontend with a single client rule, _Process_.
 
@@ -189,7 +187,7 @@ The final four global rules describe how this works.
 
 / Input: Whenever the client receives a $operation$ from the user, it is send to the input message box of the server, and the input message box of the client is updated to $nothing$. It is then ready to receive the next command.
 
-/ Output: Whenever the server has a $message$ in its output message box, it is end to the client, and the message is cleared from the server's message box.
+/ Output: Whenever the server has a $message$ in its output message box, it is send to the client, and the message is cleared from the server's message box.
 
 / Client: Whenever a client rule applies, the client in $global$ can take a step.
 
@@ -220,7 +218,7 @@ Debugger completeness is the dual of soundness, but in the opposite direction.
 Completeness demands that any path in the underlying semantics can be observed in the debugger.
 
 #theorem("Debugger completeness")[
-  Let $t$ be a #stlc program, and $global_"start"$ the start configuration of a debug session for this program. Then:
+  Let $t$ be a well-typed #stlc program, and $global_"start"$ the start configuration of a debug session for this program. Then:
   $ forall space t' space . space ( t multi(arrow.r.long) t' ) arrow.r.double.long exists space global space . space (global = clientrule(nothing, nothing) bar.v serverrule(nothing, nothing, t')) and ( global_"start" multi(dbgarrow) global ) $
 ]
 #proof[
@@ -230,9 +228,9 @@ Completeness demands that any path in the underlying semantics can be observed i
 Debugger soundness and completeness together ensure that the debugger does not deviate from the semantics of the program being debugged, and that the debugger and the normal execution observe the same program behaviour.
 This is an essential property for any type of debugger.
 
-Both theorems are trivial to prove for our tiny remote debugger #remotedbg, however, this by no means implies that they are trivial to prove for every debugger, or that they have no value.
+Both theorems are trivial to prove for our tiny remote debugger #remotedbg, however, this by no means implies that they are trivial to prove for every debugger, or that they are not valuable guarantees.
 To illustrate the usefulness of the correctness criteria, //and show they are by no means trivial to prove for every debugger, 
-we will discuss them for a few interesting debuggers built on our tiny remote semantic.
+we will discuss them for a two interesting debuggers built on our tiny remote semantic.
 
 //#note[In fact, we only noticed when going over the progress proof, that the _Fallback_ rule was missing in the first version of #remotedbg.]Aside from these specific correctness criteria for debuggers, it is often a good idea to also proof the typical _progress_ and _preservation_ properties @pierce02:types for the debugger semantics.
 //Especially progress, generally serves as an important sanity check that the debugger is well-defined, and that there are no missing rules.
@@ -276,24 +274,39 @@ The exact values of these fields are immaterial for those remaining rules, excep
 
 / Play: The _Play_ rule changes the execution state to _play_.
 
-/ BreakpointAdd: The _BreakpointAdd_ rule adds the breakpoint $n$ from the $("bp"^+ space n)$ command to the set of breakpoints in the debugger configuration.
+/ BreakpointAdd: The _BreakpointAdd_ rule adds the breakpoint $n$ from the $(bpadd)$ command to the set of breakpoints in the debugger configuration.
 
-/ BreakpointRemove: The _BreakpointRemove_ rule removes the breakpoint $n$---specified by the $("bp"^- space n)$ command---from the set of breakpoints in the debugger configuration.
+/ BreakpointRemove: The _BreakpointRemove_ rule removes the breakpoint $n$---specified by the $(bpremove)$ command---from the set of breakpoints in the debugger configuration.
 
-/ Run: When the execution state is _play_, and there are currently no commands in the message box of the client or server, nor is the current program counter $n$ an element of the breakpoints set $b$, then the debugger will take a single step in the underlying language semantics $t arrow.r.long t'$. Through this rule the debugger will continue normal execution until it reaches a breakpoint, or the program is paused, or the program is cannot be reduced anymore.
+/ Run: When the execution state is _play_, and there are currently no commands in the message box of the client or server, nor is the current program counter $n$ an element of the breakpoints set $b$, then the debugger will take a single step in the underlying language semantics $t arrow.r.long t'$. Through this rule the debugger will continue normal execution until it reaches a breakpoint, or the program is paused, or the program cannot be reduced anymore.
 
 / BreakpointHit: When the execution state is _play_, and the program counter $n$ is part of the breakpoint set $b$, the debugger pauses the program by changing the execution state to _paused_. Finally, it outputs an alert of the breakpoint hit containing the current program counter.
 
 === Correctness criteria for the #conventionaldbg debugger
 
-We will apply the same _soundness_ and _completeness_ criteria to the conventional debugger as we did for the tiny remote debugger. We briefly sketch the proofs here, starting with soundness.
+We will apply the same _soundness_ and _completeness_ criteria to the conventional debugger as we did for the tiny remote debugger. We briefly sketch the proofs here.
+We start with soundness, since its theorem remains unchanged.
 
-#proof("Debugger soundness for the conventional debugger")[
+#proof([Debugger soundness for $conventionaldbg$])[
   The proof proceeds by induction on the number of steps taken in the debugger.
-  The _Step_ and _Run_ rules are the only rule that changes the term _t_ in the debugger configuration, and both use the internal step ($arrow.r.long$). This means that there is necessarily a path $t multi(arrow.r.long) t_global$.
+  The _Step_ and _Run_ rules are the only rules that changes the term _t_ in the debugger configuration, and both use the #stlc step ($arrow.r.long$). This means that there is necessarily a path $t multi(arrow.r.long) t_global$.
 ]
 
-The proof for completeness is similar to the proof given for the tiny remote debugger, since we do not need to introduce any breakpoints in the debugging session. The rules _Remote_ and _Step_ can still faithfully re-execute the path $t multi(arrow.r.long) t'$.
+For completeness, we tweak the formulation of the theorem slightly, for the new components of the server configuration.
+
+#theorem([Debugger completeness for $conventionaldbg$])[
+  Let $t$ be a well-typed #stlc program, and $global_"start"$ the start configuration of a debug session for this program. Then:
+  $ forall space t' space . space ( t multi(arrow.r.long) t' ) arrow.r.double.long \ exists space global space . space (global = globalrule(clientrule(nothing, nothing), conserverrule(nothing, nothing, n, "paused", breakpoints, t'))) and ( global_"start" multi(dbgarrow) global ) $
+]
+
+Given the construction of our debugger semantics it remains easy to construct a sequence of debug commands that follows the exact same path as the underlying language semantics.
+//The proof for completeness is similar to the proof given for the tiny remote debugger. //, since we do not need to introduce any breakpoints in the debugging session. The rules _Remote_ and _Step_ can still faithfully re-execute the path $t multi(arrow.r.long) t'$.
+
+#proof([Debugger completeness for $conventionaldbg$])[
+  We can construct a sequence of _step_ commands equal to the number of steps in the path $t multi(arrow.r.long) t'$.
+  Starting from $d_start$, the debugger will apply the _Input_, _Step_, _Process_ steps repeatedly until all these commands have been consumed.
+  Afterwards, the state of debugger is $globalrule(clientrule(nothing, nothing), conserverrule(nothing, nothing, n, "paused", breakpoints, t'))$.
+]
 
 == #reversibledbg: A reversible debugger for #stlc
 
@@ -306,11 +319,12 @@ We start from the conventional debugger semantics in @sec:conventional, and add 
     "fig:stlc.reversible")
 
 A common approach to implementing a reversible debugger is to periodically store snapshots of the program state, and reconstruct the execution from the last snapshot @engblom12:review @klimushenkova17:improving.
+These type of reversible debuggers are often called _reconstruction-based reversible debuggers_ @engblom12:review.
 Formalising this approach requires only few extensions to the semantics of the conventional debugger.
 We list the new syntax and evaluation rules for the reversible debugger in @fig:stlc.reversible.
 // go back to start and rerun -> we need to keep track of the number of steps
 
-We extend the syntax of the debugger with a list of snapshots, which are tuples of program counters and terms.
+We extend the syntax of the debugger server with a list of snapshots, which are tuples of program counters and terms.
 The commands are extended with a _backwards step_ command, which takes a single step backwards in the program.
 To handle this command we need five additional server rules, specifically, the _BackwardStep0_, _BackwardStep2_, and _BackwardStep2_ rules, along with two fallback rules.
 
@@ -322,7 +336,7 @@ To handle this command we need five additional server rules, specifically, the _
 
 / BackwardFallback1: The _BackwardFallback1_ rule applies when the execution state is not paused. Analogous to the forward step, the debugger will not step back if the program is not paused, and simply send an empty acknowledgement to indicate that nothing has changed.
 
-/ BackwardFallback2: The _BackwardFallback2_ rule applies when the program counter is zero, in this case, the only sensible option is to also return an empty acknowledgement, since the program cannot step back any further.
+/ BackwardFallback2: The _BackwardFallback2_ rule applies when the program counter is zero, in this case, the only sensible option is to return an empty acknowledgement, since the program cannot step back any further.
 
 Given these server evaluation rules, we only need to specify in the global evaluation rules how and when snapshots are created.
 Several strategies can be used to determine when to create new snapshots, for simplicity we will let the debugger create a snapshot every few steps by replacing the _Run_ rule by the following two rules.
@@ -337,10 +351,10 @@ To summarize the reversible semantics, when the reversible debugger is at a term
 
 Again, we apply the same soundness and completeness criteria to the reversible debugger as we did for the two previous debuggers.
 The proofs however, are slightly more involved, since we need to reason about the snapshots.
-To make this easier, we will first proof two lemma about the snapshots that are helpful in the proofs of soundness and completeness.
+To make this easier, we will first proof a lemma about the snapshots that is helpful in the proof of soundness.
 
 #lemma("Snapshot preservation")[
-  The semantics of a reconstructing reversible debugger is said to be _snapshot preserving_ if the following holds:
+  The semantics of a reconstruction-based reversible debugger is said to be _snapshot preserving_ if the following holds:
   $ forall global space . space global = boxed(operation) bar.v t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(message) and global_"start" multi(dbgarrow) global \
    arrow.double.r.long \
    forall (programcounter', t') in s space . space programcounter' lt.eq.slant programcounter and t_"start" multi(arrow.r.long) t' $
@@ -361,24 +375,37 @@ Given @snapshotpreservation, we know that any snapshot list produced by the reve
   Given the induction hypothesis and @snapshotpreservation, the backward rules _BackwardStep0_, _BackwardStep1_, and _BackwardStep2_ are straightforward to prove.
 ]
 
+For completeness, we tweak the formulation of the theorem slightly, for the new components of the server configuration.
+
+#theorem([Debugger completeness $#reversibledbg$])[
+  Let $t$ be a well-typed #stlc program, and $global_"start"$ the start configuration of a debug session for this program. Then:
+  $ forall space t' space . space ( t multi(arrow.r.long) t' ) arrow.r.double.long \ exists space global space . space (global = globalrule(clientrule(nothing, nothing), revserverrule(nothing, nothing, n, "paused", breakpoints, snapshots, t'))) and ( global_"start" multi(dbgarrow) global ) $
+]
+
+#proof[
+  We can construct a sequence of _step_ commands equal to the number of steps in the path $t multi(arrow.r.long) t'$.
+  Starting from $d_start$, the debugger will apply the _Input_, _Step_, _Process_ steps repeatedly until all these commands have been consumed.
+  Afterwards, the state of debugger is $globalrule(clientrule(nothing, nothing), revserverrule(nothing, nothing, n, "paused", breakpoints, snapshots, t'))$.
+]
 == A counterexample: an intercession debugger for #stlc
 
 Our debuggers so far have only observed the execution of a program, without interceding in it.
 Even our reversible debugger, does not intercede in the control flow of the program, it only replays a previously observed execution.
 //However, many debuggers support some form of _reflection_ @maes87:concepts @papoulias13:remote, where they change the program's execution.
 Yet, it is quite common for debuggers to support changing the value of variables @stallman88:debugging, or influence the control flow of the program @lauwaerts22:event-based-out-of-place-debugging @stallman88:debugging @alter.
+In this work, we refer to these as _intercession debuggers_.
 
 Intercession debuggers are an interesting case to study in terms of our correctness criteria.
-Since, we expect the debugger to observe the same semantics as the program, we need to be careful when changing the program state.
-It is very easy when changing even just a simple variable to break debugger correctness.
-Luckily, we can illustrate this in the #stlc by allowing the debugger to substitute terms at runtime.
+Very few intercessions can be made while maintaining soundness, since soundness expects the debugger to observe the same semantics as the program.
+A clear example, is debuggers that allow the user to update the code during the debugging session.
+We can illustrate this in the #stlc by allowing the debugger to substitute terms at runtime.
 
 #semantics(
     [*Intercession debugger semantics extending #remotedbg.*],
     [#intercession],
     "fig:stlc.intercession")
 
-#note[The substitution debug command is similar to substitutions through let bindings in #stlc @pierce02:types.]@fig:stlc.intercession shows our intercession debugger semantics, as again an extension on the previous debugger semantics---shown in @fig:stlc.reversible.
+#note[The substitution debug command is similar to substitutions for let bindings in #stlc @pierce02:types.]@fig:stlc.intercession shows our intercession debugger semantics, as again an extension on the previous debugger semantics---shown in @fig:stlc.reversible.
 We add a new debug command #subst to the debugger, which allows the user to substitute the current term $t_1$ with a new term $t_2$ of the same type.
 
 === Intercession breaks straightforward correctness //criteria for the #remotedbg debugger
@@ -411,7 +438,7 @@ We can illustrate this by the following example (@example), where we use the _su
 
 In @example, the debugger changes all occurrences of _succ 0_ in the program to simply _0_ in the middle of the debugging session.
 Through this intervention, the program results in true, while the original code can clearly only be false.
-To our correctness criteria, this means we designed an incorrect debugger.
+To our correctness criteria, this means we designed an unsound debugger.
 However, there are many reasons for designing a debugger that can update the program during a debugging session, allowing developers to patch code as they debug it.
 Moreover, there is nothing in the function of the debugger that would lead us to believe---on the face of it---that the debugger is incorrect.
 After all, the new program is still well typed, and the debugger observes the correct behaviour of the updated program.
@@ -470,12 +497,8 @@ Therefore---analogous to the previous extensions to the semantics---the addition
 
 //As this chapter shows,
 Given the wide variety of debuggers and the vagueness around what constitutes as a debugger, it is not possible to formally define a general correctness criterion that is the same for all types of debuggers.
-Therefore, it should not surprise anyone that the correctness criteria presented in this chapter depend on, and are different for, each of the debugger semantics.
-Especially, the criteria for the intercession debugger depend in a crucial way on the type of intercession the debugger supports.
-//This becomes even more unavoidable given that we define the debugger semantics in terms of the underlying semantics.
-
 However, the _soundness_ and _completeness_ criteria presented in this chapter do present the same general principle, which is that the debugger should observe the same semantics as the program being debugged.
-In the case of the intercession debuggers these criteria need to be adapted on a case by case basis, depending on the type of intercessions supported, but their general principles still hold.
+This does not mean that no case can be made for the usefulness of unsound debuggers, however, their unsoundness is important to keep in mind as a user of such debuggers.
 
 The extensive discussion of the different debugger semantics for the #stlc in this chapter serve to show the general applicability of debugger soundness and completeness, and support our claim that these are the most essential correctness properties for any type of debugger.
 The same criteria will be used throughout this dissertation, as we explore how to develop sound out-of-place and multiverse debugging techniques for constrained environments. //, we will test our models with the correctness criteria presented in this chapter.

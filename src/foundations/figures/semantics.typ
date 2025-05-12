@@ -215,8 +215,8 @@
 
 #let pause = text(style: "italic", "pause")
 #let play = text(style: "italic", "play")
-#let bpadd = $"bp"^+ space n$
-#let bpremove = $"bp"^- space n$
+#let bpadd = $"bp"^+angle.l n angle.r$
+#let bpremove = $"bp"^-angle.l n angle.r$
 
 #let conserverrule(i, o, n, e, b, t) = $angle.l #i, #o, #n, #e, #b separator #t angle.r$
 
@@ -262,7 +262,16 @@
             definition("n", "(numeric values)",
                     ("0", "succ n"),
                     ("constant zero", "succ"), division: (1em, 1.5em, 3fr, 5fr)),
+        ),
 
+        table(columns: (1fr), align: (left), stroke: none,
+            tablehead([New initial configuration]),
+
+            $d_start = clientrule(nothing, nothing) bar.v conserverrule(nothing, nothing, 0, "paused", nothing, t_start)$,
+
+//            definition("n", "(numeric values)",
+//                    ("0", "succ n"),
+//                    ("constant zero", "succ"), division: (1em, 1.5em, 3fr, 5fr)),
         ),
   )]
 
@@ -306,7 +315,7 @@
         
 ]
 
-#let snapshots = $s$
+#let snapshots = $z$
 #let backwards = $"step"^arrow.l$
 #let interval = $theta$
 
@@ -331,8 +340,9 @@
         ),
 
         table(columns: (1fr), align: (left), stroke: none,
+            tablehead(""),
             definition(snapshots, "(snapshots)",
-                ($(0, t)$, $(n, t), s$,),
+                ($(0, t)$, $(n, t), snapshots$,),
                 ("start snapshot", "list of snapshots"), division: (1.0em, 1.5em, 4fr, 9fr)),
         ),
 

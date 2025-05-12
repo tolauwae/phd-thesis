@@ -97,19 +97,21 @@
         [#metadata(none) <chapter-start>]
     }
 
-    #show ref.where(
-      form: "normal"
-    ): set ref(supplement: it => {
-      if (it.func() == heading) and it.level == 1 {
-        "Chapter"
-      } else {
-        it.supplement
-      }
-    })
+    //#show ref.where(
+    //  form: "normal"
+    //): set ref(supplement: it => {
+    //  if (it.func() == heading) and (it.supplement != "Appendix") and it.level == 1 {
+    //    "Chapter"
+    //  } else {
+    //    it.supplement
+    //  }
+    //})
 
 
     // section titles
     #set heading(numbering: "1.1")
+
+    #show heading.where(level: 1): set heading(supplement: [Chapter])
 
     #show heading: set text(font: heading-font, hyphenate: false)
     #show heading: set par(justify: false)
@@ -351,6 +353,7 @@
 
 #[
 #set heading(numbering: "A.1", supplement: [Appendix])
+#show heading.where(level: 1): set heading(supplement: [Appendix])
 
 #show heading: it => [
   #set align(center)
@@ -380,6 +383,7 @@
   #bibliography("references.bib", style: "elsevier-harvard")<bibliography>
 ]
 
+#set heading(numbering: "A", supplement: [Appendix])
 #show heading: it => [
   #set align(center)
   #set text(weight: 600)
