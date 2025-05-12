@@ -13,6 +13,12 @@
   action: (simple: "lst.action.0:3", publish: "lst.action.0:5"),
   unit: (check: "lst.unit.check.0:7", invoke: "lst.unit.invoke.0:6"))
 
+Debuggers are only useful when you know you have a bug.
+There are naturally many ways to discover bugs in your software, however, the single most effective and widely used approach i unsurprisingly _testing_.
+Modern software uses continuous integration and regression testing to detect bugs as early as possible in the development cycle.
+
+Unfortunately, the same reasons that cause debugging techniques to lag behind for embedded devices, likewise make modern testing techniques hard to apply on constrained systems. In this chapter, we present a novel testing technique called managed testing, and a prototype implementation Latch, which aim to enable large-scale testing of embedded software directly on the constrained devices as part of continuous integration. The framework was also used to test the previously discussed debugger prototypes.
+
 == Introduction
 
 Software testing for constrained devices, still lags behind standard best practices in testing.
