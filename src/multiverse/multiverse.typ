@@ -161,17 +161,9 @@ Output primitives are supported as long as they are atomic, and are deterministi
 Our MIO debugger, has initial support for expressing such simple dependencies, in the semantics however, we take abstraction and assume that sensor values are independent. 
 
 === WebAssembly Language Semantics
-WebAssembly is a low-level, portable binary code format designed for safe and efficient execution on various platforms.
-Its formal semantics are grounded in a stack-based virtual machine, where instructions and values operate on a single stack with strict typing to guarantee fast static validation.
-We base our formalisation on the semantics from the original WebAssembly paper by #cite(form: "prose", <haas17:bringing>), where the core semantics include structured control flow (blocks, loops, and conditionals) and memory management via linear memory.
-WebAssembly intentionally excludes external interface definitions, including I/O operations, to minimize its dependence on platform-specific details.
-This design choice enables us to deliberately sculpt the I/O operations so that they are deterministically reversible, a necessary condition for multiverse debugging.
 
-The execution of a WebAssembly program is defined by a small-step reduction relation, denoted as $wasmarrow$ where, $i$ refers to the index of the currently executing module. 
-The relation $wasmarrow$ is defined over a configuration $\{s;v^*;e^*\}$, with global store $s$, local values $v^*$, and the current stack of instructions $e^*$.
-The reduction rules take the form $\{s;v^*;e^*\} wasmarrow \{s';v'^*;e'^*\}$.
-Important for our semantics, the global store $s$ contains instances of modules, tables, and memories.
-The global store allows access to any function within a module instance, denoted as $s_"func" (i,j)$, where $i$ represents the module index and $j$ corresponds to the function index.
+We discussed the basics of the WebAssembly language semantics in @chapter:oop (@oop:webassembly).
+In this chapter, we again use the same semantics, taken from #cite(form: "prose", <haas17:bringing>).
 
 === Extending WebAssembly with Primitive I/O Operations<mult:webassembly>
 

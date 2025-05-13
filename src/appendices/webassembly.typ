@@ -1,4 +1,4 @@
-= WebAssembly Specification Summary <webassembly>
+= WebAssembly Specification Summary <app:webassembly>
 In this appendix, we will discuss the elements of WebAssembly needed to understand the formalization of our extensions. A full and detailed account of all WebAssembly’s formal semantics can be found in the excellent paper of #cite(<haas17:bringing>, form: "prose");.
 
 #figure[

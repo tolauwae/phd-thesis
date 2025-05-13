@@ -48,12 +48,7 @@ The prototype showed how out-of-place debugging can reduce the debugging latency
 === Out-of-place debugging for microcontrollers
 
 // 1. why on microncotrollers: motivation for Edward
-In the context of embedded applications, out-of-place debugging has great potential for improving the debugging experience offered by remote debuggers.
-This is due to the techninque being ideally suited for tackling the three main drawbacks of remote debuggers.
-Firstly, the debugger is run on the remote device.
-In the context of constrained devices, this additionally limits the resources available to the debugger.
-Secondly, the communication channel can be slow, and can introduce latency in the debugging process.
-Thirdly, the delays introduced by the remote communication can exasperate the debugging interference.
+In the context of embedded applications, out-of-place debugging has great potential for improving the debugging experience offered by remote debuggers, by freeing the debugger from much of the limitations of constrained devices.
 
 // todo ...
 
@@ -77,7 +72,7 @@ We therefore developed the first formalisation of the technique based on WebAsse
 However, our formalisation illustrates and captures the essence of out-of-place debugging without many WebAssembly specifics---and so we argue, is more broadly applicable.
 
 Second, existing work fails to address possible state desynchronization between the remote and local device.
-Existing solutions typically limit internal state changes to the local debugging environment, making it difficult to debug essential operations like MQTT communication in Internet of Things (IoT) systems.
+Existing solutions typically limit internal state changes to the local debugging environment, making it difficult to debug essential operations like MQTT communication in Internet of Things systems.
 In our formalisation, we show how to handle stateful operations on non-transferable resources through limited synchronization of the state between the local and remote devices.
 
 #note[In the original publication @lauwaerts22:event-based-out-of-place-debugging, we used the terms _pull_ and _push_, here we use _request-driven_ and _event-driven_ instead.]
@@ -162,10 +157,9 @@ Instead, the server maintains a small stub which instruments its runtime, and ca
 Specifically, the stub supports direct access to synchronous non-transferable resources through remote function calls.
 For asynchronous non-transferable resources, the stub (server) can send messages to the client through the same connection.
 
-In the case of our example, the only non-transferable resource is the LED light.
+In the case of our example, the only non-transferable resource is the LED light.#note[Reversible debugging can make external state inconsistent. We address this in @chap:multiverse.]
 We consider the action for controlling the LED stateless because it does not change the internal state of the runtime, and does not depend on any internal state other than its own arguments.
 Such stateless operations can still effect external state.
-#note[Reversible debugging can make external state inconsistent. We address this in @chap:multiverse.]
 However, since external state is part of the non-transferable resources it only exists on the remote server.
 As out-of-place debugging still accesses those resources through the server, we assume that their state remains consistent during debugging.
 
@@ -380,38 +374,60 @@ Although these requirements impose some limitations on the types of stateful ope
 //
 //== Remote Invocation of Stateful Operations
 
-
-=== WebAssembly Semantics with Embedded Actions
+=== WebAssembly language semantics<oop:webassembly>
 
 #semantics(
     [The configuration for WebAssembly with embedded actions, supporting transfer and syncing of state based on the semantics of the original paper @haas17:bringing.],
     wasm,
+"oop:fig:wasm")
+
+We briefly discussed WebAssembly, and its semantics in the previous chapter (@chapter:remote) and we provide a larger overview of the relevant rules from the original paper @haas17:bringing in @app:webassembly.
+Here we reiterate the most important aspects of the WebAssembly semantics that are relevant to our formalization of stateful out-of-place debugging.
+
+The WebAssembly semantics are grounded in a stack-based virtual machine, where instructions and values operate on a single stack with strict typing to guarantee fast static validation.
+We base our formalisation on the semantics from the original WebAssembly paper by #cite(form: "prose", <haas17:bringing>), where the core semantics include structured control flow (blocks, loops, and conditionals) and memory management via linear memory.
+WebAssembly intentionally excludes external interface definitions, including I/O operations, to minimize its dependence on platform-specific details.
+This design choice enables us to deliberately sculpt the I/O operations for our synchronization system, as we will show in @oop:actions.
+
+@oop:fig:wasm shows the most important syntax rules for WebAssembly.
+
+The execution of a WebAssembly program is defined by a small-step reduction relation, denoted as $wasmarrow$ where, $i$ refers to the index of the currently executing module. 
+The relation $wasmarrow$ is defined over a configuration $K = {s;v^*;e^*}$, with global store $s$, local values $v^*$, and the current stack of instructions $e^*$.
+Important for our semantics, the global store $s$ contains instances of modules, tables, and memories.
+The global store allows access to any function within a module instance, denoted as $s_"func" (i,j)$, where $i$ represents the module index and $j$ corresponds to the function index.
+
+The WebAssembly semantics makes use of administrative operators to deal with control constructs, for example $call i$ denotes a call to a function with index $i$ . To mark the extend of an active control struct, expressions are wrapped into labels. 
+Evaluation context $L^k$ are used in the _Label_ rule to unravel the nesting of $k$ labels, allowing to focuses on the currently evaluation expressions $e*$.  
+This rule, as defined in the WebAssembly semantics, is important for defining the out-of-place debugger semantics because it allows capturing the current continuation, (i.e. $L^k [ ]$) , just before invoking a remote call. 
+
+=== Extending WebAssembly with Embedded Actions<oop:actions>
+
+In @chapter:remote, we discussed in great detail how WARDuino extends WebAssembly with actions for peripherals of constrained devices, and other resources specific to embedded and Internet-of-Things applications.
+For the purposes of the out-of-place debugger, these actions correspond precisely with the synchronous accesses of non-transferable resources.
+In @chapter:remote, actions differed not from other WebAssembly functions, but in the context of out-of-place debugging we need to distinguish between the two, and extend actions with two transfer functions to enable our sparse synchronization strategy.
+
+
+#semantics(
+    [The configuration for WebAssembly with embedded actions, supporting transfer and syncing of state based on the semantics of the original paper @haas17:bringing.],
+    actions,
 "oop:fig:prim-def")
 
-WebAssembly is a portable, low-level binary code format built for secure and efficient execution across different platforms.
-Its formal semantics are based on a stack-based virtual machine, where instructions and values interact with a single, strictly typed stack, enabling fast static validation.
-The core semantics encompass structured control flow constructs, such as blocks, loops, and conditionals, along simple linear memory.
-To remove platform-specific dependencies, WebAssembly deliberately omits external interface definitions, including input and output operations.
 We have extended WebAssembly with a set of non-transferable actions which are clearly separated from regular code execution. 
 This design choice enables us to have a clear and easy division between transferable and non-transferable code.
+@oop:fig:prim-def shows the extended WebAssembly syntax rules for non-transferable resources support.
+The changes are highlighted.
 
 #semantics(
     [The semantics of actions, and invoking instructions in WebAssembly.],
     invokeconfig,
 "oop:fig:invoking")
 
-#note[We use the terms _forward_ and _backward_ transfer to refer to the direction of the state changes, similar to program slicing.]We build on the semantics of WebAssembly as defined by #cite(form: "prose", <haas17:bringing>).
-@oop:fig:prim-def shows data extensions to WebAssembly needed to support non-transferable resources.
-The WebAssembly program state is defined as a configuration $K$, with global store $s$, local values $v^*$, and the current stack of instructions $e^*$.
-The #emph[global] action table $A$ contains all actions, each action $a$ is a named pair of a closure $cl$ and a transfer functions $t$ and $r$.
+The WebAssembly global store is extended with a #emph[global] action table $A$ contains all actions, each action $a$ is a named pair of a closure $cl$ and a transfer functions $t$ and $r$.
 The closure consists of the code which performs the action over the non-transferable resource. 
- The backward transfer function $t$, returns the state $s'$ needed to perform the action, given the arguments $v^*$ and the current state $s$ of the server. 
- The forward transfer function $r$, produces the state $s'$ that has been altered by execution the action given the state $s$ after executing the action on the client. 
- We refer to elements of named tuples, such as the transfer function as $a_(transfer)$.
+#note[We use the terms _forward_ and _backward_ transfer to refer to the direction of the state changes, similar to program slicing.]The backward transfer function $t$, returns the state $s'$ needed to perform the action, given the arguments $v^*$ and the current state $s$ of the server. 
+The forward transfer function $r$, produces the state $s'$ that has been altered by execution the action given the state $s$ after executing the action on the client. 
+We refer to elements of named tuples, such as the transfer function as $a_(transfer)$.
 
-The execution of a WebAssembly program is defined by a small-step reduction relation over the configuration $\{s;v^*;e^*\}$, denoted as #wasmarrow, where  $i$ refers to the index of the currently executing module as shown in figure @oop:fig:invoking. The WebAssembly semantics makes use of administrative operators to deal with control constructs, for example $call i$ denotes a call to a function with index $i$ . To mark the extend of an active control struct, expressions are wrapped into labels. 
-Evaluation context $L^k$ are used in the _Label_ rule to unravel the nesting of $k$ labels, allowing to focuses on the currently evaluation expressions $e*$.  
-This rule, as defined in the WebAssembly semantics, is important for defining the out-of-place debugger semantics because it allows capturing the current continuation, (i.e. $L^k [ ]$) , just before invoking a remote call. 
 //To accommodate the semantics of the out-of-place debugger, we make a small modification to the semantics of WebAssembly, by adding a special label $Inv$ for invoking a series of WebAssembly instructions.
 
 Naturally, the semantics of actions needs to be define both for when the debugger is active and during normal execution. 
@@ -613,7 +629,7 @@ In fact, some recent work on debugging non-deterministic programs in WebAssembly
 == Debugging Asynchronous Non-transferable Resources<oop:debugAsynchronous>
 
 #figure(
-    caption: [],
+    caption: [The callback system for handling asynchronous events in out-of-place debugging developed as part of our work, #cite(form: "prose", <lauwaerts22:event-based-out-of-place-debugging>). The schematic shows how events are forwarded from the server to the client, where they are placed in the WARDuino event queue.],
     image("figures/oopdebugging.svg", width: 80%),  // todo update image
 )<oop:forwardevents>
 

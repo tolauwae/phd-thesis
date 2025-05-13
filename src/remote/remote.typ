@@ -179,7 +179,7 @@ callback handler, and additional WebAssembly modules. External devices can send 
 parsed concurrently to the interpretation loop, and placed into the message queue. Asynchronous events for the callback handler are processed analogously, and placed into the
 event queue. Both queues are shown in gray to indicate that they are populated by platform specific code, outside the interpretation loop. The program (WebAssembly module)
 executed by the virtual machine is shown in blue. The arrows indicate the interactions between components, which are executed in the interpretation loop.],
-  image("images/architecture.svg", width: 90%)
+  image("images/architecture.svg", width: 100%)
 )<fig:warduino>
 
 WARDuino allows developers to debug and update the running program over the air. The virtual machine can receive update and debug messages over different channels, such as Wi-Fi or the serial port. Whenever a message arrives, it is put in the debug message queue, where it is visible to the main interpretation loop. During interpretation, the virtual machine will periodically check the queue for new messages and resolve them one at a time as shown in @fig:warduino #circled([A]). Debug messages can instruct the VM to pause, step or resume execution #circled([B]). Update messages can replace the entire WebAssembly module, single functions, or even single variable values #circled([F]).
@@ -756,7 +756,7 @@ In this section we formalize WARDuino’s architecture, by presenting it as thre
 
 WebAssembly is a memory-safe, compact and fast bytecode format designed to serve as a universal compilation target. The bytecode is defined as a stack-based virtual instruction set architecture, which is strictly typed to allow for fast static validation. However, its design features some major departures from other instruction sets, and resembles much more the structure of programming languages than other bytecode formats. Importantly, it features memory sandboxing and well-defined interfacing through modules, as well as structured control flow to prevent control flow hijacking. The original use-case of WebAssembly was to bring the high-performance of low-level languages such as C and Rust to the web.
 
-The execution of a WebAssembly program is described by the small step reduction relation $wasmarrow$ over a configuration triple representing the state of the VM, where $i$ indicates the index of the current executing module. The index $i$ is necessary since WebAssembly can load multiple modules at a time. A configuration contains one global store $s$, the local values $v^(\*)$ and the active instruction sequence $e^(\*)$ being executed. The rules are of the form $s ; v^(\*) ; e^(\*) wasmarrow s' ; v'^(\*) ; e'^(\*)$. A more detailed overview of the WebAssembly specification can be found in @webassembly.
+The execution of a WebAssembly program is described by the small step reduction relation $wasmarrow$ over a configuration triple representing the state of the VM, where $i$ indicates the index of the current executing module. The index $i$ is necessary since WebAssembly can load multiple modules at a time. A configuration contains one global store $s$, the local values $v^(\*)$ and the active instruction sequence $e^(\*)$ being executed. The rules are of the form $s ; v^(\*) ; e^(\*) wasmarrow s' ; v'^(\*) ; e'^(\*)$. A more detailed overview of the WebAssembly specification can be found in @app:webassembly.
 
 === Remote Debugging Extensions <remote:debugging>
 
@@ -1322,7 +1322,7 @@ Note that the WebAssembly program implementing \texttt{tak} does run on the same
 }
 
 
-#let linewidth = 0.5pt
+#let linewidth = 0.4pt
 
 #let content = ([name], table.vline(stroke: linewidth), [Espruino (s)], [WARDuino (s)], [WASM3 (s)], [C (s)], $"Espruino" / C$, $"WARDuino" / C$, $"WASM3" / C$, table.hline(stroke: linewidth))
 #content.push(table.hline(stroke: linewidth))

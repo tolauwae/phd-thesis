@@ -1,4 +1,4 @@
-#import "../../../lib/util.typ": code, snippet, algorithm, semantics, lineWidth, headHeight, tablehead, boxed
+#import "../../../lib/util.typ": code, snippet, algorithm, semantics, lineWidth, headHeight, tablehead, boxed, highlight
 #import "../../../lib/class.typ": lemma
 #import "../../semantics/arrows.typ": *
 
@@ -43,26 +43,51 @@
 #let start = $"start"$
 #let length = $"length"$
 
+#let inst = $sans("inst")$
+#let tab = $sans("tab")$
+#let tabinst = $"tabinst"$
+#let mem = $sans("mem")$
+#let meminst = $"meminst"$
+#let prim = $sans("prim")$
+#let ret = $sans("ret")$
+#let cps = $sans("cps")$
+
 #let i32 = $"i32"$
 
 #let wasm = [
+  #table(columns: (2.0fr, 1fr), stroke: none, gutter: 1.0em,
+      tablehead("WebAssembly syntax"), "",
+      table.cell(colspan: 2,
     $
 
-        &"(WebAssembly program state)"& K & colon.double.eq \{ s, v^*, e^* \} \
-        &"(Action table)"& A              & colon.double.eq a^* \
-        &"(Action)"& a                    & colon.double.eq \{code cl, transfer t, transfer^(-1) space r\} \
-        &"(Backward transfer)"& t         & colon.double.eq v^* times s arrow.r s', "where" s' subset.eq s \
-        &"(Forward transfer)"& r          & colon.double.eq s arrow.r s', "where" s' subset.eq s \
-    $
-]
-
-#let invokeconfig = [#table(columns: (2.0fr, 1fr), stroke: none, gutter: 1.0em,
+        &"(WebAssembly program state)"& K & colon.double.eq { s, v^*, e^* } \
+        &"(Global store)"& s & colon.double.eq {inst "inst"^ast, tab tabinst^ast, mem meminst^ast} \
+    $),
                 tablehead("WebAssembly evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.4em), $\{ s, v^*, e^* \} wasmarrow \{ s', v'^*, e'^* \}$),
             table.cell(colspan: 2, table(columns: (1fr, 1fr), stroke: none,
                 prooftree(rule($\{ s, v^*, L^k [e^*] \} wasmarrow \{ s', v'^*, L^k [e'^*] \}$, $\{ s, v^*, e^* \} wasmarrow \{ s', v'^*, e'^* \}$, name: smallcaps("Label"))),
                 prooftree(rule($\{ s, v^*, L^k [e^*] \} wasmarrow \{ s', v'^*, L^k [e'^*] \}$, $\{ s, v^*, e^* \} wasmarrow \{ s', v'^*, e'^* \}$, name: smallcaps("Local"))),
             )),
-            table.hline(stroke: lineWidth),
+  )
+]
+
+#let act = $sans("act")$
+
+#let actions = [
+#table(columns: (2.0fr, 1fr), stroke: none, gutter: 1.0em,
+      tablehead("New WebAssembly syntax"), "",
+      table.cell(colspan: 2,
+    $
+        &"(Global store)"& s & colon.double.eq {inst "inst"^ast, tab tabinst^ast, mem meminst^ast, highlight(#silver, act A}) \
+        &"(Action table)"& A              & colon.double.eq a^* \
+        &"(Action)"& a                    & colon.double.eq \{code cl, transfer t, transfer^(-1) space r\} \
+        &"(Backward transfer)"& t         & colon.double.eq v^* times s arrow.r s', "where" s' subset.eq s \
+        &"(Forward transfer)"& r          & colon.double.eq s arrow.r s', "where" s' subset.eq s \
+    $))
+]
+
+#let invokeconfig = [#table(columns: (2.0fr, 1fr), stroke: none, gutter: 1.0em,
+            tablehead("New WebAssembly evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.4em), $\{ s, v^*, e^* \} wasmarrow \{ s', v'^*, e'^* \}$),
             table.cell(colspan: 2,
                 prooftree(rule($\{s, v^*, call j\} wasmarrow \{s,v^*, v\}$, $s_(func)(i,j) eq.not cl$, $A(j) = a$, $\{s, v^*, call a_(code) \} multi(wasmarrow) \{s', v'^*, v\}$, name: smallcaps("Action"))),
             ),
@@ -85,7 +110,7 @@
         tablehead("Server syntax rules"),
     $
     &"(Server configuration)"& C & colon.double.eq overline(es), boxed(overline(im)) separator K \
-    &"(Execution state)"& overline(es) & colon.double.eq running ∣ halted ∣ invoking(a) \
+    &"(Execution state)"& overline(es) & colon.double.eq running ∣ halted \
     &"(Internal messages)"& overline(im) & colon.double.eq nothing | invoke(s comma e^ast) \
     $
   )
@@ -179,35 +204,13 @@
           $
           brackets.l invoked(a), boxed(nothing) separator K bar.v halted, boxed(invoke(s' comma v^n call i)) separator {s; epsilon; epsilon} brackets.r \
           dbgarrow
-          brackets.l invoked(a), boxed(nothing) separator K bar.v invoking(a), boxed(nothing) separator {s''; epsilon; v^n call i} brackets.r
+          brackets.l invoked(a), boxed(sync(Delta comma v)) separator K bar.v halted, boxed(nothing) separator {s; epsilon; epsilon} brackets.r
           $,
           $
           s'' = update(s, s')
-          $,
-          name: "invoke-start"
-        )),
-        prooftree(rule(
-          $
-          brackets.l C bar.v invoking(a), boxed(nothing) separator K brackets.r
-          dbgarrow
-          brackets.l C bar.v invoking(a), boxed(nothing) separator K' brackets.r
-          $,
-          $
-          K wasmarrow K'
-          $,
-          name: "invoke-run"
-        )),
-        prooftree(rule(
-          $
-          brackets.l invoked(a), boxed(nothing) separator K bar.v invoking(a), boxed(nothing) separator K' brackets.r
-          dbgarrow \
-          brackets.l invoked(a), boxed(sync(delta comma v)) separator K bar.v halted, boxed(nothing) separator {s; epsilon; epsilon} brackets.r
-          $,
-          $
-          Δ = a_(transfer^(-1))(s)$,
-          $K' = {s; epsilon; v}
-          $,
-          name: "invoke-end"
+          $, ${s''; epsilon; v^n call i} wasmarrow  {s; epsilon; v}$,
+          $Delta = a_(transfer^(-1))(s)$,
+          name: "invoke"
         )),
       )),
     )
