@@ -87,7 +87,7 @@ This section outlines the challenges preventing large-scale testing on constrain
 
 === Memory Constraints
 
-In this article we focus on the ESP32 microcontroller family#note[ESP32 devices can have different amounts of memory,
+In this chapter, we focus on the ESP32 microcontroller family#note[ESP32 devices can have different amounts of memory,
 but the order of magnitude is the same.] having about 400 KiB SRAM and 384 KiB ROM, typically operating at a clock frequency around 160-240 MHz.
 Due to these hardware limitations, programs cannot be arbitrarily large as the program memory is quite small and they execute slower than workstations.
 For companies producing IoT devices it is often desirable to make use of the cheapest and most minimal hardware possible that can handle the task at hand.
@@ -124,9 +124,10 @@ that test engineers suddenly need to take into account many of the problems asso
 
 First, when the test machine is waiting for a response, it cannot reliably distinguish between a failure or a delayed response.
 Many other testing frameworks need to deal with this problem, especially JavaScript frameworks @flanagan20:javascript where asynchronous code is prevalent @fard17:javascript.
-These frameworks time out tests that take too long, unfortunately, the fact that a test timed out does not provide much information for developers, especially when a test includes multiple asynchronous steps.
+These frameworks time out tests that take too long.
+Unfortunately, the fact that a test timed out does not provide much information for developers, especially when a test includes multiple asynchronous steps.
 
-Second, the non-determinism of the asynchronous communication also contributes to an inherent problem of testing, flaky tests @lam19:root.
+Second, the non-determinism of the asynchronous communication also contributes to an inherent problem of testing: flaky tests @lam19:root.
 These are tests that can pass or fail for the same version of the code.
 Unfortunately, on constrained hardware, many tests have the potential to become flaky due to the inherent non-determinism of these systems.
 For example, when testing communication with a remote server small changes in the communication timing with the server could lead to different behavior.

@@ -709,7 +709,7 @@ This is further evidenced in our #link("https://youtube.com/playlist?list=PLaz61
 
 === Use case: Lego Mindstorms color dial<mult:usecase>
 
-To illustrate the practical potential of MIO and its new debugger approach, we present a simple reversible robot application using Lego Mindstorms components components.
+To illustrate the practical potential of MIO and its new debugger approach, we present a simple reversible robot application using Lego Mindstorms components.
 However, not just microcontroller applications may benefit from our novel approach, there are many application domains where output is entirely in the form of digital graphics, which are more easily reversible---such as video games, simulations, etc.
 Nevertheless, to highlight the potential of the approach we demonstrate the MIO debugger using small physical robots and other microcontroller applications, as this is a more challenging environment for multiverse debugging.
 Using the digital input and motor primitives described in @mult:implementation, we developed a color dial, as a simplified application.
@@ -732,11 +732,11 @@ We developed this example alongside a few others to further demonstrate the usab
 //morestring=[b]` % Interpolation strings.
 //}
 
-The color dial application works as follows, the robot has a color sensor that can detect the color of objects.
+The color dial application works as follows; the robot has a color sensor that can detect the color of objects.
 Depending on the color seen by the sensor, a single motor will move the needle on the dial to the location indicating the color seen by the sensor.
-We built the dial using LEGO Mindstorms components~@ferreira24:open as shown on the left of @fig:robot.
+We built the dial using LEGO Mindstorms components~@ferreira24:open as shown on the left of @fig.robot.
 //The example is written in AssemblyScript using the reversible primitives introduced by the MIO debugger to the WARDuino virtual machine.
-The right-hand side of @fig:robot shows the infinite loop that controls the robot, written in AssemblyScript.
+The right-hand side of @fig.robot shows the infinite loop that controls the robot, written in AssemblyScript.
 In this loop, the robot will continually read sensor values from the color sensor. While doing so it will move the needle of the dial to the correct position indicating the current color seen by the sensor.
 The needle is only moved if the color sensor sees a value different from what the dial is currently indicating.
 The relative amount that the needle needs to move is calculated by taking the difference between the current color the needle is pointing at and the new color.
@@ -744,7 +744,7 @@ The relative amount that the needle needs to move is calculated by taking the di
 #figure(
   grid(columns: (1.0fr, 1.3fr),
     rect(inset: 0mm, image(height: 6cm, "./figures/color_gauge.jpg")),
-snippet("app:robot",
+snippet("app.robot",
     columns: 2,
     headless: true,
       [],
@@ -756,19 +756,21 @@ const sensor = colorSensor(Pin.IO2);
 let current: Color = Color.none;
 while (true) {
   let next: Color = sensor.read();
-  if (next != current) {'<line:target>'
+  if (next != current) {
     // turn the needle if the color changed
     rotate(Pin.IO1,
       (next - current) * angle, speed);
   }
   current = next;
 }
-```,))), caption: [Left: Lego color dial that recognizes the color of objects. Right: The main loop controlling the behavior of the color dial. The dial is controlled by a single motor connected to pin IO1, and the color sensor is connected to pin IO2.])<fig:robot>
+```,))), caption: [Left: Lego color dial that recognizes the color of objects. Right: The main loop controlling the behavior of the color dial. The dial is controlled by a single motor connected to pin IO1, and the color sensor is connected to pin IO2.])<fig.robot>
+
+#let target = "app.robot.0:8"
 
 The program for the color dial uses the reversible primitive #emph[rotate], used as an example in @mult:implementation, to rotate the needle of the dial.
 By using only reversible output primitives, the program written for this robot automatically becomes reversible. //%without any additional input from the programmer.
 This means that while debugging the application, the color the needle is pointing towards will always correspond to variable #emph[current] in the program.
-Concretely, if the debugger steps back through the program from the end of a loop iteration to line~\ref{line:target}, it will move the needle back to the previous color without having to read a new sensor value.
+Concretely, if the debugger steps back through the program from the end of a loop iteration to #line(target), it will move the needle back to the previous color without having to read a new sensor value.
 This makes it easy to test certain state transitions where the needle is pointing at one particular color and now has to move to a different color.
 
 Aside from using time travel debugging which keeps external state in mind, users of our debugger are also able to leverage multiverse debugging capabilities to deal with the non-deterministic nature of this color sensor.
@@ -820,9 +822,9 @@ Additionally, the techniques for handling the state explosion problem~@valmari98
 Reversible debugging, also called back-in-time debugging, has existed for more than fifty years~@balzer69:exdams, and has been implemented with various strategies~@engblom12:review.
 #emph[Record-replay debuggers]~@agrawal91:execution-backtracking@feldman88:igor@ronsse99:recplay@boothe00:efficient@burg13:interactive@ocallahan17:engineering allow offline debugging with a checkpoint-based trace.
 In spite of all the different implementation strategies, few reversible debuggers also reverse output effects, with a few notable exceptions.
-The more recent RR framework~@ocallahan17:engineering is a culmination of many years of research, and is one of the most advanced record-replay debugger to date.
+The more recent RR framework~@ocallahan17:engineering is a culmination of many years of research, and is one of the most advanced record-replay debuggers to date.
 While replaying it does not reverse I/O operations, in fact, the operations are not performed at all.
-For example, file descriptors are not opened during replay, instead the external effects are recorded and replayed within the debugger.
+For example, file descriptors are not opened during replay, but instead the external effects are recorded and replayed within the debugger.
 One of the earliest works, the Igor debugger~@feldman88:igor, featured so-called #emph[prestart routines], which could perform certain actions after stepping back, such as updating the screen with the current frame buffer.
 This is one of the first attempts at dealing with external state, however, the solution was purely ad-hoc, and required significant user intervention; for instance, supplying the name, mode, and file pointer for each file currently opened during execution.
 Additionally, dealing with I/O in a structured way through the prestart routines was still too costly at the time.

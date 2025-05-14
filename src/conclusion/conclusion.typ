@@ -11,7 +11,7 @@ In this final chapter, we sum up the overarching challenges we set out to addres
 
 Using the WebAssembly virtual machine approach implemented by WARDuino, and presented in @chapter:remote, we are able to provide developers with a series of new tools that can speed up the development process significantly.
 Primarily, the remote debugger built on top of the WARDuino virtual machine eliminates the need to use laborious hardware debuggers, and provides partial over-the-air code updates to reduce the need for reflashing the entire software.
-By using WebAssembly as the target language, developers can choose from a wide range of high-level languages to write their embedded software in. 
+By using WebAssembly as the target language, developers can choose from a wide range of high-level languages to write their embedded software.
 Additonally, we can leverage the existing tooling and ecosystem around WebAssembly to provide, for instance, easier ways to write emulators using existing web technology.
 Finally, the portability of WebAssembly makes it much easier to support different platforms---making WARDuino programs much more portable than existing embedded software.
 
@@ -26,8 +26,6 @@ We adapted out-of-place debugging to work on the embedded devices, and presented
 Any non-transferable resources of the original constrained device, such as sensors and actuators, can still be accessed during the debugging session, to provide the illusion of remote debugging.
 Such non-transferable resources can have both stateless and stateful natures, and access to them can be both synchronous and asynchronous.
 In our novel out-of-place solution, we are the first to address all of these aspects/* of non-transferable resources, and provide a clear formalization of our approach---in order to help other researchers apply our techniques to their own debugging problems, and application domains*/---leading to what we call _stateful out-of-place debugging_.
-
-Our stateful out-of-place debugger solves another crucial problem for embedded systems debugging.
 
 #C3
 
@@ -74,7 +72,7 @@ Coupled with our novel managed testing approach, which allows developers to inte
 The debuggers that are the subject of this dissertation are all manual online debuggers, for which we define soundness as the property that the debugger observes all possible behavior of the program being debugged, and does not deviate from it.
 
 Like many conventional debuggers, our remote debugger---while complete---is not sound, since it can update the code of the program being debugged during the debugging session.
-However, we without the live code updates, we were able to prove soundness for the remote debugging.
+However, without the live code updates, we were able to prove soundness for the remote debugging.
 Through significant efforts we were likewise able to design an entirely new class of out-of-place and multiverse debuggers, which are both sound and complete.
 This gives developers greater confidence in the reliability of their observations, especially when debugging non-deterministic bugs.
 
