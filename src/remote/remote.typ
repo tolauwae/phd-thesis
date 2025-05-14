@@ -79,7 +79,7 @@ In summary, our novel contributions compared to the initial paper~@gurdeep19:mul
 
 - A detailed and expanded presentation of the #emph[improved WARDuino VM];: A WebAssembly virtual machine for embedded devices#note[The latest version of the VM is freely available under the Mozilla Public License 2.0];. (@remote:architecture)
 
-- #emph[Support for IoT actions] (asynchronous hardware peripherals and common M2M protocols) at the WebAssembly level. (@remote:extending and @actions)
+- #emph[Support for IoT actions] (asynchronous hardware peripherals and common M2M protocols) at the WebAssembly level. (@remote:extending and @primitives)
 
 - A general recipe for supporting WebAssembly-level actions in high-level languages in the form of #emph[language symbiosis] implemented for the AssemblyScript language, presented through multiple code examples. (@remote:interoperability)
 
@@ -162,7 +162,7 @@ Underneath the high-level language library, the actions are implemented in the W
 
 The implementation of the actions is backed by Arduino libraries. Arduino @banzi08:getting is an open-source electronics platform that supports a wide range of microcontrollers. By providing a thin layer on top of C++, Arduino increases the portability of programs on microcontrollers. The Arduino platform does an excellent job of defining uniform libraries. For example, the code implementing the iconic blinking LED program is identical for all supported devices. This is made possible by the fact that these microcontroller boards implement a core set of libraries to access and address the input-output pins. The constant `LED_PIN` is one of those provided addresses, it holds the pin number of an LED on the board. By building on top of the Arduino libraries, we can bring the same kind of interoperability to programs compiled to WebAssembly.
 
-Our "built-in" modules provide the most important Arduino features for controlling peripheral devices. These include `GPIO`, `SPI`, `USART` and `PWM` as well as more advanced networking modules. Specifically, we have modules with actions to connect to Wi-Fi networks and to use the HTTP and MQTT protocols. Currently, all our modules are exposed in one single custom WebAssembly module named "`env`". This is in line with the WebAssembly System Interface (WASI) specification @hickey20:webassemblywasi. An overview of these actions and their WebAssembly interface can be found in @actions.
+Our "built-in" modules provide the most important Arduino features for controlling peripheral devices. These include `GPIO`, `SPI`, `USART` and `PWM` as well as more advanced networking modules. Specifically, we have modules with actions to connect to Wi-Fi networks and to use the HTTP and MQTT protocols. Currently, all our modules are exposed in one single custom WebAssembly module named "`env`". This is in line with the WebAssembly System Interface (WASI) specification @hickey20:webassemblywasi. An overview of these actions and their WebAssembly interface can be found in @primitives.
 ]
 
 === Conclusion <conclusion>
@@ -279,7 +279,8 @@ Callback handling in WARDuino works as follows. Within WebAssembly, functions ca
 
 We do not allow multiple callbacks for a single topic string at the level of WebAssembly instructions, but the WebAssembly actions we built on top of this system do in fact support registering multiple callbacks. This gives the same result for developers writing programs in a high-level language in WARDuino. However, it does make a significant difference for the WebAssembly specification, as we will explain in @remote:callback-handling.
 
-Whenever the virtual machine wants to resolve an event (@alg.interpretation, @alg.interpretation:events), the callback handler takes the oldest event from the queue and looks up its topic in the callback mapping . The mapping returns the table index of the registered callback function. Through this index the callback handler can set up the call for the correct WebAssembly function on the call stack, and add the topic and payload of the event as arguments to the operand stack . In other words, the callback handler does not execute the callback functions itself, it merely sets up the appropriate calls on the stacks. When the interpretation loop resumes it will automatically execute the callback function. Executing callbacks is therefore completely transparent to the virtual machine, since it is just another function call. Furthermore, the virtual machine does not need to know whether an event was actually processed by the callback handler. This does force callback functions to never return a value.#note[The precise signature is shown as part of the operational semantics in @remote:callback-handling.] However, this is a reasonable requirement that many other microcontroller platforms also impose on their interrupt callbacks @espressif-systems23:esp-idf@banzi08:getting. After all, since the callbacks are executed concurrently to interpretation and in complete isolation, there is no way of using the return value anyway. Therefore, after the callback function is resolved, the interpretation of the program continues as if no additional function was called.
+Whenever the virtual machine wants to resolve an event (@alg.interpretation, @alg.interpretation:events), the callback handler takes the oldest event from the queue and looks up its topic in the callback mapping . The mapping returns the table index of the registered callback function. Through this index the callback handler can set up the call for the correct WebAssembly function on the call stack, and add the topic and payload of the event as arguments to the operand stack . In other words, the callback handler does not execute the callback functions itself, it merely sets up the appropriate calls on the stacks. When the interpretation loop resumes it will automatically execute the callback function. Executing callbacks is therefore completely transparent to the virtual machine, since it is just another function call.
+#note[The precise signature is shown as part of the operational semantics in @remote:callback-handling.]Furthermore, the virtual machine does not need to know whether an event was actually processed by the callback handler. This does force callback functions to never return a value. However, this is a reasonable requirement that many other microcontroller platforms also impose on their interrupt callbacks @espressif-systems23:esp-idf@banzi08:getting. After all, since the callbacks are executed concurrently to interpretation and in complete isolation, there is no way of using the return value anyway. Therefore, after the callback function is resolved, the interpretation of the program continues as if no additional function was called.
 
 There is a possible pitfall with adding callbacks to the call stack at any point during execution. In light of the microcontroller’s limited memory, it is easy for the call stack to grow too rapidly. Therefore, we prohibit that callbacks interrupt other callbacks. #note[Blocked callbacks do not get lost, they are processed after the current callback completes.]In practice, the virtual machine keeps track of whether a callback is being executed by adding a marker on the call stack just before the callback. When the virtual machine encounters this marker again, it knows that the callback completed. So when #emph[resolveEvent] is called in @alg.interpretation, and the last callback has not yet completed, the callback handler will never resolve an event.
 
@@ -576,23 +577,23 @@ By doing so, WARDuino has similar function signatures to other libraries in the 
 
 To use high-level languages with WARDuino in practice, the actions need to be lifted from their WebAssembly interface to the host language.
 In this section we showed how this interoperability can be implemented to various degrees, ranging from using the low-level WebAssembly interface directly, to a high-level interface that integrates completely with the paradigms of the higher-level language.
-The examples listed here can be used as a general recipe for implementing language integration libraries in other languages that compile to WebAssembly.
-For instance, programs written in C, Rust, and AssemblyScript have been used with WARDuino using the implementation strategies outlined here.#note[Example programs can be found on the #link("https://topllab.github.io/WARDuino/")[documentation website] and in the #link("https://github.com/TOPLLab/WARDuino")[GitHub repository]]
+#note[Examples can be found on the #link("https://topllab.github.io/WARDuino/")[documentation website] and in the #link("https://github.com/TOPLLab/WARDuino")[GitHub repository]]The examples listed here can be used as a general recipe for implementing language integration libraries in other languages that compile to WebAssembly.
+For instance, programs written in C, Rust, and AssemblyScript have been used with WARDuino using the implementation strategies outlined here.
 
 == Extending the Virtual Machine<remote:extending>
 
-#[
-#show raw: set text(size: script, font: monospace)
+//#[
+//#show raw: set text(size: script, font: monospace)
 
 
 In the previous sections we explained that WARDuino has native support for the most significant features of the microcontroller, such as monot("GPIO->SPI"), $mono("PWM")$, $mono("SPI")$, as well as communication protocols, such as $mono("HTTP")$ and $mono("MQTT")$.
-However, we need to keep the memory constraints of the microcontrollers in mind.
+#note[For readers familiar with OS architectures, this is somewhat familiar to the unikernel approach.]However, we need to keep the memory constraints of the microcontrollers in mind.
 Given the #emph[hardware limitations] of embedded devices, it is important to keep the WARDuino virtual machine as small as possible.
 We therefore restricted the supported libraries to the most essential ones for embedded applications.
-Furthermore, when compiling the virtual machine, developers can disable select actions to reduce the size of WARDuino further.#note[For readers familiar with OS architectures, this is somewhat familiar to the unikernel approach.]
+Furthermore, when compiling the virtual machine, developers can disable select actions to reduce the size of WARDuino further.
 On the other hand, developers can add new actions to the WARDuino VM for specific functionality or hardware they require for their projects.
 In this section we give an overview of how to add new actions to the WARDuino VM.
-]
+//]
 
 === Creating User-Defined actions<remote:sub:extending>
 

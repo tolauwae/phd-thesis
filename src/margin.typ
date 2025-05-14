@@ -208,7 +208,7 @@
     #show figure.where(kind: "algorithm"): set figure(placement: none)  // top placement for algorithms breaks line labels
 
     #set figure.caption(separator: ". ")
-    #show figure.caption: set text(small)
+    #show figure.caption: set text(size: normal)
     #show figure.caption: it => context {
         align(left)[*#it.supplement~#it.counter.display()#it.separator*#it.body]
     }
@@ -217,6 +217,8 @@
     #set figure(numbering: (..num) =>
         numbering("1-1", counter(heading).get().first(), num.pos().first())
     )
+
+    #show figure.caption: set block(below: 5em)
 
     // style code snippets
     #show: codly-init.with()

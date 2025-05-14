@@ -8,9 +8,9 @@
 // text sizes
 #let normal = 10pt
 #let small = 8pt
-#let codefont = 8pt
+#let codefont = 10pt
 #let script = 6pt
-#let tiny = 4pt
+#let tiny = 6pt
 
 #let monot(body) = { text(font: monospace, body) }
 

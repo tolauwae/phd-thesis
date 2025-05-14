@@ -1,6 +1,6 @@
 #import "@preview/codly:1.3.0": codly
 #import "@preview/lovelace:0.3.0": pseudocode
-#import "fonts.typ": serif, monospace, normal, small, script, tiny
+#import "fonts.typ": serif, monospace, normal, script, tiny
 #import "colors.typ": colour
 
 #let circled(body) = box(baseline: 0.24em, height: 1em, circle(stroke: 0.2mm)[

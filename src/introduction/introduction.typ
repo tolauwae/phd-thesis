@@ -43,7 +43,7 @@ To give the reader more context, we will briefly discuss the history of debugger
 #note(text(weight: 400)[Actually, the term _bug_ was already used to refer to a fault in a machine in the late nineteenth century @wills22:bug.])Debugging has been central to programming since the earliest days of computer science. The term itself is often traced to _Grace Hopper’s famous 'bug' story_ from 1947, when a literal moth was found shorting a relay in the Harvard Mark II computer @cohen94:use.
 
 No history of debugging is complete without also mentioning Maurice Wilkes' famous anecdote, describing the first time he experienced a need for debugging back in 1949: _"As soon as we started programming, [...] we found to our surprise that it wasn’t as easy to get programs right as we had thought it would be. [...] Debugging had to be discovered. I can remember the exact instant [...] when I realized that a large part of my life from then on was going to be spent in finding mistakes in my own programs."_ @wilkes79:birth @spinellis18:modern
-The term _debugging_ came into circulation shortly after Wilkes famous encounter. //, and continues to be an integral part of programming today.
+The term _debugging_ came into circulation shortly after Wilkes' famous encounter. //, and continues to be an integral part of programming today.
 From that point on, debuggers evolved alongside programming languages and computer systems, from the early days of assembly language and punch cards to the high-level languages we use today.
 Wilkes' description still sums up the need for debugging perfectly today.
 
@@ -96,7 +96,7 @@ This can reduce debugging interference, or---as this dissertation will show---re
 
 Of course the shift towards domain-specific debuggers, in no way meant that new general-purpose debuggers were not developed.
 A great example are _multiverse debuggers_ @torres19:multiverse, which emerged around the end of the last decade, as a powerful technique to debug non-deterministic program behavior.
-As the name suggests, multiverse debuggers allow programmers to explore multiple execution paths simultaneously, i.e., the multiverse of a program.
+As the name suggests, multiverse debuggers allow programmers to explore multiple execution paths simultaneously, i.e., the multiverse of a program's execution.
 
 Yet, the start of this decade saw many new domain-specific debugger techniques.
 For example, reversible debugging was recently adapted for _graphical programming languages_, by two projects for the Scratch language @maloney10:scratch-programming-language, Blink~@strijbol24:blink and NuzzleBug~@deiner24:nuzzlebug.
@@ -125,7 +125,7 @@ Many researchers have tried to understand why debuggers are avoided so much, and
 The cognitive load of debugging is undeniable, and while it is by no means trivial to learn, few programmers are formally trained in debugging @mccauley08:debugging @perscheid17:studying.
 Many programmers are overconfident in the correctness of their code @chattopadhyay22:cognitive, which leads to an unwillingness to examine their programs with the needed level of scrutiny @calikli10:analysis.
 Laziness cannot be discounted either, as debuggers are often---perhaps rightly---perceived as hard to set up @beller18:on.
-In many cases programmers feel it is not worth the time to use debuggers for mistakes---they perceive as small or easy to diagnose @mccauley08:debugging.
+In many cases programmers feel it is not worth the time to use debuggers for those mistakes they perceive as small or easy to diagnose @mccauley08:debugging.
 
 The unpopularity of debuggers among developers is not a new phenomenon.
 The situation was famously criticized thirty years ago by Henry Lieberman in his introduction to the 1997 special issue of Communications of the ACM, entitled _"The Debugging Scandal and What to Do About It"_ with the words, _"Debugging is the dirty little secret of computer science"_ @lieberman97:debugging, lamenting not just the unpopularity of debuggers, but the lack of attention and improvement they had received.
@@ -156,18 +156,20 @@ To track down the causes of such failures, we need direct access to the system�
 
 This is what debuggers can give us.
 They provide precise, and deterministic mechanisms for controlling and examining program execution, which is essential for diagnosing subtle bugs, concurrency issues, performance bottlenecks, and hardware-specific behavior.
+Ongoing debugger research not only enhances these capabilities but also drives advances in program analysis, visualization, security, and education.
 
 While automatic tools such as static analyzers, model checkers, and type systems can catch many classes of errors, they are limited by what they are designed to check. They work when you know the kinds of mistakes you’re guarding against. But when a system fails and you don’t know why, and have no predefined property to verify, you need debuggers that let you observe the system directly.
 
 // todo some of the surveys on how programmers work could support:
 // even when you detect an error automatically, often debugging is part of the process for fixing that mistake
 
+/*
 Despite the rapid rise of large language models (LLMs) in software engineering, debuggers remain critical for program understanding, and finding mistakes.
 While LLMs can assist in debugging and code generation, they operate as probabilistic tools without direct connection to runtime state, offering suggestions rather than guarantees.
 
 Debuggers, by contrast, are deterministic and precise, providing direct access to program execution and memory state.
-Ongoing debugger research not only enhances these capabilities but also drives advances in program analysis, visualization, security, and education.
 In fact, since more and more code is generated probabilistically with LLMs, there is arguably an even greater need for deterministic and precise debugging tools to inspect the generated code.
+*/
 
 === Debugging constrained devices
 
