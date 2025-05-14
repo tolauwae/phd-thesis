@@ -34,12 +34,12 @@
 #let brackets = (l: $($, r: $)$)
 #let separator = $space ; space$
 
-#let callbacks = $"callbacks"$
+#let callbacks = $sans("callbacks")$
 #let callback = $"callback"$
 #let events = $"events"$
-#let topic = $"topic"$
+#let topic = $sans("topic")$
 #let memslice = $"memslice"$
-#let payload = $"payload"$
+#let payload = $sans("payload")$
 #let start = $"start"$
 #let length = $"length"$
 
@@ -266,11 +266,14 @@
     )
   ]
 
+#let Clb = $"Clb"$
+
 #let cconfig = [
     $
     &"(Extended WebAssembly store)"& s & colon.double.eq { dots, callbacks Cbs, events evt^* } \
     &"(Callback environment)"& Cbs & colon.double.eq nothing \
-    && & Cbs, x arrow.r.bar i \
+    && &#h(1.3em) Cbs, memslice arrow.r.bar i \
+    &"(Callback context)"& Clb & colon.double.eq L^0 \
     &"(Event)"& evt & colon.double.eq { topic memslice, payload memslice } \
     &"(Memory slice)"& memslice & colon.double.eq { start i32, length i32 } \
     &"(Extended instructions)"& e & colon.double.eq dots ∣ callback."set" ∣ callback."drop" \
@@ -296,7 +299,7 @@
           {s; v^*; (i32."const" j)(callback."set" topic)} dbgarrow {s'; v^*; epsilon}
           $,
           $
-          s_{callbacks}[topic arrow.r.bar j] = s'_{callbacks}
+          s_(callbacks)[topic arrow.r.bar j] = s'_callbacks
           $,
           name: "register"
         ))),
@@ -305,20 +308,20 @@
           {s; v^*; e^*} dbgarrow {s'; v^*; e^*}
           $,
           $
-          xi = s_{events}(0)$,$
-          s'_{events} = "remove"(s_{events}, 0)$,$
-          s_{callbacks}(xi_{topic}) = #smallcaps("nil")
+          xi = s_events(0)$,$
+          s'_events = "remove"(s_events, 0)$,$
+          s_(callbacks)(xi_topic) = #smallcaps("nil")
           $,
           name: "drop"
         )),
         prooftree(rule(
           $
-          \{s; v^*; e^*\} dbgarrow {s'; v^*; "Clb"[e'^*] e^*}
+          {s; v^*; e^*} dbgarrow {s'; v^*; Clb[e'^*] e^*}
           $,
         $
-          xi = s_{events}(0)$,$
-          s'_{events} = "remove"(s_{events}, 0)$,$
-          e'^* = "construct"\_call(s, xi)
+          xi = s_events(0)$,$
+          s'_events = "remove"(s_events, 0)$,$
+          e'^* = "construct_call"(s, xi)
           $,
           name: "interrupt"
         )),
@@ -327,13 +330,13 @@
           {s; v^*; e^*} dbgarrow {s'; v'^*; e'^*}
           $,
           $
-          {s; v^*; "Clb"[e^*]} dbgarrow {s'; v'^*; "Clb"[e'^*]}
+          {s; v^*; Clb[e^*]} dbgarrow {s'; v'^*; Clb[e'^*]}
           $,
           name: "callback"
         )),
         prooftree(rule(
           $
-          \{s; v^*; "Clb"[epsilon]\} dbgarrow \{s; v^*; epsilon\}
+          {s; v^*; Clb[epsilon]} dbgarrow {s; v^*; epsilon}
           $,
           name: "resume"
         )),

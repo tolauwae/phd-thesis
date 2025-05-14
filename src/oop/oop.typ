@@ -558,77 +558,21 @@ The process is split into three parts, (1) the server synchronizes the state bas
 
 The semantics so far, allow for the out-of-place debugger to handle programs with synchronous operations that are both stateless and stateful.
 However, in microcontroller systems, actions can be triggered asynchronously by elements such as sensors, hardware interrupts, and asynchronous communication protocols like MQTT.
-Pure WebAssembly does not have support for callbacks, therefore, we extend the WebAssembly semantics with a lightweight callback handling system as proposed by #cite(form: "prose", <lauwaerts24:warduino>). While our semantics largely follow their approach, we made minor adjustments to better align with our stateful out-of-place debugger. Our  contribution lies in extending this semantics to support stateful out-of-place debugging, as shown in @oop:debugAsynchronous.
-// todo reword to: we use the system from warduino (which we use for our prototype) but make a few small adjustments to fit better with our semantics.
-
-#semantics(
-  [
-    The extended WebAssembly configuration, and the typing rules for the new concurrent callback system.
-  ],
-  [
-    $
-    &"(Extended WebAssembly store)"& s & colon.double.eq { dots, callbacks Cbs, events evt^* } \
-    &"(Callback environment)"& Cbs & colon.double.eq nothing \
-    && & Cbs, x arrow.r.bar i \
-    &"(Event)"& evt & colon.double.eq { topic memslice, payload memslice } \
-    &"(Memory slice)"& memslice & colon.double.eq { start i32, length i32 } \
-    &"(Extended instructions)"& e & colon.double.eq dots ∣ callback."set" ∣ callback."drop" \
-    $
-  ],
-  "oop:sem:callbackconfig"
-)
-
-#semantics(
-  [
-    The reduction rules describing the event and callback handling in our concurrent callback system for asynchronous events in WebAssembly, based on the lightweight callback system of the WARDuino virtual machine @lauwaerts24:warduino.
-  ],
-  crules,
-  "oop:sem:callbacks"
-)
-
-The required extension to support asynchronous events are shown in @oop:sem:callbackconfig and @oop:sem:callbacks.
-Note that in this section we focus on explaining these extensions separately from our debugging semantics. 
-
-@oop:sem:callbackconfig shows how the store $s$ is extended with a callback table $Cbs$, which maps event topics to WebAssembly function indices $i$.
-The event system captures asynchronous events, such as hardware interrupts, and reifies them into a universal event queue.
-We further extend the global store $s$ with an event queue $evt^ast$.
-All asynchronous events $evt$ are captured in the event queue, similar to the debugging message queue shown before. 
-Each event has a topic stored as a slice of WebAssembly memory, we keep track of these slices by their _start_ address and _length_.
-The topic of an event corresponds to the unique identifier of a category of events, to which callbacks can subscribe.
-Additional data of the event can be stored as a second slice of memory, which we refer to as the event's payload.
-
-//For microcontrollers, this means that all hardware interrupts are captured by the WebAssembly runtime, and their effects on the internal state are deferred until their corresponding callback is invoked.
-@oop:sem:callbacks shows the reduction rules describing the event and callback handling, we discuss each of the rules in detail below.
-
-    / register: The register rule adds a new callback to the callback map, which maps a topic to a WebAssembly function index.
-        The _callback.set_ instruction takes an immediate memory slice, which corresponds to the topic string.
-        The instruction updates the callback map for the topic with a function index $j$, which it takes from the stack.
-        //This allows the WebAssembly runtime to invoke the function when the corresponding event is triggered.
-    / deregister: Callback functions can be removed from the callback map, with the _callback.drop_ instruction, which simply takes a memory slice immediate, and removes the entry for the topic corresponding to the memory slice.
-    / drop: Whenever the event queue is not empty, the first event is taken from the queue, and its topic is looked up in the callback map.
-        If no callback is registered for the topic, the event is simply dropped by this rule.
-    / interrupt: Whenever a popped event does correspond to a registered callback, its topic and payload are placed on the stack as arguments for the callback function.
-        The callback function is called indirectly with its function index.
-        For brevity, we leave out the details of this call construction in this figure, the detailed construction created by the _construct-call_ function can be found in the appendix.
-        The call is placed in the dedicated _Clb_ label before the current series of instructions, so that the callback can be executed concurrently with the main program.
-    / callback: The callback rule is similar to the invoking rule, and allows the WebAssembly runtime to execute the callback within the _Clb_ label.
-    / resume: The resume rule is triggered when the callback has finished executing, its label is empty, and the WebAssembly runtime can continue executing the program.
-        Callback labels must always reduce internally to $epsilon$, since no callbacks can have a return value.
+Pure WebAssembly does not have support for callbacks, therefore we extended the WebAssembly semantics with a lightweight callback handling system in @chapter:remote (see @remote:implcallback and @remote:callback-handling).
+We made minor adjustments to the implementation to better align with our stateful out-of-place debugger, but the semantics remain the same.
 
 // todo important to note is that the rules are still deterministic, eventhough the system might not be. Given the queue of debug and event messages, the whole reduction is deterministic. THIS IS IMPORTANT FOR THE PROOFS
+We can summarize the system as follows.
+The WARDuino virtual machine captures all asynchronous events into a universal representation---a topic and payload tuple.
 Whenever an event arrives in the event queue, the WebAssembly runtime will interrupt the current execution, and invoke the callback function associated with the event topic.
 Such callbacks cannot have a return type, to ensure that callbacks do not break a well-typed WebAssembly program.
 However, callbacks can update other internal state, such as global variables, or linear memory. // todo double check if this does not break our solution
-Asynchronous events and callbacks introduce non-determinism into the WebAssembly languages, which can seriously complicate debugging of programs.
-However, simplifying debugging of non-deterministic bugs is beyond the scope of this chapter, and is an orthogonal problem to that of state desynchronization in out-of-place debugging. // todo show in proofs that this does not change things
-In fact, some recent work on debugging non-deterministic programs in WebAssembly uses some resource-heavy program analysis, which can benefit from out-of-place debugging to reduce overhead, and support resource-constraint microcontrollers. // todo cite demo and master thesis maarten
+Asynchronous events and callbacks further introduce non-determinism into the WebAssembly languages, which can seriously complicate debugging of programs.
+However, simplifying debugging of non-deterministic bugs is beyond the scope of this chapter, andis
+simplifying debugging of non-deterministic bugs is an orthogonal problem to that of state desynchronization in out-of-place debugging, and beyond the scope of this chapter.
+We tackle this problem in the next chapter (@chap:multiverse), where we present our new multiverse debugger for I/O operations.
 
 == Debugging Asynchronous Non-transferable Resources<oop:debugAsynchronous>
-
-#figure(
-    caption: [The callback system for handling asynchronous events in out-of-place debugging developed as part of our work, #cite(form: "prose", <lauwaerts22:event-based-out-of-place-debugging>). The schematic shows how events are forwarded from the server to the client, where they are placed in the WARDuino event queue.],
-    image("figures/oopdebugging.svg", width: 80%),  // todo update image
-)<oop:forwardevents>
 
 The callback system and the asynchronous non-transferable resources it enables, present a second challenge for handling state desynchronization in out-of-place debugging.
 Identical to the other parts of the program's runtime, we wish to have the callback system run on the client.
@@ -650,6 +594,11 @@ This is a clear example of asynchronous desynchronization, which needs to be han
 
 In order to support event-driven access to non-transferable resources, the out-of-place debugger hijacks the event system of the virtual machine.
 Rather than directly executing the callback function whenever an event is received, the event is send from the server to the client, and removed from the event queue in the server.
+
+#figure(
+    caption: [The callback system for handling asynchronous events in out-of-place debugging developed as part of our work, #cite(form: "prose", <lauwaerts22:event-based-out-of-place-debugging>). The schematic shows how events are forwarded from the server to the client, where they are placed in the WARDuino event queue.],
+    image("figures/oopdebugging.svg", width: 100%),  // todo update image
+)<oop:forwardevents>
 
 // todo update text to new figure
 @oop:forwardevents shows a schematic of how the out-of-place debugger handles events in the event system.
@@ -689,7 +638,7 @@ We therefore want full control over the impact that asynchronous events have on 
 
 #semantics(
   [
-    The semantics of push-based asynchronous non-transferable resources in out-of-place debugging $attach(#dbgarrow, tr: alpha)$, which encapsulates the relation $dbgarrow$, and provides control over the non-determinism of events to the developer.
+    The semantics of event-driven asynchronous non-transferable resources in out-of-place debugging $attach(#dbgarrow, tr: alpha)$, which encapsulates the relation $dbgarrow$, and provides control over the non-determinism of events to the developer.
   ],
   eventsrules,
   "oop:sem:events"
@@ -709,7 +658,7 @@ The _transfer-events_ rule describes how the client sends events to the server, 
 Since the event queue is an extension of the WebAssembly state, the same synchronization and updating mechanism is used as before.
 We provide a summary of each rule below.
 
-/ trigger: When the client receives a trigger message for event at index $j$, it pops the event from the event queue, and identical to the _interrupt_ rule in @oop:sem:callbacks, it calls the corresponding callback function.
+/ trigger: When the client receives a trigger message for event at index $j$, it pops the event from the event queue, and identical to the _interrupt_ rule in @fig:callback-inst (@remote:callback-handling), it calls the corresponding callback function.
 / trigger-invalid: If the index of the event in the trigger message is out of bounds, or the event is invalid, because there are still undispatched events that are smaller under the partial order relation, the server will return an error message.
 / transfer-events: This rule shows how all events arriving on the client are forwarded to the server through the same synchronization message we used before.
     The message includes the events in the queue, and slices of memory containing the events' topic and payload.
