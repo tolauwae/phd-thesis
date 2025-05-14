@@ -14,12 +14,13 @@ Others have deep, and complex causes such as timing issues in concurrent systems
 Crucially, many real-world bugs are not predictable or even known in advance @mogul06:emergent @ubayashi19:when.
 
 This is why automated verification @dsilva08:survey @rodriguez19:software, however powerful, has limits. Formal proofs and model checking work only when the system and its requirements can be fully specified and the relevant properties articulated.
-But many software systems today are too large, too dependent on external environments, or too hastily evolving for perfect formalization.
-No model or simulation can capture every single aspect of the real world @roska90:limitations @khan11:limitations, and so cannot detect every possible bug.
+But many software systems today are too large, too dependent on external environments, or too hastily evolving f2r perfect formalization.
+No model or simulation can capture every single aspect of the real world @roska90:limitations @khan11:limitations and so cannot detect every possible bug.
 In these cases, the only path forward is empirical investigation.
 //That is what debuggers make possible.
 
-This kind of empirical investigation is what we call _"debugging"_, and was best described by Andreas Zeller in his definitive guide, _"Why Programs Fail: A Guide to Systematic Debugging"_ @zeller05:why, which provides a thorough overview of debugging as a part of software development, describes a scientific approach to isolating bugs, and discusses best practices, common tools, and novel techniques.
+This kind of empirical investigation is what we call _"debugging"_, and was best described by Andreas Zeller in his definitive guide, _"Why Programs Fail: A Guide to Systematic Debugging"_ @zeller05:why, which provides a thorough overview of debugging as a part of software development.
+The book describes a scientific approach to isolating bugs, and discusses best practices, common tools, and novel techniques.
 
 == What are debuggers?
 
@@ -60,7 +61,8 @@ Early on they were often called _post-mortem debuggers_ @green60:ipl-v, however,
 
 During the same decade, the first _online debuggers_ were developed as well, which in contrast enable interactive inspection, control, and modification of a program’s execution state while the program is running.
 One of the earliest examples is the RCA 501 system @smith58:design, which included six breakpoint switches, and a paper tape reader and monitor printer for debugging.
-Of course computers have changed dramatically since the 1950s, and the days of magnetic tapes are long gone, however, the debugging tools of the RCA 501 system are very similar to the core debug operations present in most modern debuggers today.
+Of course computers have changed dramatically since the 1950s, and the days of magnetic tapes are long gone.
+Still, the debugging tools of the RCA 501 system are very similar to the core debug operations present in most modern debuggers today.
 A clear illustration of how slow adoption of new debugging techniques has been in some regards @perscheid17:studying.
 
 //While debugging is still seen as hard, and something to avoid if possible, by many programmers, not all is doom and gloom.
@@ -74,7 +76,7 @@ This led to a wide range of attempts to design _automatic debuggers_, which are 
 The term automatic debuggers has been used to describe both algorithmic debuggers @shapiro83:algorithmic, model checking, and tools for automatic fixing of bugs. // todo add cites
 However, in this dissertation we are interested in the more traditional _manual debuggers_.
 
-Let us highlight a few techniques here.
+Let us highlight a few techniques here, to illustrate the evolution and variety of manual debuggers.
 
 _Record-replay debuggers_ @agrawal91:execution-backtracking@feldman88:igor@ronsse99:recplay@boothe00:efficient@burg13:interactive@ocallahan17:engineering allow offline debugging with a checkpoint-based trace, and have been widely studied.
 They have also been widely adopted in industry, with tools such as the RR framework @ocallahan17:engineering, which is one of the most advanced and widely used record-replay debugger to date.
@@ -97,11 +99,11 @@ A great example are _multiverse debuggers_ @torres19:multiverse, which emerged a
 As the name suggests, multiverse debuggers allow programmers to explore multiple execution paths simultaneously, i.e., the multiverse of a program.
 
 Yet, the start of this decade saw many new domain-specific debugger techniques.
-eFor example, reversible debugging was recently adapted for _graphical programming languages_, by two projects for the Scratch language @maloney10:scratch-programming-language, Blink~@strijbol24:blink and NuzzleBug~@deiner24:nuzzlebug.
+For example, reversible debugging was recently adapted for _graphical programming languages_, by two projects for the Scratch language @maloney10:scratch-programming-language, Blink~@strijbol24:blink and NuzzleBug~@deiner24:nuzzlebug.
 
 Only last year, a PhD thesis @whitington24:debugging presented a novel debugger solution for _functional programming_, which allows users to inspect the behavior of OCAML programs as they are interpreted.
 
-Another recent trend in debugger research, is to use static analysis or model checking techniques in conjunction with debuggers, such as the _abstract debugger_ by #cite(form: "prose", <holter24:abstract>) or the _symbolic debugger_ by #cite(form: "prose", <karmios23:symbolic>).
+Another recent trend in debugger research is to use static analysis or model checking techniques in conjunction with debuggers, such as the _abstract debugger_ by #cite(form: "prose", <holter24:abstract>) or the _symbolic debugger_ by #cite(form: "prose", <karmios23:symbolic>).
 
 The list of debugging techniques and unique domains could go on for several more pages, and one could write a whole book about the history of debuggers.
 However, we hope the overview above provides sufficient context to the reader for now.
@@ -125,7 +127,7 @@ Many programmers are overconfident in the correctness of their code @chattopadhy
 Laziness cannot be discounted either, as debuggers are often---perhaps rightly---perceived as hard to set up @beller18:on.
 In many cases programmers feel it is not worth the time to use debuggers for mistakes---they perceive as small or easy to diagnose @mccauley08:debugging.
 
-The unpopularity of debuggers under developers is not a new phenomenon.
+The unpopularity of debuggers among developers is not a new phenomenon.
 The situation was famously criticized thirty years ago by Henry Lieberman in his introduction to the 1997 special issue of Communications of the ACM, entitled _"The Debugging Scandal and What to Do About It"_ with the words, _"Debugging is the dirty little secret of computer science"_ @lieberman97:debugging, lamenting not just the unpopularity of debuggers, but the lack of attention and improvement they had received.
 Luckily, in the decades since, the research community has made tremendous strides.
 Yet to a certain extent, the situation remains unchanged in practice---especially in the domain of embedded software, where debuggers are still laborious to set up and industry adoption of research advances continues to lag behind.
@@ -146,14 +148,14 @@ Since then, debuggers have come a long way.
 
 === Debugging with debuggers
 
-Clearly not all errors, faults, or bugs can be found easily, let alone, automatically detected and fixed.
+Clearly not all errors, faults, or bugs can be found easily, let alone, be automatically detected and fixed.
 Many bugs are unpredictable, non-deterministic, and only emerge under specific conditions.
 This is especially true for software running on embedded systems, think of microcontrollers for hobbyist such as Arduino's, or internet-of-things devices, such as smart thermostats, and fitness trackers.
 Here, bugs can be caused not just by pure mistakes in the programming logic, but also by unexpected interactions with the hardware, specific timings, or unexpected behavior from the physical world.
 To track down the causes of such failures, we need direct access to the system’s behavior---to stop execution, inspect memory, and walk through the precise state transitions that led to failure.
 
 This is what debuggers can give us.
-They provide precise, and deterministic mechanisms for controlling and examining program execution, essential for diagnosing subtle bugs, concurrency issues, performance bottlenecks, and hardware-specific behavior.
+They provide precise, and deterministic mechanisms for controlling and examining program execution, which is essential for diagnosing subtle bugs, concurrency issues, performance bottlenecks, and hardware-specific behavior.
 
 While automatic tools such as static analyzers, model checkers, and type systems can catch many classes of errors, they are limited by what they are designed to check. They work when you know the kinds of mistakes you’re guarding against. But when a system fails and you don’t know why, and have no predefined property to verify, you need debuggers that let you observe the system directly.
 
@@ -171,9 +173,11 @@ In fact, since more and more code is generated probabilistically with LLMs, ther
 
 Debuggers are especially useful in the domain of embedded systems, where software interacts heavily with hardware, and the physical world.
 These real-world interactions can lead to non-deterministic bugs that depend on specific input values, or other interactions with the environment.
+In fact, device issues are one of the most common causes of bugs in embedded systems @makhshari21:iot-bugs.
 Additionally, embedded software is often written in an _interrupt-driven_ manner, where the program is interrupted by hardware events, such as a timer or an external signal, and the program must respond to these events in real-time.
 Such code can be difficult to debug, as the program's state may change unexpectedly due to hardware interrupts, and the timing of these events can be unpredictable.
-Moreover, interrupt-driven code can lead to unpredictable bugs that depend on the order or timing of events, making them difficult to reproduce and diagnose.
+//Additionally, concurrency bugs can depend on specific interleavings of events, making them difficult to reproduce and debug @li23:empirical-study.
+Moreover, interrupt-driven code can lead to unpredictable concurrency bugs that depend on the order, interleaving, or timing of events, making them difficult to reproduce and diagnose @li23:empirical-study.
 
 Unfortunately, debuggers for embedded software are often constrained by the very limitations of the hardware they target.
 They typically rely on specialized hardware debugging interfaces, which can be difficult to configure and require additional---sometimes expensive---equipment.
@@ -187,14 +191,14 @@ In this dissertation, we present a novel virtual machine for programming embedde
 
 === Challenges to debugging constrained devices
 
-In each chapter of this dissertation we discuss the specific challenges we address, however, there are four main challenges that span the entire dissertation.
+In each chapter of this dissertation we discuss the specific challenges we address, but there are four main challenges that span the entire dissertation.
 
 #let C1 = [
 / C1: Embedded software development is characterized by a _slow development cycle_. //, partly because reflashing the device after each change is time-consuming, and setting up typical hardware debuggers is cumbersome.
 ]
 
 #let C2 = [
-/ C2: The _hardware limitations_ of embedded devices, make it difficult to run debuggers alongside the target software. //traditional debuggers, and make advanced debugging techniques often infeasible.
+/ C2: The _hardware limitations_ of embedded devices make it difficult to run debuggers alongside the target software. //traditional debuggers, and make advanced debugging techniques often infeasible.
 ]
 
 #let C3 = [
@@ -208,13 +212,13 @@ In each chapter of this dissertation we discuss the specific challenges we addre
 #C1
 
 The slow development cycle has several causes, in the first place the need to reflash the device after each change can slow down the development cycle significantly---especially, when developers use print statements to debug their code.
-Unfortunately, in case developers wish to use a debugger, they usually need to setup a hardware debugger, which can be cumbersome and time-consuming.
+Secondly, in case developers wish to use a debugger, they usually need to setup a hardware debugger, which can be cumbersome and time-consuming.
 //Lesser challenges include the hardware limitations, bare-metal execution environments, bad portability of code over different devices, and the lack of high-level language support.
-We will discuss these, and other lesser challenges underlying the slow development cycle in more detail in @chapter:remote,.
+We will discuss these, and other lesser challenges underlying the slow development cycle in more detail in @chapter:remote.
 
 #C2
 
-Especially, limited memory and processing power are a major concern for embedded devices.
+Especially, limited memory and processing power are major concerns for embedded devices.
 The resource constraints not only impact the embedded programs, but also any debugger stub that is run alongside it.
 
 #C3
@@ -224,7 +228,7 @@ Specific interleaving executions of interrupts can cause concurrency bugs, which
 More generally, arbitrary interrupts can trigger at any time, leading to non-deterministic behavior, and making it difficult to reproduce bugs.
 #C4
 
-Non-deterministic bugs are very common on embedded systems, but are notoriously difficult to debug, as they often depend on specific timing or order of events, or on very specific input, or environmental conditions.
+Non-deterministic bugs are very common on embedded systems, but are notoriously difficult to debug, as they often depend on the specific timing or order of events, on very specific input, or environmental conditions.
 
 === Contributions //Novel techniques for debugging constrained devices
 
@@ -248,14 +252,14 @@ Finally, the stateful out-of-place debugger already allows for some control over
 
 This shortcoming is addressed by our multiverse debugger for microcontrollers, _MIO_, which we present in @chap:multiverse.
 The _MIO_ debugger presents the first multiverse debugger that works on a live execution of the program, and takes into account both input and output streams.
-The technique is unique in another way, as it allows for the debugger to reverse the programs execution as it explores the multiverse, while remaining sound and complete.
+The technique is unique in another way, as it allows for the debugger to reverse the program's execution as it explores the multiverse, while remaining sound and complete.
 Again, we prove the soundness and completeness of our multiverse debugger, particularly in @mult:correctness.
 
 === Open-source prototype and usability
 
 A major goal throughout this research has been to develop usable prototypes of our novel debugging techniques.
 Prototypes which can debug real-world embedded software, thereby showing the feasibility of our techniques, and increasing the changes of their adoption.
-Towards this end, all our prototypes are open-source, and available on GitHub, along side a dedicated documentation website.
+Towards this end, all our prototypes are open-source, and available on GitHub, alongside a dedicated documentation website.
 
 No software can be considered usable---even as a prototype for other researchers---without proper testing.
 Unfortunately, typical regression testing as part of continuous integrations, as is now standard practice, is not common in embedded software development.

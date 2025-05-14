@@ -45,7 +45,7 @@
     set figure(placement: none)
 
     [
-        #let cursor = 0
+        #let cursor = offset
         #let snippets = ()
         #for (index, el) in content.enumerate() {
             let subtag = tag + "." + str(index)

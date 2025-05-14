@@ -199,6 +199,7 @@ Now that we have the formal semantics for a remote debugger that can step throug
 
 // todo motivate/argue for this as our correctness theorem more
 Since we define our debugger in terms of the underlying language, the most intuitive definition of correctness for a debugger is that it should not change the semantics of the program being debugged.
+//In other words, the debugger and language semantics form a bisimulation.
 An intuition shared by the earliest works on debugger correctness such as #cite(form: "prose", <da-silva92:correctness>).
 We develop the idea into two correctness criteria, _debugger soundness_ and _debugger completeness_.
 
@@ -355,10 +356,14 @@ To make this easier, we will first proof a lemma about the snapshots that is hel
 
 #lemma("Snapshot preservation")[
   The semantics of a reconstruction-based reversible debugger is said to be _snapshot preserving_ if the following holds:
-  $ forall global space . space global = boxed(operation) bar.v t bar.v programcounter, executionstate, breakpoints, snapshots, boxed(message) and global_"start" multi(dbgarrow) global \
+  $ forall global space . space global = globalrule(client, revserverrule(boxed(operation), boxed(message), programcounter, executionstate, breakpoints, snapshots, t)) and global_"start" multi(dbgarrow) global \
    arrow.double.r.long \
-   forall (programcounter', t') in s space . space programcounter' lt.eq.slant programcounter and t_"start" multi(arrow.r.long) t' $
+   forall (programcounter', t') in snapshots space . space programcounter' lt.eq.slant programcounter and t_"start" multi(arrow.r.long) t' $
 ]<snapshotpreservation>
+
+Informally, the lemma states that for any debugger configuration $global$ that is reachable from the start configuration $global_"start"$, all snapshots in the debugger must contain a term $t$ that is reachable from the start state $t_"start"$, and a has a program counter lower or equal to the current program counter.
+Or in other words, snapshot in a debugging session contain only reachable states, from the past.
+
 #proof([Snapshot preservation for #reversibledbg])[
   The proof is straightforward by induction on steps taken in the debug session ($multi(dbgarrow)$).
   //For each case, we need to prove that all snapshots in the last debug configuration contain a program counter lower or equal to the current program counter, and that the term in the snapshot is reachable from the start term in zero or more steps.
@@ -368,7 +373,7 @@ To make this easier, we will first proof a lemma about the snapshots that is hel
   In the inductive case, each case is straightforward to prove given the induction hypothesis.
 ]
 
-Given @snapshotpreservation, we know that any snapshot list produced by the reversible debugger observes the program order, and that there is never a snapshot that lies in the _future_ of the current program state.
+Given @snapshotpreservation, we know that a snapshot list never contains any impossible program states, and that there is never a snapshot that lies in the _future_ of the current program state.
 
 #proof([Debugger soundness for #reversibledbg])[
   The proof proceeds by induction over the steps taken in the debug session. Except for the new backward stepping rules, the cases proceed analogous to the proof for #conventionaldbg.

@@ -1,6 +1,6 @@
 #import "@preview/lovelace:0.3.0": pseudocode, with-line-label, pseudocode-list, line-label
 
-#import "../../lib/util.typ": circled, line, snippet, algorithm
+#import "../../lib/util.typ": circled, line, snippet, algorithm, lineWidth
 #import "../../lib/class.typ": note
 #import "../../lib/fonts.typ": small
 
@@ -14,7 +14,7 @@
   unit: (check: "lst.unit.check.0:7", invoke: "lst.unit.invoke.0:6"))
 
 Debuggers are only useful when you know you have a bug.
-There are naturally many ways to discover bugs in your software, however, the single most effective and widely used approach i unsurprisingly _testing_.
+There are naturally many ways to discover bugs in your software, however, the single most effective and widely used approach is unsurprisingly _testing_.
 Modern software uses continuous integration and regression testing to detect bugs as early as possible in the development cycle.
 
 Unfortunately, the same reasons that cause debugging techniques to lag behind for embedded devices, likewise make modern testing techniques hard to apply on constrained systems. In this chapter, we present a novel testing technique called managed testing, and a prototype implementation Latch, which aim to enable large-scale testing of embedded software directly on the constrained devices as part of continuous integration. The framework was also used to test the previously discussed debugger prototypes.
@@ -375,8 +375,9 @@ With *set local* the programmer can change a local variable, this is especially 
 #figure([
   #set text(size: small) //, font: sans)
   #show table.cell.where(y: 0): set text(weight: "bold") //, font: sans)
-/*align(center,*/ #table(columns: (auto, 60mm), align: horizon + left, stroke: none, fill: (x, y) => if calc.odd(y) { silver },
+/*align(center,*/ #table(columns: (auto, 60mm), align: horizon + left, stroke: none, //fill: (x, y) => if calc.odd(y) { silver },
   table.header("Category", "Commands"),
+        table.hline(stroke: lineWidth),
      	"Intercession" , [invoke, set local, _upload module_],
      	"Meta"         , [pause,  set breakpoint, continue,
                           delete breakpoint, step, step over, _reset_],
@@ -975,10 +976,8 @@ Unfortunately, the public WARDuino project currently has no automated tests for 
 The following example illustrates how #latch can be used to write end-to-end tests for both the callback system and the MQTT primitives.
 The example wants to verify the following two requirements:
 
-\begin{enumerate}[ref=#emph[requirement \arabic] (@subsec:example)]
-  \item \label{req:1} After the subscribe primitive is called, the callback function should be registered for the correct topic in the virtual machine's callback system.
-  \item \label{req:2} When an MQTT message is received the correct callback function should be called.
-\end{enumerate}
+1. After the subscribe primitive is called, the callback function should be registered for the correct topic in the virtual machine's callback system.
+2. When an MQTT message is received the correct callback function should be called.
 
 To test this functionality, we use a minimal program that subscribes on a single MQTT topic, and through a callback writes all messages it receives to the serial bus.
 An AssemblyScript implementation is shown in @lst.mqtt.
@@ -1173,7 +1172,9 @@ As a result, a wide range of research topics are related to the #latch framework
 In the remainder of this section, we discuss #emph[holistic IoT testing], other #emph[unit testing frameworks] broadly, #emph[remote testing], #emph[scriptable debugging], #emph[test environments] for IoT programs, #emph[device farms] for mobile applications, #emph[conditional testing], #emph[test prioritization and selection], and #emph[flaky tests].
 Wherever possible, we include examples from IoT or microcontroller settings.
 
-#emph[Unit Testing Frameworks.]
+
+#heading(numbering: none, level: 4, "Unit Testing Frameworks")
+
 Constrained devices are still programmed primarily in low-level language such as C and C++.
 Many traditional unit testing frameworks are available for these languages, such as Google Test @googletest23:googletest, Boost.Test @boost-test-team23:what, CUTE @ifs-institut-fur-software23:cute, and bandit @beyer23:bandit.
 There are a handful of frameworks targeting microcontrollers explicitly, such as Unity @platformio23:unity @vandervoord15:unity and ArduinoTest @murdoch23:arduinounit.
@@ -1181,7 +1182,7 @@ These work analogous to other unit testing frameworks, but are small enough to r
 While preferable over manual testing, these frameworks require the tests suites to be very small, since they are compiled and run along with the framework in their entirety on the device.
 In contrast, #latch allows arbitrarily large test suites.
 
-#emph[Remote Testing.]
+#heading(numbering: none, level: 4, "Remote Testing")
 #latch's managed testing is adjacent to remote testing, but with some important differences.
 Remote testing is not a novel idea, for instance #cite(form: "prose", <jard99:remote>) argued in 1999 that local synchronous tests can be translated to remote asynchronous tests without losing any testing power.
 Remote testing has mostly been used to test distributed systems @yao05:framework.
@@ -1196,7 +1197,8 @@ However, it works significantly different from how #latch executes large test su
 While #latch allows arbitrarily large test suites by executing tests step-by-step, Unity does not address the memory constraints of the target devices as it compiles and uploads test suites as one monolithic executable.
 The framework also does not provide the debugger-like scripts (with custom actions) supported by Latch that enable the automation of standard hardware tests.
 
-#emph[Holistic IoT Testing.]
+#heading(numbering: none, level: 4, "Holistic IoT Testing")
+
 Existing tools for IoT testing focus largely on testing networked systems of many devices holistically~@popereshnyak18:iot @kanstren18:architectures, rather than the more common approach where components are tested selectively.
 Holistic testing of networked systems are by and large incompatible with many of the common development practices; such as test driven development for instance, which relies on selective testing of single components.
 Moreover, wholesale testing of heterogeneous system is very difficult, so many testing tools instead focus on monitoring to try and detect errors @datadog24:end @appoptics.
@@ -1207,14 +1209,16 @@ Neither does it lend itself well to test-driven development, as testing can only
 Therefore, there is a real need for selective---rather than holistic---testing of IoT software on microcontrollers.
 This is much easier with the single target testing in the style provided by #latch.
 
-#emph[Scriptable Debugging.]
+#heading(numbering: none, level: 4, "Scriptable Debugging")
+
 #latch's scriptable debugger-like hardware tests are inspired by scriptable debugging, which has been used in many other domains @marceau07:design.
 Scriptable debugging refers to all debugging techniques that can be controlled by developers through a programming language or similar tools such as regular expressions.
 Programmable debugging goes back to the early eighties, with many of the early proposals, such as Dispel @johnson81:dispel and Dalek @olsson90:dalek, exploring variations on the concept of breakpoints.
 Recent work on a scriptable debugger API for Pharo @dupriez19:sindarin, exposes a wide variety of advanced debugging operations, and allows developers to solve many challenging debugging scenarios through automated scripts.
 We are not aware of any framework which also applies the idea of scriptable debugging to testing in the context of constrained hardware.
 
-#emph[Test Environments.]
+#heading(numbering: none, level: 4, "Test Environments")
+
 A popular research topic in the domain of IoT testing, are heterogeneous test environments @bures20:interoperability, where software can be distributed to nodes which are connected via a controlled network.
 This solution focuses on the challenging heterogeneity of IoT systems, and does not take into account the constraints the limited memory puts on the test suite size.
 Most test environments are virtual, and emulate the entire IoT environment @ramprasad19:emu-iot-a-virtual-internet @nikolaidis21:iotier @symeonides20:fogify.
@@ -1229,27 +1233,31 @@ However, setting up such large and often complex systems is complicated and time
 Subsequently, the test environments confine users to the specific choices in hardware, virtualization, and network technologies made by the service.
 While these test environments reduce the overhead of setting up a testing lab, they do not fundamentally help developers overcome the hardware limitations faced when executing large test suites.
 
-#emph[Device Farms.]
+#heading(numbering: none, level: 4, "Device Farms")
+
 These test environments are sometimes called testing farms or device farms in case they use real hardware, and are a popular approach for testing mobile applications @huang14:appacts @fazzini20:managing.
 Curiously, testing on devices seems much more prevalent in the field of testing mobile applications @kong19:automated.
 We believe this might be because mobile devices have far more memory than the embedded devices targeted by #latch, and therefore have no problem running large test suites.
 This strengthens our view that testing on constrained hardware presents a worthwhile research direction.
 However, the existing device farms heavily target mobile devices, and again limit users to the chosen technologies and hardware.
 
-#emph[Conditional testing.]
+#heading(numbering: none, level: 4, "Conditional testing")
+
 Dependencies in #latch can be viewed as conditional skips for tests, where a test is skipped if any of the scenarios it depends on fail.
 Conditional skips have been around for some time in unit testing frameworks, such as the pytest framework for the Python language @krekel23:pytest, and the JUnit framework for Java @bechtold23:junit.
 Pytest includes a *skipif* annotation which takes a boolean expression as its argument.
 In JUnit developers can use the *Assume* class, which provides a set of methods for conditional execution of tests.
 Modern frameworks targeting constrained devices @platformio23:unit @murdoch23:arduinounit do not support conditional tests.
 
-#emph[Test prioritization and selection.]
+#heading(numbering: none, level: 4, "Test prioritization and selection")
+
 Another purpose of the dependencies in the test description language, are to determine the order tests are run in.
 Research on software testing has recently increased its attention to test prioritization and test selection @pan21:test.
 These techniques can also be applied to testing IoT systems @medhat20:framework, where they are particularly useful since they can reduce large test suites to the most important tests, and help prioritize tests in such a way that regression tests fail as early as possible.
 An interesting line of future research could focus on integrating these techniques in #latch.
 
-#emph[Flaky Tests.]
+#heading(numbering: none, level: 4, "Flaky Tests")
+
 Flaky tests represent an active domain of research @parry21:survey, which focuses on three problems: detecting flaky tests, finding root causes, and fixing flaky tests @zolfaghari21:root.
 The first step is to detect which tests are flaky.
 A popular approach is to look at the code coverage of tests @zolfaghari21:root @bell18:deflaker.

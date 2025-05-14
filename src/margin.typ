@@ -297,7 +297,7 @@
 // Chapters
 
 // Chapter 1
-= Introduction
+= Introduction<chapter:introduction>
 
 #quote("Edsger W. Dijkstra", theme: theme)[If debugging is the process of removing software bugs,\ then programming must be the process of putting them in.]
 
@@ -383,7 +383,7 @@
   #bibliography("references.bib", style: "elsevier-harvard")<bibliography>
 ]
 
-#set heading(numbering: "A", supplement: [Appendix])
+#set heading(numbering: "A.1", supplement: [Appendix])
 #show heading: it => [
   #set align(center)
   #set text(weight: 600)

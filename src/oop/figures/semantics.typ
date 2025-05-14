@@ -66,7 +66,6 @@
                 tablehead("WebAssembly evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.4em), $\{ s, v^*, e^* \} wasmarrow \{ s', v'^*, e'^* \}$),
             table.cell(colspan: 2, table(columns: (1fr, 1fr), stroke: none,
                 prooftree(rule($\{ s, v^*, L^k [e^*] \} wasmarrow \{ s', v'^*, L^k [e'^*] \}$, $\{ s, v^*, e^* \} wasmarrow \{ s', v'^*, e'^* \}$, name: smallcaps("Label"))),
-                prooftree(rule($\{ s, v^*, L^k [e^*] \} wasmarrow \{ s', v'^*, L^k [e'^*] \}$, $\{ s, v^*, e^* \} wasmarrow \{ s', v'^*, e'^* \}$, name: smallcaps("Local"))),
             )),
   )
 ]
@@ -79,17 +78,17 @@
       table.cell(colspan: 2,
     $
         &"(Global store)"& s & colon.double.eq {inst "inst"^ast, tab tabinst^ast, mem meminst^ast, highlight(#silver, act A}) \
-        &"(Action table)"& A              & colon.double.eq a^* \
-        &"(Action)"& a                    & colon.double.eq \{code cl, transfer t, transfer^(-1) space r\} \
-        &"(Backward transfer)"& t         & colon.double.eq v^* times s arrow.r s', "where" s' subset.eq s \
-        &"(Forward transfer)"& r          & colon.double.eq s arrow.r s', "where" s' subset.eq s \
+        &"(Action table)"& highlight(#silver, A)              & colon.double.eq highlight(#silver, a^*) \
+        &"(Action)"& highlight(#silver, a)                    & colon.double.eq highlight(#silver, {code cl, transfer t, transfer^(-1) space r}) \
+        &"(Backward transfer)"& highlight(#silver, t)         & colon.double.eq highlight(#silver, (v^* times s arrow.r s', "where" s' subset.eq s)) \
+        &"(Forward transfer)"& highlight(#silver, r)          & colon.double.eq highlight(#silver, (s arrow.r s', "where" s' subset.eq s)) \
     $))
 ]
 
 #let invokeconfig = [#table(columns: (2.0fr, 1fr), stroke: none, gutter: 1.0em,
             tablehead("New WebAssembly evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.6em, bottom: 0.4em), $\{ s, v^*, e^* \} wasmarrow \{ s', v'^*, e'^* \}$),
             table.cell(colspan: 2,
-                prooftree(rule($\{s, v^*, call j\} wasmarrow \{s,v^*, v\}$, $s_(func)(i,j) eq.not cl$, $A(j) = a$, $\{s, v^*, call a_(code) \} multi(wasmarrow) \{s', v'^*, v\}$, name: smallcaps("Action"))),
+                prooftree(rule($\{s, v^*, call j\} wasmarrow \{s,v^*, v\}$, $s_(func)(i,j) eq.not cl$, $s_(act)(j) = a$, $\{s, v^*, call a_(code) \} multi(wasmarrow) \{s', v'^*, v\}$, name: smallcaps("Action"))),
             ),
             )]
 
@@ -280,14 +279,14 @@
 
 #let crules = [
     #table(columns: (1.0fr, 1.0fr), stroke: none, gutter: 1.0em,
-      tablehead("Evaluation rules"), "",
+      tablehead("New WebAssembly evaluation rules"), "",
       table.cell(colspan: 2, 
         prooftree(rule(
           $
           {s; v^*; (callback."drop" topic)} dbgarrow {s'; v^*; epsilon}
           $,
           $
-          s_{callbacks}[topic arrow.r.bar #smallcaps("nil")] = s'_{callbacks}
+          s_(callbacks)[topic arrow.r.bar #smallcaps("nil")] = s'_(callbacks)
           $,
           name: "deregister"
         ))),

@@ -6,7 +6,7 @@
 #import "@preview/lovelace:0.3.0": pseudocode, with-line-label, pseudocode-list, line-label
 
 The second, and final, new debugging technique we investigated for microcontrollers, is multiverse debugging.
-As part of our investigation, we extended multiverse debugging to handle input/output operations, and created a prototype debugger that enables reversible actions on microcontrollers.
+As part of our investigation, we extended multiverse debugging to handle input/output (I/O) operations, and created a prototype debugger that enables reversible actions on microcontrollers.
 
 == Introduction
 
@@ -17,7 +17,7 @@ As part of our investigation, we extended multiverse debugging to handle input/o
     A multiverse debugger allows users to move from one execution path to another, even jumping to arbitrary program states in parallel execution paths. This entails traveling both forwards and backwards in time, i.e. a multiverse debugger is also a time travel debugger.
     So far, existing implementations work on abstract execution models to explore all execution paths of a program @torres19:multiverse@pasquier22:practical@pasquier23:debugging@pasquier23:temporal. Within these semantics, only the internal state of the program is controlled.
 
-Unfortunately, debugging programs that involve input/output (I/O) operations using existing multiverse debuggers can reveal inaccessible program states that are not encountered during regular execution.
+Unfortunately, debugging programs that involve I/O operations using existing multiverse debuggers can reveal inaccessible program states that are not encountered during regular execution.
 This is known as the probe effect @gait86:probe, and can occur in multiverse debuggers when they do not account for the effect of I/O operations on the external environment when changing the program state.
 Encountering such states during the debugging session can significantly hinder the debugging process, as the programmer may mistakenly assume a bug is present in the code, when in fact, the issue is caused by the debugger.
 In this chapter, we investigate how we can scale multiverse debugging to programs running on a microcontroller which interacts with the environment through I/O operations.
@@ -34,7 +34,7 @@ In this chapter, we investigate how we can scale multiverse debugging to program
     Without a way to handle the large ranges of possible inputs, the reproducibility of non-deterministic bugs in the multiverse debugger becomes challenging.
 
     Third, due to the hardware limitations of the microcontrollers that we target it is unfeasible to run the multiverse debugger entirely on the microcontroller.
-    We thus need to expand multiverse debugging so that it can be used even in such a restricted environment. 
+    We thus need to expand multiverse debugging so that it can be used even in such a restricted environment.
 
     // === Overview
     // In this chapter, we present a new approach to multiverse debugging tackling the three main challenges posed in the introduction.     
@@ -43,7 +43,7 @@ In this chapter, we investigate how we can scale multiverse debugging to program
     // Third, we define our multiverse debugger as a _remote debugger_ with a sparse snapshotting semantics to accommodate the hardware limitations of the microcontrollers that we target.    
     // Finally, based on our formal semantics, we have implemented a prototype debugger, called MIO, on top of the WARDuino WebAssembly virtual machine~@lauwaerts24:warduino capable of debugging various microcontrollers such as the ESP32, STM32 and Raspberry Pi Pico.
 
-== MIO: Multiverse Input/Output Debugger in Practice<mult:practice>
+== MIO: Multiverse Input/Output Debugger in Prctice<mult:practice>
 
 Before we discuss the details of our contributions and the implementation, we give an overview of how our multiverse debugger, MIO, works in practice. We will use a simple example to illustrate the different concepts of our multiverse debugger.
 
@@ -89,7 +89,7 @@ The multiverse tree in @fig:multiverse-debugger labels every node before the exe
 === Debugging with the Multiverse Debugger
 
 A developer can use the multiverse debugger to explore the execution of the light sensor program, using the debug operations in the top left corner, following normal debugging conventions.
-While the right panel continually updates to show where in the program's execution the user is.
+The right panel continually updates to show where in the program's execution the user is.
 However, the multiverse debugger allows for more than just stepping forwards and backwards through the program.
 The user can also jump to any node in the multiverse tree by simply clicking on that node, and explore the program from that point onwards with the available debugging instructions.
 
@@ -788,14 +788,15 @@ Using the I/O primitives supported by MIO, various other applications could be b
 Our work builds directly on WebAssembly~@haas17:bringing@rossberg19:webassembly@rossberg23:webassembly and WARDuino~@lauwaerts24:warduino, as we have discussed in @mult:webassembly and @mult:implementation.
 In this section, we present an overview of further related work. //%previous work on reversible debuggers and multiverse debuggers, as well as other related works that have inspired our approach.
 
-=== Multiverse debuggers
+#heading(numbering: none, level: 4, "Multiverse debuggers")
 
 Multiverse debugging has emerged as a powerful technique to debug non-deterministic program behavior, by allowing programmers to explore multiple execution paths simultaneously.
 It was proposed by #cite(form: "prose", <torres19:multiverse>) to debug parallel actor-based programs, with a prototype called Voyager~@gurdeep19:multiverse, that worked directly on the operational semantics of the language defined in PLT Redex~@felleisen09:semantics.
 Several works have expanded on multiverse debugging; #cite(form: "prose", <pasquier22:practical>) introduced user-defined reduction rules to shrink the state space that must be explored during multiverse-wide breakpoint lookup, and #cite(form: "prose", <pasquier23:temporal>) introduced temporal breakpoints that allow users to reason about the future execution of a program using linear temporal logic.
 In contrast to MIO, existing multiverse debuggers only work on a model of the program execution, and do not consider I/O operations, or their effects on the external environment.
 
-\paragraph{Multiverse Analysis}
+#heading(numbering: none, level: 4, "Multiverse Analysis")
+
 The idea of exploring the multiverse of possibilities, is more widely known as multiverse analysis.
 Within statistical analysis, it is a method that considers all possible combinations of datasets and analysis simultaneously~@steegen16:increasing.
 Within software development, there are several frameworks for exploratory programming~@kery17:exploring, which allow developers to interact with the multiverse of source code versions~@steinert12:coexist.
@@ -805,7 +806,7 @@ Explore-first editors, such as the original by #cite(form: "prose", <steinert12:
 While explore-first editors consider the variations in the program code itself, multiverse debuggers focus on variations of program execution caused by non-deterministic behavior for a single code base.
 Combining these two techniques could lead to a powerful development environment, and represents interesting future work.
 
-=== Exploring execution trees
+#heading(numbering: none, level: 4, "Exploring execution trees")
 
 Many automatic verification and other analysis tools also explore the execution tree of a program, such as software #emph[model checkers]~@godefroid97:model@jhala09:software, #emph[symbolic execution]~@king76:symbolic@cadar11:symbolic@baldoni18:survey, and #emph[concolic execution]~@godefroid05:dart@sen06:automated@marques22:concolic.
 These techniques are great at automatically detecting program faults, however, they rely on a precise description of the problem or program specification, often in the form of a formal model.
@@ -814,7 +815,7 @@ Despite the major differences, static analysis techniques could greatly help imp
 For multiverse debugging the techniques could help guide developers through large and complicated execution trees.
 Additionally, the techniques for handling the state explosion problem~@valmari98:state@kurshan98:static@kahlon09:monotonic developed for these analysis tools, can help reduce the number of redundant execution paths in multiverse debugging.
 
-=== Reversible debuggers
+#heading(numbering: none, level: 4, "Reversible debuggers")
 
 Reversible debugging, also called back-in-time debugging, has existed for more than fifty years~@balzer69:exdams, and has been implemented with various strategies~@engblom12:review.
 #emph[Record-replay debuggers]~@agrawal91:execution-backtracking@feldman88:igor@ronsse99:recplay@boothe00:efficient@burg13:interactive@ocallahan17:engineering allow offline debugging with a checkpoint-based trace.
@@ -834,7 +835,7 @@ Reversible debuggers for the #emph[graphical programming language] Scratch~@malo
 However, in all these debuggers, the output effects are internal to the system.
 For the Scratch debuggers, the visual output is actually part of the execution model~@maloney10:scratch-programming-language.
 
-=== Reversible programming languages
+#heading(numbering: none, level: 4, "Reversible programming languages")
 
 The concept of reversible computation has a longstanding history in computer science~@zelkowitz73:reversible@bennett88:notes@mezzina20:software, with the most notable models for reversibility being reversible Turing machines~@axelsen16:on, and reversible circuits~@saeedi13:synthesis.
 Furthermore, the design of reversible languages has evolved into its own field of study~@gluck23:reversible, with languages for most programming paradigms, such as the imperative, and first reversible language, Janus~@lutz86:janus@yokoyama08:principles@lami24:small-step-semantics, several functional languages~@yokoyama12:towards@matsuda20:sparcl, object-oriented languages~@schultz16:elements@haulund17:implementing@hay-schmidt21:towards, monadic computation~@heunen15:reversible, and languages for concurrent systems~@danos04:reversible@schordan16:automatic@hoey18:reversing.
@@ -842,7 +843,7 @@ Several works have investigated how reversible languages can help reversible deb
 //A lot of research has gone into reversible computing for concurrent systems, leading to 
 Moreover, these reversible languages do not consider output effects on the external world, with a few notable exceptions in the space of proprietary languages for industrial robots.
 
-=== Reverse execution of industrial robotics
+#heading(numbering: none, level: 4, "Reverse execution of industrial robotics")
 
 While numerous examples can be imagined where actions affecting the environment cannot be easily reversed, there are sufficient scenario's where this is possible, for reverse execution to be widely used in industry.
 The reversible language by #cite(form: "prose", <schultz20:reversible>) is particularly interesting.
@@ -852,7 +853,7 @@ Through our compensating actions, MIO is able to handle both directly and indire
 SCP-RASQ uses a similar system of user-defined compensating actions, to reverse indirectly reversible operations.
 Using these kinds of languages, we believe that the MIO debugger could be extended to support more complex output primitives, which could control industrial robots.
 
-=== Reversibility
+#heading(numbering: none, level: 4, "Reversibility")
 
 The concept of reversibility is well understood on a theoretical level, for both sequential context~@leeman86:formal, and concurrent systems.
 The latter is much more complex, and has lead to two major definitions; causal-consistent reversibility~@danos04:reversible@lanese14:causal-consistent-reversibility, and time reversibility~@weiss75:time-reversibility@kelly81:reversibility.
@@ -864,20 +865,12 @@ Our debugger works on a single-threaded language, where the non-determinism is i
 In our work, the undo actions are causally consistent in the single-threaded world.
 We believe that we can extend MIO to support concurrent languages, and that the existing literature~@lanese18:cauder@giachino14:causal-consistent-reversible-debugging can help to ensure it stays causally consistent.
 
-=== Remote debugging on microcontrollers
+#heading(numbering: none, level: 4, "Remote debugging on microcontrollers")
 
-In remote debugging~@rosenberg96:how, a debugger frontend is connected to a remote debugger backend running the program being debugged.
-The MIO debugger uses remote debugging to mitigate some limitations of microcontrollers, an approach that has been adopted for many embedded systems~@potsch17:advanced@skvar-c24:in-field-debugging@soderby24:debugging.
-These debuggers fall in two categories; #emph[stub] and #emph[on-chip]~@li09:research.
-A stub is a small piece of software that runs on the microcontroller, instrumenting the software being debugged, this is the approach taken by the MIO debugger.
-On-chip debugging uses additional hardware to debug the embedded device, a common example are JTAG @ieee-standard hardware debuggers.
-These debuggers can interface with different software, such as the popular OpenOCD debugger~@hogl06:open.
-However, remote debugging can exacerbate the probe effect~@gait86:probe, and can be very slow since the debugger runs on the microcontroller, combined with constant communication overhead.
-To address these limitations, a new form of remote debugging, called out-of-place debugging, has been proposed~@marra18:out-of-place@lauwaerts22:event-based-out-of-place-debugging.
-This technique moves part of the debugging process to a more powerful machine, which can reduce debugging interference and speedup performance.
-The MIO debugger is already sufficiently fast, but a speed-up can likely be achieved by adopting out-of-place debugging.
+We discussed the related work on remote debuggers for embedded devices thoroughly in @remote:related-work.
+The MIO multiverse debugger is built on top of the same architeecture as _stub remote debuggers_.
 
-=== Environment modeling
+#heading(numbering: none, level: 4, "Environment modeling")
 
 There are many environment interactions that can influence the possible input values and thereby the possible execution paths of a program.
 We have elided these interactions from the formal model and assume that I/O operations are independent, while our prototype does support defining simple #emph[predictable dependencies] between I/O operations.
@@ -885,27 +878,18 @@ Modeling the interactions between I/O operations is also hugely important for te
 Environment models are often used for automatic test generation~@dalal99:model-based@auguston05:environment for a certain specification, and have also been applied to real-time embedded software~@iqbal15:environment.
 // todo more examples + can be used for future work
 
-=== Formalizing debuggers
-
-Previous efforts to define debuggers formally have been incredibly varied in their depth and approach, and have not yet reached a consensus on any standard method.
-An early attempt used PowerEpsilon~@zhu91:higher-order @zhu92:program to define a denotational semantic describing the source mapping needed to debug a toy language that can compile to a toy instruction set~@zhu01:denotational.
-In 2012, the work by #cite(form: "prose", <li12:formal>) focussed on automatic debuggers, and defined operational semantics for tracing, and for backwards searching based on those traces.
-In 1995, #cite(form: "prose", <bernstein95:operational>) defined a debugger in terms of an underlying language semantic for the first time, an approach we adopted in this work as well.
-In fact, the approach is followed by a number of later works~@ferrari01:debugging@torres17:principled@lauwaerts24:warduino@holter24:abstract, including the work by Torres Lopez et al.~@torres19:multiverse in 2019, which defines the correctness of their debugger in terms of the non-interference with the underlying semantic.
-The correctness criteria requires each execution observed by either semantic is observed by the other, which is similar to our soundness and completeness theorems rolled into one.
-A more recent work presented a novel abstract debugger, that uses static analysis to allow developers to explore abstract program states rather than concrete ones~@holter24:abstract.
-The work defines operational semantics for their abstract debugger, and for a concrete debugger.
-The soundness of the abstract debugger is defined in terms this concrete debugger, where every debugging session in the concrete world is guaranteed to correspond to a session in the abstract world.
-The opposite direction cannot hold since the static analysis relies on an over-approximation, which means there can always be sessions in the abstract world which are impossible in the concrete world.
-This is in stark contrast with the soundness theorem in our work, which states that any path in the debugging semantics can be observed in the underlying language semantics.
-
 == Conclusion<mult:conclusion>
 
 While existing multiverse debuggers have shown promise in abstract settings, they struggled to adapt to concrete programming languages and I/O operations. 
 In this article, we address these limitations by presenting a novel approach that seamlessly integrates multiverse debugging with a full-fledged WebAssembly virtual machine. 
 This is the first implementation that enables multiverse debugging for microcontrollers.
-Our approach improves current multiverse debuggers by being able to provide multiverse debugging in the face of a set of well-defined I/O primitives. 
-We have formalized our approach and give a soundness proof.  
-We have implemented our approach and have given various examples showcasing how our approach can deal with a wide range of specialized I/O primitives, ranging from non-deterministic input sensors, to I/O pins and even steering motors. Our sparse snapshotting approach delivers reasonable performance even on a restricted microcontroller platform.
-Our initial implementation provides a substantial benefit over existing approaches, but we believe there are further opportunities to relax the constraints on I/O primitives further. For example, our current implementation only supports simple dependencies between I/O actions, but we believe this could be relaxed further by introducing an explicit rule language so that programmers can define more complex dependencies between the I/O actions.
+Our approach improves current multiverse debuggers by being able to provide multiverse debugging in the face of a set of well-defined I/O actions. 
+We have formalized our approach and give a soundness and completeness proofs.
+
+We have implemented our approach and have given various examples showcasing how our approach can deal with a wide range of specialized I/O actions, ranging from non-deterministic input sensors, to I/O pins and even steering motors.
+Our sparse snapshotting approach delivers reasonable performance even on a restricted microcontroller platform.
+While the MIO debugger is already sufficiently fast, it is currently implemented as a remote debugger.
+We can likely speed-up performance by adopting stateful out-of-place debugging we introduced in the previous chapter.
+
+Our initial implementation provides a substantial benefit over existing approaches, but we believe there are further opportunities to relax the constraints on I/O actions further. For example, our current implementation only supports simple dependencies between I/O actions, but we believe this could be relaxed further by introducing an explicit rule language so that programmers can define more complex dependencies between the I/O actions.
 

@@ -50,10 +50,11 @@
     #v(0.25fr)
     
     #grid(
+      align: horizon,
       columns: (1fr, 1fr),
       align(center)[#image("../ugent.png", width: 5cm)],
       grid.vline(stroke: white),
-      align(center)[#image("../topl.png", width: 5cm)]
+      align(center)[#image("../topl.svg", height: 2.5cm)]
     )
 ]
 
