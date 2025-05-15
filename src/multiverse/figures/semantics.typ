@@ -174,7 +174,44 @@
 //	<fig:forwards>
 //\end{figure}
 
-#let forwards = []
+#let forwards = table(columns: (2.0fr, 1fr), stroke: none, gutter: 1.0em,
+      tablehead("Forwards evaluation rules"), "",
+      table.cell(colspan: 2, table(columns: (1fr), stroke: none,
+
+        prooftree(rule(
+          $
+          ⟨ "play", nothing, mocks, K_n bar.v S^* ⟩ dbgarrow ⟨ "play", nothing, mocks, K_{n+1} bar.v S^* ⟩
+          $,
+          $sans("non-prim") K_n$ ,$ K_n wasmarrow K_{n+1}$,
+          name: smallcaps("run")
+        )),
+
+        prooftree(rule(
+          $
+          ⟨ "pause", "step", mocks, K_n bar.v S^* ⟩ dbgarrow ⟨ "pause", nothing, mocks, K_{n+1} bar.v S^* ⟩
+          $,
+          $sans("non-prim") K_n$, $K_n wasmarrow K_{n+1}$,
+          name: smallcaps("step-forwards")
+        )),
+
+        prooftree(rule(
+          $
+          ⟨ "play", "pause", mocks, K_n bar.v S^* ⟩ dbgarrow ⟨ "pause", nothing, mocks, K_n bar.v S^* ⟩
+          $,
+          "",
+          name: smallcaps("pause")
+        )),
+
+        prooftree(rule(
+          $
+          ⟨ "pause", "play", mocks, K_n bar.v S^* ⟩ dbgarrow ⟨ "play", nothing, mocks, K_n bar.v S^* ⟩
+          $,
+          "",
+          name: smallcaps("play")
+        ))
+
+      )),
+    )
 
 //\begin{figure}
 //        \begin{mathpar}
@@ -206,5 +243,36 @@
 //	<fig:forwards-prim>
 //\end{figure}
 
-#let forwardsprim = []
+#let In = $italic("In")$
+#let Out = $italic("Out")$
+
+#let forwardsprim = table(columns: (2.0fr, 1fr), stroke: none, gutter: 1.0em,
+      tablehead("Forwards I/O evaluation rules"), "",
+      table.cell(colspan: 2, table(columns: (1fr), stroke: none,
+
+        prooftree(rule(
+          $
+          ⟨ "play", nothing, mocks, K_n bar.v S^* ⟩ dbgarrow ⟨ "play", nothing, mocks, K_(n+1) bar.v S^* ⋅ {K_(n+1), r_nop} ⟩
+          $,
+          $
+          K_n = {s; v^*, v^*_0 (call j)},space P(j) = p,space p ∈ P^In,\\
+          mocks(j, v^*_0) = ε,space K_n wasmarrow K_{n+1}
+          $,
+          name: smallcaps("run-prim-in")
+        )),
+
+        prooftree(rule(
+          $
+          ⟨ "play", nothing, mocks, K_n bar.v S^* ⟩ dbgarrow ⟨ "play", nothing, mocks, K_{n+1} bar.v S^* ⋅ {K_{n+1}, r} ⟩
+          $,
+          $
+          K_n = {s; v^*, v^*_0 (call j)},space P(j) = p,space p ∈ P^Out,\\
+          p(v^*_0) = {ret v, cps r},space K_(n+1) = {s; v^*, v}
+          $,
+          name: smallcaps("run-prim-out")
+        ))
+
+      )),
+    )
+
 

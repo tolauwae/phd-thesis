@@ -317,7 +317,7 @@ This enables the debugger to continue stepping back in time.
   [The small-step reduction rule for stepping backwards in the multiverse debugger.],
   [
     #table(columns: (2.0fr, 1fr), stroke: none, gutter: 1.0em,
-      tablehead("Step-Back Semantics"), "",
+      tablehead("Backwards evaluation rules"), "",
       table.cell(colspan: 2, table(columns: (1fr), stroke: none,
         [(#smallcaps("step-back"))#h(1fr)],
         prooftree(rule(
@@ -377,7 +377,7 @@ Specifically, the _step-back_ rule is not be applicable, since $m$ and $n$ are b
         [(#smallcaps("register-mock"))#h(1fr)],
         prooftree(rule(
           $
-          ⟨ rs, msg, mocks, K_n \mid S^* ⟩ dbgarrow ⟨ rs, nothing, mocks', K_n \mid S^ast ⟩
+          ⟨ rs, msg, mocks, K_n bar.v S^* ⟩ dbgarrow ⟨ rs, nothing, mocks', K_n bar.v S^ast ⟩
           $,
           $
           msg = mock(j, v^*, v)$,$P(j) = p$,$p in P^(In)$,$v in floor.l p floor.r$,$
@@ -388,10 +388,10 @@ Specifically, the _step-back_ rule is not be applicable, since $m$ and $n$ are b
         [(#smallcaps("unregister-mock"))#h(1fr)],
         prooftree(rule(
           $
-          ⟨ rs, msg, mocks, K_n \mid S^* ⟩ dbgarrow ⟨ rs, nothing, mocks', K_n \mid S^ast ⟩
+          ⟨ rs, msg, mocks, K_n bar.v S^* ⟩ dbgarrow ⟨ rs, nothing, mocks', K_n bar.v S^ast ⟩
           $,
           $
-          msg = unmock(j, v^*)$,$mocks' = mocks \ −\ (j, v^*) arrow.r.bar v
+          msg = unmock(j, v^*)$, $mocks' = mocks, (j, v^*) arrow.r.bar v
           $,
         )),
 
@@ -484,7 +484,7 @@ For brevity, we only provide a sketch of the proofs here, but the full proofs ca
     Let $K_0$ be the start WebAssembly configuration, and $dbg$ the debugging configuration containing the WebAssembly configuration $K_n$.
     Let the debugger steps $multi(dbgarrow)$ be the result of a series of debugging messages, where $msg$ is the last message.
     Then:
-    $ forall dbg : dbg_start multi(dbgarrow) dbg arrow.r K_0 multi(wasmarrow)K_n $
+    $ forall dbg : dbg_start multi(dbgarrow) dbg arrow.double.r.long K_0 multi(wasmarrow)K_n $
 ]
 
 #theorem("Debugger soundness")[#theoremdebuggersoundness]<theorem:debugger-soundness>
@@ -496,7 +496,7 @@ In the inductive case, the proof proceeds very similarly, the only non-trivial c
 #let theoremdebuggercompleteness = [
     Let $K_0$ be the start WebAssembly configuration for which there exists a series of transition $multi(wasmarrow)$ to another configuration $K_n$. Let the debugging configuration with $K_n$ be dbg.
     Then:
-    $ forall K_n : K_0 multi(wasmarrow) K_n arrow.r dbg_start multi(dbgarrow) dbg $
+    $ forall K_n : K_0 multi(wasmarrow) K_n arrow.double.r.long dbg_start multi(dbgarrow) dbg $
 ]
 
 #theorem("Debugger completeness")[#theoremdebuggercompleteness]<theorem:debugger-completeness>
