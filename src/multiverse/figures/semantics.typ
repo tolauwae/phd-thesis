@@ -1,5 +1,6 @@
 #import "../../../lib/util.typ": tablehead, highlight
 #import "../../semantics/arrows.typ": *
+#import "../../semantics/forms.typ": brackets
 
 #import "@preview/curryst:0.5.0": rule, prooftree
 
@@ -118,20 +119,20 @@
 #let pause = $italic("pause")$
 #let step = $italic("step")$
 #let stepback = $italic("stepback")$
-#let mock = $italic("mock")$
-#let unmock = $italic("unmock")$
+#let mock(j, vs, v) = $italic("mock")angle.l #j , #vs, #v angle.r$
+#let unmock(j, vs) = $italic("unmock")angle.l #j , #vs angle.r$
 #let nop = $italic("nop")$
 
 #let multconfig = [
     $
-    &"(Debugger state)"& dbg & colon.double.eq ⟨ es, msg, mocks, K_n bar.v S^ast ⟩ \
+    &"(Debugger state)"& dbg & colon.double.eq brackets.l es, msg, mocks, K_n bar.v S^ast brackets.r \
     &"(Execution state)"& es & colon.double.eq play ∣ pause \
-    &"(Incoming messages)"& msg & colon.double.eq nothing ∣ step ∣ stepback ∣ pause ∣ play ∣ mock ∣ unmock \
+    &"(Incoming messages)"& msg & colon.double.eq nothing ∣ step ∣ stepback ∣ pause ∣ play ∣ mock(j, v^*, v) ∣ unmock(j, v^*) \
     &"(Program state)"& K & colon.double.eq {s, v^ast, e^ast} \
     &"(Overrides)"& mocks & colon.double.eq nothing ∣ mocks, (j, v^ast) arrow.r.bar v \
     &"(A snapshot)"& S_n & colon.double.eq {K_m, p_{cps}} \
     &"(Snapshots list)"& S^ast & colon.double.eq S_0 ⋅ ... ⋅ S_{n-1} ⋅ S_n \
-    &"(Starting state)"& dbg_"start" & colon.double.eq angle.l pause, nothing, nothing, K_0 bar.v {K_0, E} angle.r \
+    &"(Starting state)"& dbg_"start" & colon.double.eq brackets.l pause, nothing, nothing, K_0 bar.v {K_0, E} brackets.r \
     &"(Empty action)"& r_nop & colon.double.eq λ(). nop \
     $
 ]
@@ -180,7 +181,7 @@
 
         prooftree(rule(
           $
-          ⟨ "play", nothing, mocks, K_n bar.v S^* ⟩ dbgarrow ⟨ "play", nothing, mocks, K_{n+1} bar.v S^* ⟩
+          brackets.l "play", nothing, mocks, K_n bar.v S^* brackets.r dbgarrow brackets.l "play", nothing, mocks, K_{n+1} bar.v S^* brackets.r
           $,
           $sans("non-prim") K_n$ ,$ K_n wasmarrow K_{n+1}$,
           name: smallcaps("run")
@@ -188,7 +189,7 @@
 
         prooftree(rule(
           $
-          ⟨ "pause", "step", mocks, K_n bar.v S^* ⟩ dbgarrow ⟨ "pause", nothing, mocks, K_{n+1} bar.v S^* ⟩
+          brackets.l "pause", "step", mocks, K_n bar.v S^* brackets.r dbgarrow brackets.l "pause", nothing, mocks, K_{n+1} bar.v S^* brackets.r
           $,
           $sans("non-prim") K_n$, $K_n wasmarrow K_{n+1}$,
           name: smallcaps("step-forwards")
@@ -196,7 +197,7 @@
 
         prooftree(rule(
           $
-          ⟨ "play", "pause", mocks, K_n bar.v S^* ⟩ dbgarrow ⟨ "pause", nothing, mocks, K_n bar.v S^* ⟩
+          brackets.l "play", "pause", mocks, K_n bar.v S^* brackets.r dbgarrow brackets.l "pause", nothing, mocks, K_n bar.v S^* brackets.r
           $,
           "",
           name: smallcaps("pause")
@@ -204,7 +205,7 @@
 
         prooftree(rule(
           $
-          ⟨ "pause", "play", mocks, K_n bar.v S^* ⟩ dbgarrow ⟨ "play", nothing, mocks, K_n bar.v S^* ⟩
+          brackets.l "pause", "play", mocks, K_n bar.v S^* brackets.r dbgarrow brackets.l "play", nothing, mocks, K_n bar.v S^* brackets.r
           $,
           "",
           name: smallcaps("play")
@@ -252,23 +253,19 @@
 
         prooftree(rule(
           $
-          ⟨ "play", nothing, mocks, K_n bar.v S^* ⟩ dbgarrow ⟨ "play", nothing, mocks, K_(n+1) bar.v S^* ⋅ {K_(n+1), r_nop} ⟩
+          brackets.l "play", nothing, mocks, K_n bar.v S^* brackets.r dbgarrow brackets.l "play", nothing, mocks, K_(n+1) bar.v S^* ⋅ {K_(n+1), r_nop} brackets.r
           $,
           $
-          K_n = {s; v^*, v^*_0 (call j)},space P(j) = p,space p ∈ P^In,\\
-          mocks(j, v^*_0) = ε,space K_n wasmarrow K_{n+1}
-          $,
+          K_n = {s; v^*, v^*_0 (call j)}$, $P(j) = p$, $p in P^In$, $mocks(j, v^*_0) = epsilon$, $K_n wasmarrow K_(n+1)$,
           name: smallcaps("run-prim-in")
         )),
 
         prooftree(rule(
           $
-          ⟨ "play", nothing, mocks, K_n bar.v S^* ⟩ dbgarrow ⟨ "play", nothing, mocks, K_{n+1} bar.v S^* ⋅ {K_{n+1}, r} ⟩
+          brackets.l "play", nothing, mocks, K_n bar.v S^* brackets.r dbgarrow brackets.l "play", nothing, mocks, K_(n+1) bar.v S^* ⋅ {K_(n+1), r} brackets.r
           $,
           $
-          K_n = {s; v^*, v^*_0 (call j)},space P(j) = p,space p ∈ P^Out,\\
-          p(v^*_0) = {ret v, cps r},space K_(n+1) = {s; v^*, v}
-          $,
+          K_n = {s; v^*, v^*_0 (call j)}$, $P(j) = p$, $p in P^Out$, $p(v^*_0) = {ret v, cps r}$, $K_(n+1) = {s; v^*, v}$,
           name: smallcaps("run-prim-out")
         ))
 

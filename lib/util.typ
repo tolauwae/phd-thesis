@@ -16,12 +16,10 @@
     }
     show ref: it => {
       let el = it.element
-      if el != none and el.has("kind") and el.kind == "codly-line" {
-        link(el.location(), [#prefix#numbering(
+      if el != none and el.has("kind") and el.kind == "codly-line" [#prefix#link(el.location(), [#numbering(
           el.numbering,
           ..counter(figure).at(el.location())
-        )])
-      } else {
+        )])] else {
         none
       }
     }

@@ -2,6 +2,7 @@
 #import "../../lib/class.typ": note, definition, theorem
 #import "./figures/semantics.typ": *
 #import "../semantics/arrows.typ": *
+#import "../semantics/forms.typ": brackets
 
 #import "@preview/lovelace:0.3.0": pseudocode, with-line-label, pseudocode-list, line-label
 
@@ -305,7 +306,7 @@ This means, that after restoring the internal virtual machine state, the program
 Starting from this point, the debugger can replay the program's execution forwards to $K_(m-1)$, which will not include any primitive calls.
 This means the steps will be deterministic, and will not change the external environment.
 This corresponds with the full arrow at the bottom of the figure.
-Next to it is shown the snapshot list after the step back, which now only contains the snapshot of the state $K_n$.
+Next to it, is shown the snapshot list after the step back, which now only contains the snapshot of the state $K_n$.
 
 In the outlined scenario the last transition in the chain, from $K_(m-1)$ to $K_m$, performs an output action.
 However, if this transition is a standard WebAssembly instruction instead, no compensating action will be performed.
@@ -322,7 +323,7 @@ This enables the debugger to continue stepping back in time.
         [(#smallcaps("step-back"))#h(1fr)],
         prooftree(rule(
           $
-          ⟨ "pause", "step back", mocks, K_m bar.v S^* ⋅ {K_n, r} ⟩ dbgarrow ⟨ "pause", nothing, mocks, K_(m-1) bar.v S^* ⋅ {K_n, r} ⟩
+          brackets.l "pause", "step back", mocks, K_m bar.v S^* ⋅ {K_n, r} brackets.r dbgarrow brackets.l "pause", nothing, mocks, K_(m-1) bar.v S^* ⋅ {K_n, r} brackets.r
           $,
           $
           K_n attach(wasmarrow, tr: m-n-1) K_(m-1)$, $m > n$
@@ -330,7 +331,7 @@ This enables the debugger to continue stepping back in time.
         [(#smallcaps("step-back-compensate"))#h(1fr)],
         prooftree(rule(
           $
-          ⟨ "pause", "step back", mocks, K_m bar.v S^* ⋅ {K_n, r} ⋅ {K_m, r'} ⟩ dbgarrow ⟨ "pause", nothing, mocks, K_(m-1) bar.v S^* ⋅ {K_n, r} ⟩
+          brackets.l "pause", "step back", mocks, K_m bar.v S^* ⋅ {K_n, r} ⋅ {K_m, r'} brackets.r dbgarrow brackets.l "pause", nothing, mocks, K_(m-1) bar.v S^* ⋅ {K_n, r} brackets.r
           $,
           $
           "first" r'() "then" K_n attach(wasmarrow, tr: m-n-1) K_(m-1)
@@ -343,7 +344,7 @@ This enables the debugger to continue stepping back in time.
   "fig:backwards"
 )
 
-Each of the two outlined scenarios correspond with a rule in the multiverse debugger semantics, shown in @fig:backwards.
+Each of the two outlined scenarios corresponds with a rule in the multiverse debugger semantics, shown in @fig:backwards.
 The first scenario where the effects of an output primitive is reversed, is described by the _step-back-compensate_ rule.
 The second scenario where the last transition is a standard WebAssembly instruction, is described by the _step-back_ rule.
 We describe the rules in detail below.
@@ -359,9 +360,9 @@ We describe the rules in detail below.
         The debugger then replays the program's execution from that point to exactly one step before the starting state.
         The last snapshot is removed from the snapshot list, since it now lies in the future.
 
-In the case, where no primitive call has yet been made, the snapshot list contains exactly ${K_0,r_nop}$, as defined by $dbg_"start"$, which the _step-back_ rule can jump to.
+In the case where no primitive call has yet been made, the snapshot list contains exactly ${K_0,r_nop}$, as defined by $dbg_"start"$, which the _step-back_ rule can jump to.
 If the current state is $K_0$, stepping back is not possible.
-Specifically, the _step-back_ rule is not be applicable, since $m$ and $n$ are both zero, and the _step-back-compensate_ rule requires the snapshot list to contain at least two snapshots.
+Specifically, the _step-back_ rule is not applicable, since $m$ and $n$ are both zero, and the _step-back-compensate_ rule requires the snapshot list to contain at least two snapshots.
 
 === Instrumenting Non-deterministic Input in Multiverse Debuggers<mult:mocking>
 
@@ -377,7 +378,7 @@ Specifically, the _step-back_ rule is not be applicable, since $m$ and $n$ are b
         [(#smallcaps("register-mock"))#h(1fr)],
         prooftree(rule(
           $
-          ⟨ rs, msg, mocks, K_n bar.v S^* ⟩ dbgarrow ⟨ rs, nothing, mocks', K_n bar.v S^ast ⟩
+          brackets.l rs, msg, mocks, K_n bar.v S^* brackets.r dbgarrow brackets.l rs, nothing, mocks', K_n bar.v S^ast brackets.r
           $,
           $
           msg = mock(j, v^*, v)$,$P(j) = p$,$p in P^(In)$,$v in floor.l p floor.r$,$
@@ -388,7 +389,7 @@ Specifically, the _step-back_ rule is not be applicable, since $m$ and $n$ are b
         [(#smallcaps("unregister-mock"))#h(1fr)],
         prooftree(rule(
           $
-          ⟨ rs, msg, mocks, K_n bar.v S^* ⟩ dbgarrow ⟨ rs, nothing, mocks', K_n bar.v S^ast ⟩
+          brackets.l rs, msg, mocks, K_n bar.v S^* brackets.r dbgarrow brackets.l rs, nothing, mocks', K_n bar.v S^ast brackets.r
           $,
           $
           msg = unmock(j, v^*)$, $mocks' = mocks, (j, v^*) arrow.r.bar v
@@ -398,11 +399,11 @@ Specifically, the _step-back_ rule is not be applicable, since $m$ and $n$ are b
         [(#smallcaps("step-mock"))#h(1fr)],
         prooftree(rule(
           $
-          ⟨ "pause", "step", mocks, K_n bar.v S^ast ⟩ dbgarrow ⟨ "pause", nothing, mocks, K'_(n+1) bar.v S^ast ⋅ {K'_{n+1}, r_nop} ⟩
+          brackets.l "pause", "step", mocks, K_n bar.v S^ast brackets.r dbgarrow brackets.l "pause", nothing, mocks, K'_(n+1) bar.v S^ast ⋅ {K'_(n+1), r_nop} brackets.r
           $,
           $
           K_n = {s; v^*; v^*_0 (call j)}$, $P(j) = p$, $p in P^(In)$, $
-          mocks(j, v^*_0) = v$, $K'_{n+1} = {s'; v'^*; v}
+          mocks(j, v^*_0) = v$, $K'_(n+1) = {s'; v'^*; v}
           $,
         ))
 
@@ -459,8 +460,8 @@ In the final step of the algorithm, execution is replayed from the join to $K_n$
 @schematic:arbitrary-jump illustrates the algorithm for jumping to an arbitrary state, when the user clicks on a node on another branch in the multiverse tree.
 The figure shows a possible multiverse tree for a program where the second and third instruction are input primitives.
 The program has executed two input primitives in a row, and the debugger has explored some of the possible inputs.
-Each node in the figure is labeled with the program state and possible compensating action, where $r_{nop}$ indicates that no compensating action is needed
-For clarity, the external state are also numbered.
+Each node in the figure is labeled with the program state and possible compensating action, where $r_nop$ indicates that no compensating action is needed.
+For clarity, the external states are also numbered.
 The figure shows clearly that the external state only changes after a primitive call.
 The current state is $K_5$, and the debugger wants to jump to $K_4'$.
 Per the algorithm, the debugger finds the join of the two states, which is $K_1$.
@@ -508,7 +509,7 @@ However, it gives us no guarantees about the correctness of the compensating act
 Due to the way effects on the external environment are presented in the MIO debugger semantics, we can define the entire effect of a debugging session of regular execution, both as ordered lists of steps that have external effects.
 There are only two options, the output primitive rules, and the rule that applies the compensating action.
 
-#let external = $"external"$
+#let external = $italic("external")$
 
 #definition("External state effects")[
     The function $external$ returns the steps affecting external state for any series of rules in the debugging or underlying language semantics.
@@ -538,9 +539,9 @@ This leaves only the forward steps of the minimal path to be considered, meaning
 == The MIO debugger<mult:implementation>
 
 We have implemented the multiverse debugger described above in a prototype debugger, called the MIO debugger.
-The MIO debugger is built on top of a WebAssembly runtime for microcontrollers, called WARDuino @lauwaerts24:warduino.
-WARDuino is written in C++, includes primitives for controlling hardware peripherals, and has support for traditional remote debugging.  
-Our prototype implementation builds further on its virtual machine and the remote debugging facilities but needed to be extended significantly in order to support all the basic operations for multiverse debugging: smart snapshotting, mocking of primitives and reversible actions.  
+The MIO debugger is built on top of the WARDuino runtime.
+Our prototype implementation builds further upon the virtual machine and the remote debugging facilities described in @chapter:remote.
+Under the hood, the virtual machine needed to be extended significantly in order to support all the basic operations for multiverse debugging: smart snapshotting, mocking of primitives and reversible actions.
 Additionally, we created a high-level interface which implements the message passing interface described in @mult:multiverse-debugger as messages in the remote debugger of WARDuino. On top of this interface we built a Kotlin application for debugging AssemblyScript programs on microcontrollers running WARDuino.
 This application keeps track of the program states, and shows them as part of the multiverse tree, as shown in @fig:multiverse-debugger from @mult:practice.
 @alg:jumping for arbitrary jumping, is implemented at the level of the Kotlin application using the message passing interface of the remote debugger.

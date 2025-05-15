@@ -101,7 +101,7 @@ As the name suggests, multiverse debuggers allow programmers to explore multiple
 Yet, the start of this decade saw many new domain-specific debugger techniques.
 For example, reversible debugging was recently adapted for _graphical programming languages_, by two projects for the Scratch language @maloney10:scratch-programming-language, Blink~@strijbol24:blink and NuzzleBug~@deiner24:nuzzlebug.
 
-Only last year, a PhD thesis @whitington24:debugging presented a novel debugger solution for _functional programming_, which allows users to inspect the behavior of OCAML programs as they are interpreted.
+Only last year, a PhD thesis by #cite(form: "author", <whitington24:debugging>) presented a novel debugger solution for _functional programming_, which allows users to inspect the behavior of OCAML programs as they are interpreted #cite(form: "normal", <whitington24:debugging>).
 
 Another recent trend in debugger research is to use static analysis or model checking techniques in conjunction with debuggers, such as the _abstract debugger_ by #cite(form: "prose", <holter24:abstract>) or the _symbolic debugger_ by #cite(form: "prose", <karmios23:symbolic>).
 

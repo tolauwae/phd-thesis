@@ -1169,7 +1169,6 @@ As a result, a wide range of research topics are related to the #latch framework
 In the remainder of this section, we discuss #emph[holistic IoT testing], other #emph[unit testing frameworks] broadly, #emph[remote testing], #emph[scriptable debugging], #emph[test environments] for IoT programs, #emph[device farms] for mobile applications, #emph[conditional testing], #emph[test prioritization and selection], and #emph[flaky tests].
 Wherever possible, we include examples from IoT or microcontroller settings.
 
-
 #heading(numbering: none, level: 4, "Unit Testing Frameworks")
 
 Constrained devices are still programmed primarily in low-level language such as C and C++.
@@ -1200,6 +1199,9 @@ Existing tools for IoT testing focus largely on testing networked systems of man
 Holistic testing of networked systems are by and large incompatible with many of the common development practices; such as test driven development for instance, which relies on selective testing of single components.
 Moreover, wholesale testing of heterogeneous system is very difficult, so many testing tools instead focus on monitoring to try and detect errors @datadog24:end @appoptics.
 The few real testing frameworks available, tend to provide testing as a service @kim18:iot-taas.
+A recent research project developed an interesting framework for automatic testing of distributed _bluetooth mesh applications_ with precise event scheduling, where tests are specified use a specific json format @wieme24:distributed.
+However, the work is focussed on a research setting, and benchmarking of new algorithms, rather than testing of software.
+
 While holistic testing makes sense for IoT applications in industry, the approach makes far less sense for more consumer-oriented applications, such as smart home devices.
 Besides, developers cannot trust that end-to-end testing on such a high level, is enough to test IoT systems thoroughly.
 Neither does it lend itself well to test-driven development, as testing can only take place with a fully operational system.
