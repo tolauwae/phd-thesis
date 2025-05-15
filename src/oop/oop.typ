@@ -472,7 +472,7 @@ In order for the right state to be synchronized, the messages passes along the W
 We go into more details when discussing the evaluation rules.
 For clarity, we place a line over these components to differentiate them from the similar components in the client configuration.
 
-In our implementation we also have an outgoing message box used to communicate all the information needed to update the debugger frontend, in order not to clutter the semantics we omit this message box in the semantics.
+#note[Breakpoints can be added to the semantics, analogous to the approach in @chapter:remote.]In our implementation we also have an outgoing message box used to communicate all the information needed to update the debugger frontend, in order not to clutter the semantics we omit this message box in the semantics.
 // todo In the appendix, we show how to extend the semantics with this message box, and how to handle breakpoints. These rules are similar to those represented for the remote debugger in the previous chapter.
 
 === Stepping in a Stateful Out-of-place Debugger<oop:invocation>
@@ -596,18 +596,18 @@ In order to support event-driven access to non-transferable resources, the out-o
 Rather than directly executing the callback function whenever an event is received, the event is send from the server to the client, and removed from the event queue in the server.
 
 #figure(
-    caption: [The callback system for handling asynchronous events in out-of-place debugging developed as part of our work, #cite(form: "prose", <lauwaerts22:event-based-out-of-place-debugging>). The schematic shows how events are forwarded from the server to the client, where they are placed in the WARDuino event queue.],
-    image("figures/oopdebugging.svg", width: 100%),  // todo update image
+    caption: [The callback system for handling asynchronous events in out-of-place debugging developed as part of our work. The schematic shows how events are forwarded from the server to the client, where they are placed in the WARDuino event queue.],
+    image("figures/oopdebugging.svg", width: 100%),
 )<oop:forwardevents>
 
-// todo update text to new figure
 @oop:forwardevents shows a schematic of how the out-of-place debugger handles events in the event system.
-The client stores the forwarded events in a local event queue, mirroring the event queue on the server #circled("D").
+Whenever a new event arrives in the event queue of the server runtime, it is forwarded via its debugger stub to the client #circled("A").
+The client stores the forwarded events in a local event queue, mirroring the event queue on the server #circled("B").
 Events received by the client are not automatically handled.
-Instead, they are forwarded to the frontend, to be shown in a dedicated view.
+Instead, they are forwarded to the frontend, to be shown in a dedicated view #circled("C").
 Events will be manually resolved upon the developer's request.
 When the client receives such a request from the frontend, it will only process the specified event if the partial ordering of events is maintained.
-This way, the developer can choose at what point in the code an event should be handled, enabling the reproduction of multiple situations.
+This way, the developer can choose at what point in the code an event should be handled, making it easier to reproduce specific situations.
 
 === The Callback System in Out-of-place Debugging
 
@@ -669,9 +669,16 @@ We provide a summary of each rule below.
 
 == Correctness of Out-of-place Debugging<oop:soundness>
 
-Given the presented formalization of out-of-place debugging, we can now proof several interesting properties showing the soundness and completeness of the approach.
+Given the presented formalization of stateful out-of-place debugging, we can now proof the soundness and completeness of the approach.
 Let us first restate our basic assumptions about the semantics of the out-of-place debugger.
+
+Given that we work on a theoretical model of our debugger, we must necessarily make some assumptions about the real-world.
+Specifically, the influence of events on a program's execution is crucial for our debugger, since the debugger allows developers to control the order in which events are processed.
+We assume that the behavior of the events can be fully modeled as a partial order, and events can otherwise occur at any point in the program and can follow each other instantaneously.
+This assumption can be captured by two important axioms.
+
 First, for any program the asynchronous events follow a partial order #partialorder, known to the debugger.
+This requirement is essential to ensure that the debugger does not cause impossible execution paths by triggering events in the wrong order.
 
 #let partialorderlemma = [
   Asynchronous events can be ordered using the partial order #partialorder.
@@ -679,8 +686,8 @@ First, for any program the asynchronous events follow a partial order #partialor
 
 #axiom("Event ordering")[#partialorderlemma]<axiom:partialorder>
 
-Second, under this partial ordering of events, any interleaving of events in the program is possible.
-That is to say, events can follow each other instantaneously, and can occur at any point in the program as long as the partial order allows it.
+Second, we will assume that events can follow each other instantaneously, and can occur at any point in the program as long as the partial order allows it.
+This implies that any interleaving of partially ordered events in the program is theoretically possible in the language semantics, and so may be explored by the debugger without breaking any soundness or completeness properties.
 
 #let interleavings = [
     Under the partial order #partialorder, any interleaving of events in the program is possible.
@@ -688,13 +695,16 @@ That is to say, events can follow each other instantaneously, and can occur at a
 
 #axiom("Event interleaving")[#interleavings]<axiom:interleavings>
 
+While we choose a very simple model of the program-environment interactions here, we believe that the assumptions already capture a large part of real-world programs.
+We see no reason, why the simple partial order model cannot be extended to more complex models.
+We return to this point in @oop:related when discussing related work on _environment modeling_.
+With these basic assumptions in mind, we can examine soundness and completeness for the stateful out-of-place debugger---starting with soundness.
+
 #let theoremdebuggersoundness = [
-    Let $K$ be the start WebAssembly configuration, and $dbg$ the debugging configuration, where $C$ contains the WebAssembly configuration $K'$.
-    Let the debugger steps $attach(dbgarrow, tr: alpha comma ast)$ be the result of a series of debugging messages. Then:
+    Let $dbg_start$ be the start debugger configuration with the client containing WebAssembly state $K$. //, and $dbg$ the debugging configuration, where $C$ contains the WebAssembly configuration $K'$.
+    Let $dbg$ be a debugging configuration with the client containing WebAssembly state K', and the steps $attach(dbgarrow, tr: alpha comma ast)$ the result of a series of debug messages. Then:
     $ forall dbg : dbg_start attach(dbgarrow, tr: alpha comma ast) dbg arrow.double.r.long K multi(wasmarrow) K' $
 ]
-
-With these basic assumptions in mind, we can examine soundness and completeness for the stateful out-of-place debugger.
 
 #theorem("Debugger soundness")[#theoremdebuggersoundness]<theorem:debugger-soundness>
 #proof[
@@ -716,9 +726,10 @@ With these basic assumptions in mind, we can examine soundness and completeness 
     3. The _trigger_ rule handles the dispatching of events in the exact same manner as if the events were dispatched on the server.
 ]
 
+Next we consider the completeness of the out-of-place debugger.
 
 #let theoremdebuggercompleteness = [
-    Let $K$ be the start WebAssembly configuration for which there exists a series of transition $attach(dbgarrow, tr: alpha comma ast)$ to another configuration $K'$, and $dbg_start$ the corresponding starting debugger configuration with $K$ in $C$. Let the debugging configuration with $K'$ be $dbg$.
+    Let $K$ be the start WebAssembly configuration for which there exists a series of transitions $multi(wasmarrow)$ to another configuration $K'$. Let $dbg_start$ be the corresponding starting debugger configuration with $K$ in the client, and $dbg$ the debugging configuration with $K'$ in the client.
     Then:
 $ forall K' : K multi(wasmarrow) K' arrow.double.r.long dbg_start attach(dbgarrow, tr: alpha comma ast) dbg $
 ]
@@ -1184,7 +1195,7 @@ Only a few works have looked into static @stievenart22:static and dynamic @stiev
 
 Environment modeling is a technique used in testing to model the behavior of the environment in which a program runs @blackburn98:using.
 Such models are often used for automatic test generation @dalal99:model-based @auguston05:environment for a certain specification, and has also been applied to real-time embedded software @iqbal15:environment.
-Our work models the asynchronicity of the environment through simple partial order reduction of instantaneous events.
+Our work models the asynchronicity of the environment through a simple partial order of instantaneous events.
 This model enables exploring different behavior based on the order of events, and to a certain extent the timings of asynchronous events.
 More advanced models of the environment could help take into account additional dependencies between events, and real-time effects.
 
