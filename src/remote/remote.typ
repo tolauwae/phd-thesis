@@ -7,6 +7,7 @@
 #import "../../lib/class.typ": note, theorem, proofsketch
 
 #import "../semantics/arrows.typ": *
+#import "../semantics/forms.typ": *
 #import "../oop/figures/semantics.typ": cconfig, crules, Cbs, evt, events
 
 // figures
@@ -19,7 +20,7 @@ Developing and investigating novel debugging techniques for microcontrollers wit
 The best way to achieve this is unarguably, to use a virtual machine that can run on the microcontrollers.
 Luckily, earlier work at Ghent University, developed just such a virtual machine, called WARDuino---which was the first-ever WebAssembly virtual machine for microcontrollers @gurdeep19:warduino.
 
-However, the original work was limited to a proof of concept, and many of the promises of the new WebAssembly-based approach to programming microcontrollers were not fully realised---such as, programming in high-level languages, highly portable code, the ability to easily handle asynchronous events, and by extension support for asynchronous I/O actions.
+However, the original work was limited to a proof of concept, and many of the promises of the new WebAssembly-based approach to programming microcontrollers were not fully realised---such as, programming in high-level languages, highly portable code, the ability to easily handle asynchronous events, and by extension support for asynchronous I/O primitives.
 In this chapter, we present a more complete version of WARDuino, developed as part of this dissertation.
 We will discuss the full range of features and benefits of the new approach to programming microcontrollers proposed by WARDuino.
 
@@ -59,7 +60,7 @@ Some high-level languages have been ported to embedded devices using small custo
 == WARDuino: WebAssembly for Microcontrollers
 
 In this work we take a different approach aimed at enabling multiple high-level languages on microcontrollers while mitigating their downsides.
-To accomplish this goal, we created WARDuino~@gurdeep19:warduino, a virtual machine (VM) designed to run WebAssembly~@haas17:bringing on microcontrollers#note[WARDuino supports the first release of WebAssembly (MVP).]. // todo "we created" does this feel right given the introduction of this chapter?
+To accomplish this goal, we created WARDuino @gurdeep19:warduino, a virtual machine (VM) designed to run WebAssembly @haas17:bringing on microcontrollers#note[WARDuino supports the first release of WebAssembly (MVP).]. // todo "we created" does this feel right given the introduction of this chapter?
 Since WebAssembly is a universal compile target, it can enable programs written in a wide variety of languages to run on low-end embedded devices. This is an important design choice to improve the #emph[portability] of our solution. The design of WebAssembly further focuses on a compact representation, since the byte code is intended to be streamable and efficient~@haas17:bringing. This compactness is especially important when executing programs within the #emph[hardware limitations] of the embedded devices. Additionally, WebAssembly can achieve performance speeds close to native code~@haas17:bringing@jangda19:not, potentially outperforming other interpreters for high-level languages on microcontrollers.
 
 The WARDuino virtual machine was first presented in 2019 by #cite(<gurdeep19:warduino>, form: "prose");, and addressed #emph[the slow development cycle] and the challenging #emph[debuggability] through the initial implementation of a remote debugger with over-the-air reprogramming capabilities. The paper presented these two features as extensions to the operational semantics of WebAssembly, in order to show their interaction and compatibility with the WebAssembly standard, and to ease re-implementation in other virtual machines. Additionally, WARDuino provided support for a limited set of hardware features through WebAssembly functions embedded in the virtual machine. It is necessary to embed this support in the virtual machine, since the #emph[bare-metal execution environments] of embedded devices provide no conventional interfaces to the hardware. Simultaneously, the actions should be exposed at the level of WebAssembly in order to achieve the highest #emph[portability] possible. However, the paper left some important problems as future work.
@@ -67,7 +68,7 @@ The WARDuino virtual machine was first presented in 2019 by #cite(<gurdeep19:war
 // todo add https://www.sciencedirect.com/science/article/pii/S1084804516000990?casa_token=oQSbZCnzdN8AAAAA:0Qnux5SJSO_tDkY0OpMkNOOpE13-w5JYRKeuyRabdTGtxS066s-GmQ3JCPnKKALIRUvyb12LPQ https://www.mdpi.com/1424-8220/14/10/19582 https://ieeexplore.ieee.org/abstract/document/9247996
 First, WebAssembly does not natively support asynchronous code, but many standard M2M protocols for IoT applications  such as MQTT @banks14:mqtt rely on asynchronous events. Similarly, IoT applications often rely on asynchronous handling of hardware interrupts. Due to this limitation in WebAssembly, WARDuino lacked any support for either hardware actions that rely on asynchronicity, or M2M protocols. In this chapter, we extend the WebAssembly operational semantics with support for event-driven callback handling. Through this system, callback functions can subscribe to asynchronous events at the WebAssembly level. The functions will be executed whenever such an event occurs. While other proposals for asynchronous code in WebAssembly are being developed @webassembly-community-group22:webassembly, these proposals are still in early stages, and often focus heavily on browser applications, making them unsuitable for resource-constrained microcontrollers.
 
-Second, since hardware support is exposed at the WebAssembly level,paperthere is a language barrier that has to be bridged for every higher-level language. The original version of WARDuino did not address this issue, and in practice lacked any real support for high-level languages. In this chapter, we show that WARDuino can practically solve the #emph[low-level coding] challenge as promised in the original paper~@gurdeep19:multiverse. We illustrate how WARDuino can support high-level languages through language symbiosis, by showing different levels of language integration for AssemblyScript, a TypeScript-like language. These examples serve as a general recipe for implementing other language libraries.
+Second, since hardware support is exposed at the WebAssembly level,paperthere is a language barrier that has to be bridged for every higher-level language. The original version of WARDuino did not address this issue, and in practice lacked any real support for high-level languages. In this chapter, we show that WARDuino can practically solve the #emph[low-level coding] challenge as promised in the original paper @gurdeep19:warduino. We illustrate how WARDuino can support high-level languages through language symbiosis, by showing different levels of language integration for AssemblyScript, a TypeScript-like language. These examples serve as a general recipe for implementing other language libraries.
 
 Third, the formal rules for the debugger semantics were not used to prove any interesting properties or guarantees for the debugger. In this chapter, we improve the semantics for the debugging and over-the-air updates, and provide a proof for observational equivalence between the debugger semantics, and the underlying WebAssembly semantics. This equivalence means that the executions observed by the debugger semantics are precisely the same as those observed by the underlying language semantics.
 
@@ -75,7 +76,7 @@ Fourth, the virtual machine was never used to implement a real-world IoT applica
 
 To further illustrate how WARDuino can provide an improved development experience, closer to conventional programming, we present how WebAssembly enables fast prototyping of emulators, and the improved tool support with the visual debugger plugin for WARDuino in the VS Code IDE. This plugin is an important contribution towards the increased #emph[debuggability] of IoT software in WARDuino. The chapter also includes additional code examples that explain how hardware peripherals can be accessed from WebAssembly, as well as a notably improved and expanded presentation of the WARDuino virtual machine architecture.
 
-In summary, our novel contributions compared to the initial paper~@gurdeep19:multiverse are:
+In summary, our novel contributions compared to the initial paper @gurdeep19:warduino are:
 
 - A detailed and expanded presentation of the #emph[improved WARDuino VM];: A WebAssembly virtual machine for embedded devices#note[The latest version of the VM is freely available under the Mozilla Public License 2.0];. (@remote:architecture)
 
@@ -764,45 +765,47 @@ The execution of a WebAssembly program is described by the small step reduction 
 
 To formalize our debugging system, we extend the operational semantics of WebAssembly with the necessary remote debugging constructs. The goal of these extensions, is to provide constructs that are as lightweight as possible while still being powerful enough to provide the most common remote debugging facilities. We follow the recipe for defining a debugger semantics as outlined by #cite(<torres19:multiverse>, form: "prose");, where the semantics of the debugger are defined in terms of the underlying language’s semantics: in this case the WebAssembly specifications. One advantage of this approach, is that it leads to a very concise description of the debugger semantics. More importantly, with this recipe you get a debugger whose semantics are observationally equivalent to those of the underlying language’s semantics. This means that the debugger does not interfere with the underlying semantics, and therefore, only observes real executions. Or more precisely, any execution in the WARDuino debugger corresponds to an execution of a WebAssembly program, and conversely that any execution of a program is observed by the debugger. The recipe also makes it straightforward to proof this non-interference of the debugger, as we will show in @remote:proofsketch.
 
-
+#let bp = $"bp"$
+#let breakadd(id) = $"break"^+angle.l #id angle.r$
+#let breakrem(id) = $"break"^-angle.l #id angle.r$
 
 #semantics(
-    [#strong[Core debugger semantics.] Small step reduction rules ($attach(arrow.r.hook, br: d comma i)$) for the WARDuino remote debugger, as extensions to the WebAssembly semantics.],
+    [#strong[Core debugger semantics.] Small step reduction rules ($attach(arrow.r.hook, br: d comma i)$) for the WARDuino remote debugger, as extensions to the WebAssembly semantics as defined in #cite(form: "prose", <haas17:bringing>).],
     [
     $
-        &"(Debugger State)"& "dbg" &colon.double.eq brace.l "es", "msg"_i, "msg"_o, "s", "bp" brace.r \
+        &"(Debugger State)"& "dbg" &colon.double.eq brackets.l "es", "msg"_i, "msg"_o, "s", "bp" brackets.r \
         &"(execution state)"& "es" &colon.double.eq "play" bar.v "pause" \
-        &"(Messages)"& "msg" &colon.double.eq nothing bar.v "play" bar.v "pause" bar.v "step" bar.v "dump" bar.v "break"^+ "id" bar.v "break"^- "id" \
+        &"(Messages)"& "msg" &colon.double.eq nothing bar.v "play" bar.v "pause" bar.v "step" bar.v "dump" bar.v breakadd(id) bar.v breakrem("id") \
     $
 
     #curryst.prooftree(curryst.rule(name: [#text(size: small, [vm-run])],
-        $brace.l "play", nothing, nothing, "s", "bp" brace.r ; v^* ; e^* arrow.r.hook""_(d,i) brace.l "play", nothing, nothing, "s", "bp" brace.r ; v'^* ; e'^*$,
+        $brackets.l "play", nothing, nothing, "bp" brackets.r ; s ; v^* ; e^* arrow.r.hook""_(d,i) brackets.l "play", nothing, nothing, "bp" brackets.r ; s ; v'^* ; e'^*$,
     $s;v^*;e^* arrow.r.hook""_(i) s' ; v'^* ; e'^*$,
     $id(e^*) in.not "bp"$)) \
 
     #curryst.prooftree(curryst.rule(name: [#text(size: small, [db-step])],
-        $brace.l "pause", "step", nothing, "s", "bp" brace.r ; v^* ; e^* arrow.r.hook""_(d,i) brace.l "pause", nothing, nothing, "s'", "bp" brace.r ; v'^* ; e'^*$,
+        $brackets.l "pause", "step", nothing, "bp" brackets.r ; s ; v^* ; e^* arrow.r.hook""_(d,i) brackets.l "pause", nothing, nothing, "bp" brackets.r ; s' ; v'^* ; e'^*$,
     $s;v^*;e^* arrow.r.hook""_(i) s' ; v'^* ; e'^*$)) \
 
     #curryst.prooftree(curryst.rule(name: [#text(size: small, [db-dump])],
-        $brace.l "pause", "dump", nothing, "s", "bp" brace.r ; v^* ; e^* arrow.r.hook""_(d,i) brace.l "pause", nothing, "msg", "s'", "bp" brace.r ; v'^* ; e'^*$,
+        $brackets.l "pause", "dump", nothing, "bp" brackets.r ; s ; v^* ; e^* arrow.r.hook""_(d,i) brackets.l "pause", nothing, "msg", "bp" brackets.r ; s' ; v'^* ; e'^*$,
     $s;v^*;e^* arrow.r.hook""_(i) s' ; v'^* ; e'^*$)) \
 
 
     #curryst.prooftree(curryst.rule(name: [#text(size: small, [db-pause])],
-        $brace.l "es", "pause", nothing, "s", "bp" brace.r ; v^* ; e^* arrow.r.hook""_(d,i) brace.l "pause", nothing, nothing, "s", "bp" brace.r ; v^* ; e^*$)) \
+        $brackets.l "es", "pause", nothing, "bp" brackets.r ; s  ; v^* ; e^* arrow.r.hook""_(d,i) brackets.l "pause", nothing, nothing, "bp" brackets.r ; s ; v^* ; e^*$)) \
 
     #curryst.prooftree(curryst.rule(name: [#text(size: small, [db-pause])],
-        $brace.l "pause", "play", nothing, "s", "bp" brace.r ; v^* ; e^* arrow.r.hook""_(d,i) brace.l "play", nothing, nothing, "s", "bp" brace.r ; v^* ; e^*$)) \
+        $brackets.l "pause", "play", nothing, "bp" brackets.r ; s  ; v^* ; e^* arrow.r.hook""_(d,i) brackets.l "play", nothing, nothing, "bp" brackets.r ; s ; v^* ; e^*$)) \
 
     #curryst.prooftree(curryst.rule(name: [#text(size: small, [db-bp-add])],
-        $brace.l "es", "break"^+ "id", nothing, "s", "bp" brace.r ; v^* ; e^* arrow.r.hook""_(d,i) brace.l "es", nothing, nothing, "s", ("bp" union brace.l "id" brace.r) brace.r ; v^* ; e^*$)) \
+        $brackets.l "es", breakadd(id), nothing, "bp" brackets.r ; s  ; v^* ; e^* arrow.r.hook""_(d,i) brackets.l "es", nothing, nothing, ("bp" union brackets.l "id" brackets.r) brackets.r ; s ; v^* ; e^*$)) \
 
     #curryst.prooftree(curryst.rule(name: [#text(size: small, [db-bp-rem])],
-        $brace.l "es", "break"^- "id", nothing, "s", "bp" brace.r ; v^* ; e^* arrow.r.hook""_(d,i) brace.l "es", nothing, nothing, "s", ("bp" backslash brace.l "id" brace.r) brace.r ; v^* ; e^*$)) \
+        $brackets.l "es", breakrem(id), nothing, "bp" brackets.r ; s ; v^* ; e^* arrow.r.hook""_(d,i) brackets.l "es", nothing, nothing, ("bp" backslash brackets.l "id" brackets.r) brackets.r ; s ; v^* ; e^*$)) \
 
     #curryst.prooftree(curryst.rule(name: [#text(size: small, [db-bp-rem])],
-        $brace.l "es", "break"^- "id", nothing, "s", "bp" brace.r ; v^* ; e^* attach(arrow.r.hook, br: d comma i) brace.l "es", nothing, nothing, "s", ("bp" backslash brace.l "id" brace.r) brace.r ; v^* ; e^*$,
+        $brackets.l "es", breakrem(id), nothing, "bp" brackets.r ; s ; v^* ; e^* attach(arrow.r.hook, br: d comma i) brackets.l "es", nothing, nothing, ("bp" backslash brackets.l "id" brackets.r) brackets.r ; s ; v^* ; e^*$,
     $"es" eq.not "pause"$,
     $id(e^*) in "bp"$)) \
 ],
@@ -857,11 +860,11 @@ In order to proof the observational equivalence between the debugger semantics a
 In the semantics we leave out the specifics of the communication, and assume the incoming messages are added to the debugging state in the correct order. For the proof, we will reason over a stream of messages instead of a single one. Thanks to the recipe we follow for the debugger semantics, the proof follows almost directly by construction.
 
 #theorem("Observational equivalence")[
-Let $S$ be the WebAssembly configuration ${ s ; v^ast ; e^ast }$, for which there exists a transition (#wasmarrow) to another configuration $S'$ with ${ s' ; v'^ast ; e'^ast }$. Let the debugging configuration $({ r s , m s g_i , m s g_o , s , b p } ; v^ast ; e^ast)$ with execution state $r s$, incoming messages $m s g_i$, outgoing messages $m s g_o$, and set of breakpoints $b p$; be such that processing the stream of incoming message $M^ast$ takes exactly one externally visible step (#smallcaps[vm-run] or #smallcaps[db-step];) in the debugger semantic (#exarrow), then:
+Let $S$ be the WebAssembly configuration ${ s ; v^ast ; e^ast }$, for which there exists a transition (#wasmarrow) to another configuration $S'$ with ${ s' ; v'^ast ; e'^ast }$. Let the debugging configuration $({ "es" , "msg"_i , "msg"_o , "bp" } ; s ; v^ast ; e^ast)$ with execution state $"es"$, incoming messages $m s g_i$, outgoing messages $"msg"_o$, and set of breakpoints $"bp"$; be such that processing the stream of incoming message $M^ast$ takes exactly one externally visible step (#smallcaps[vm-run] or #smallcaps[db-step];) in the debugger semantic (#exarrow), then:
 
   $ ({ s ; v^ast ; e^ast } wasmarrow { s ' ; v '^ast ; e '^ast }) \
-  arrow.l.r.double \
-  ({ r s , m s g_i , m s g_o , s , b p } ; v^ast ; e^ast exarrow { r s , m s g_i , m s g_o , s ' , b p } ; v '^ast ; e '^ast) $
+  arrow.l.r.double.long \
+  ({ r s , m s g_i , m s g_o , b p } ; s ; v^ast ; e^ast exarrow { r s , m s g_i , m s g_o , s' , b p } ; s' ; v '^ast ; e '^ast) $
 ]
 The left-hand side of the double implication presents a single step in the normal evaluation (#wasmarrow) of a WebAssembly program, while the right-hand side presents one or more steps in the debugging semantics ($multi(dbgarrow)$) where only a single step is externally visible ($exarrow$). We will start by sketching the proof for the first implication, that is, an evaluation step in the WebAssembly semantics implies an equivalent series of debugging steps.
 
@@ -885,19 +888,23 @@ In order to improve the usability of the semantics, the over-the-air updates can
   #curryst.prooftree(vertical-spacing: vertical-spacing, curryst.rule(name: [#smallcaps(title)], conclusion, ..premises))]
 #let pause = $"pause"$
 
+#let upload(payload) = $"upload"angle.l #payload angle.r$
+#let updatef(i, fidx, code) = $"update"_(f)angle.l #i, #fidx, #code angle.r$
+#let updatel(i, fidx) = $"update"_(l)angle.l #i, #fidx angle.r$
+
 #semantics(
     [Extension of the debugging rules (@fig:dbg:syntax) with safe over-the-air updates.],
     [
     $
-        &"(Messages)"& "msg" &colon.double.eq ... bar.v "upload "m^* bar.v "update"_f " id"_i " id"_f "code"_f bar.v "update"_l j v \
+        &"(Messages)"& "msg" &colon.double.eq ... bar.v "upload "m^* bar.v updatef("id"_i, " id"_f, "code"_f) bar.v updatel(j, v) \
         &"(Closure)"& "cl" &colon.double.eq { "inst" i, "idx" j, "code" f} \
     $
 
-    #debugrule("upload-m", ${pause, "upload" m^*, nothing, s, "bp"} ; v^* ; e^* dbgarrow {pause, nothing, nothing, s', nothing} ; v'^* ; e'^*$, $(tack.r m)^*$, ${s', v'^*, e'^*} = "bootstrap"(m^*)$)
+    #debugrule("upload-m", ${pause, upload(m^*), nothing, "bp"} ; s ; v^* ; e^* dbgarrow {pause, nothing, nothing, nothing} ; s' ; v'^* ; e'^*$, $(tack.r m)^*$, ${s', v'^*, e'^*} = italic("bootstrap")(m^*)$)
 
-    #debugrule("update-f", ${pause, "update"_f id_i id_f "code"_f, nothing, s, "bp"} ; v^* ; e^* dbgarrow {pause, nothing, nothing, s', "bp"} ; v'^* ; e^*$, $s' = "update"_(f)(s, id_i, id_f, "code"_f)$)
+    #debugrule("update-f", ${pause, updatef(id_i, id_f, "code"_f), nothing, "bp"} ; s ; v^* ; e^* dbgarrow {pause, nothing, nothing, "bp"} ; s' ; v'^* ; e^*$, $s' = italic("update")_(f)(s, id_i, id_f, "code"_f)$)
 
-    #debugrule("update-local", ${pause, "update"_l j v', nothing, s, "bp"} ; v^j_1 v v^k_2 ; e^* dbgarrow {pause, nothing, nothing, s, "bp"} ; v^j_1 v' v^k_2 ; e^*$, $tack.r v : epsilon.alt arrow.r t$, $tack.r v^* : epsilon.alt arrow.r t$)
+    #debugrule("update-local", ${pause, updatel(j, v'), nothing, "bp"} ; s ; v^j_1 v v^k_2 ; e^* dbgarrow {pause, nothing, nothing, "bp"} ; s ; v^j_1 v' v^k_2 ; e^*$, $tack.r v : epsilon.alt arrow.r t$, $tack.r v^* : epsilon.alt arrow.r t$)
 
 ],
 "fig:red_update")
@@ -905,9 +912,9 @@ In order to improve the usability of the semantics, the over-the-air updates can
 
 / upload-m: An _upload_ message instructs WebAssembly to restart execution with a new set of modules $m^ast$. We require all these modules to be well typed, $(tack.r m)^ast$. The meta-function bootstrap represents WebAssembly’s initialization procedure, described in the original WebAssembly chapter @haas17:bringing. Note that this procedure replaces the entire configuration, including the WebAssembly state, locals and stack. Furthermore, upon receiving the _upload_ message the debugger state is reset and all breakpoints removed.
 
-/ update-f: The message to update a function specifies the function to update and its new code ($"code"_f$). To identify a function we must supply the ID of the instance $"id"_i$ it lives in and the index it exists at $"id"_f$ in that instance. The meta-function $sans("update")_f$ replaces the function in the state $s$ and validates that its type remains the same.
+/ update-f: The message to update a function specifies the function to update and its new code ($"code"_f$). To identify a function we must supply the ID of the instance $"id"_i$ it lives in and the index it exists at $"id"_f$ in that instance. The meta-function $italic("update")_f$ replaces the function in the state $s$ and validates that its type remains the same.
 
-    WebAssembly’s formalization transforms every function in a closure that holds its code $f$ and the module instance it was originally defined in. When a function is imported into another module or placed in a table, its closure is copied to the other module instance. Because the closure holds the original instance, it can be executed in the right context. When it calls other functions, for example, these must be the functions from the original module rather than from the calling module. We extended closures with an extra identifier idx, which holds the index of the function in its defining module. Thanks to this, the $sans("update")_f$ can replace all closures in $s$ where the inst is $i d_i$ and the idx is $i d_f$.
+    WebAssembly’s formalization transforms every function in a closure that holds its code $f$ and the module instance it was originally defined in. When a function is imported into another module or placed in a table, its closure is copied to the other module instance. Because the closure holds the original instance, it can be executed in the right context. When it calls other functions, for example, these must be the functions from the original module rather than from the calling module. We extended closures with an extra identifier idx, which holds the index of the function in its defining module. Thanks to this, the $italic("update")_f$ can replace all closures in $s$ where the inst is $"id"_i$ and the idx is $"id"_f$.
 
 / update-local: Updating a local is done with an $"update"_l$ message. This message holds the index of the local to be updated and its new value. We validate that the type of the new value is the same constant type $epsilon.alt arrow.r t$ as the original value at the chosen index.
 
@@ -1423,12 +1430,12 @@ A recent chapter by #cite(<phipps-costin23:continuing>, form: "prose"), alternat
 
 The WebAssembly System Interface (WASI) @hickey20:webassemblywasi is a collection of standardized APIs for system level interfaces. It is not part of the official WebAssembly standard, but is widely used. 
 When developing our callback system, WASI had partial support for the _pthreads_ API.
-In recent years, WASI has started to developed their uniform architecture for interoperable interactions with the host environment, called the _component model_. // todo ref
-As part of the component model, WASI is working on a new async proposal that goes beyond our callback system, and aims add native support for asynchronous functions to the component model.
+In recent years, WASI has started to developed their uniform architecture for interoperable interactions with the host environment, called the _component model_ @webassemblycomponent-model.
+As part of the component model, WASI is working on a new async proposal that goes beyond our callback system, and aims to add native support for asynchronous functions to the component model.
 We conjecture that this proposal could be used to implement a callback handling system similar to the one we have described in this chapter.
 However, at the time of writing, the proposal is still being actively developed for the next major version of the component model.
 //The WASI `pthreads` API could be used to implement interrupts in WebAssembly. WASI provides a means to access system level APIs in WebAssembly. As with our approach, these API functions can be imported from a module named `env`. The expectation is that the WASI `pthreads` API could be used to implement a callback handling system. Again, this is currently only an idea, as we are not aware of anyone actually realizing such an implementation.
-Building a callback handling system on top of WASI already has its own challenges, but using it on embedded systems adds an additional layer of constraints. As a start, simply supporting the full WASI specification on embedded devices has proven to be complicated in practice @massey21:wasm3.
+Building a callback handling system on top of WASI has its own challenges, but using it on embedded systems adds an additional layer of constraints. As a start, simply supporting the full WASI specification on embedded devices has proven to be complicated in practice @massey21:wasm3.
 
 //To the best of our knowledge there is no WebAssembly runtime for constrained devices that fully supports WASI. Moreover, this approach does not seem to have much traction in the community, as there are several online discussion threads to add a more dedicated API for asynchronous interrupts to WASI#note[In particular the #link(
 //    "https://github.com/WebAssembly/WASI/issues/79",
