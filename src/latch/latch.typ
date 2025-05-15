@@ -9,9 +9,9 @@
   mqtt: (callback: "lst.mqtt.0:1", init: "lst.mqtt.0:7", subscribe: "lst.mqtt.0:8"),
   dump: (expect: "lst.dump.0:4"),
   listen: (pureaction: "lst.listen.0:1", signature: "lst.listen.0:5", assertable: "lst.listen.0:8"),
-  suite: (testee: "lst.suite.testee.0:2", test: "lst.suite.test.0:4", run: "lst.suite.run.0:5"),
+  suite: (testee: "lst.suite.0:2", test: "lst.suite.0:4", run: "lst.suite.0:5"),
   action: (simple: "lst.action.0:3", publish: "lst.action.0:5"),
-  unit: (check: "lst.unit.check.0:7", invoke: "lst.unit.invoke.0:6"))
+  unit: (check: "lst.unit-test.0:7", invoke: "lst.unit-test.0:6"))
 
 Debuggers are only useful when you know you have a bug.
 There are naturally many ways to discover bugs in your software, however, the single most effective and widely used approach is unsurprisingly _testing_.
@@ -202,16 +202,16 @@ The example multiplication test is added to the test suite on #line(lines.suite.
     [#latch setup code to run the $mono("multiplicationTest")$ on two ESP32 devices.],
     (```ts
 const suite = latch.suite("Example test suite");
-suite.testee("wrover A", new ArduinoSpec("/dev/ttyUSB0", "esp32:esp32:esp32wrover"), 5000)'\label{line:suite:testee}'
+suite.testee("wrover A", new ArduinoSpec("/dev/ttyUSB0", "esp32:esp32:esp32wrover"), 5000)
      .testee("wrover B", new ArduinoSpec("/dev/ttyUSB1", "esp32:esp32:esp32wrover"))
-     .test(multiplicationTest);'\label{line:suite:test}'
-latch.run([suite]);'\label{line:suite:run}'
+     .test(multiplicationTest);
+latch.run([suite]);
 ```,))
 
 @lst.suite shows how a test suite is built in #latch through a fluent interface @xie17:principles, meaning the methods for constructing a test suite can be chained together.
 Each test suite in latch is entirely separate from the rest, and therefore contains only its own tests, and platforms to run those tests on.
 In the example, two ESP32 devices are configured for the test suite.
-This means that when the test suite is started with the *run* function on #line(lines.suite.run), the framework will execute all scenarios in the suite on all configured platforms.
+This means that when the test suite is started with the _run_ function on #line(lines.suite.run), the framework will execute all scenarios in the suite on all configured platforms.
 Alternatively, the user can configure #latch to not execute duplicate runs, but instead to split the tests into chunks that are performed in parallel on different devices.
 In that case, each test is only run once and the execution time of the whole test suite should be dramatically improved due to the parallelization.
 
@@ -369,9 +369,9 @@ The list of assertions is optional, a step without any assertions will always su
 The set of commands #latch supports is shown in @tab:instructions.
 We divide the set of commands in intercession, meta, and introspection commands.
 The intercession commands, allow #latch tests to intervene directly with the software under test.
-With *invoke* the programmer can call a function and wait for the result, as illustrated by the step in our multiplication example (@lst.unit-test).
+With _invoke_ the programmer can call a function and wait for the result, as illustrated by the step in our multiplication example (@lst.unit-test).
 This enables unit testing of specific functions, as is the popular approach adopted in most testing frameworks @doctest @junit.
-With *set local* the programmer can change a local variable, this is especially useful to test a program with local boundary conditions without having to rerun the program completely.
+With _set local_ the programmer can change a local variable, this is especially useful to test a program with local boundary conditions without having to rerun the program completely.
 
 #figure([
   #set text(size: small) //, font: sans)
@@ -385,7 +385,7 @@ With *set local* the programmer can change a local variable, this is especially 
         "Introspection", [core dump, dump callback mapping, dump locals]
 )], caption: [The #latch commands. Internal commands are in italic.])<tab:instructions>
 
-The *reset* and *upload module* instructions are primarily for internal use in #latch, but are available in the test specification language.
+The _reset_ and _upload module_ instructions are primarily for internal use in #latch, but are available in the test specification language.
 The upload module instruction loads a binary onto the testee, replacing any current program.
 The reset instruction restarts the current program.
 
@@ -432,12 +432,12 @@ This is useful to define actions that need to respond to changes on the testee d
 Actions may be asynchronous and therefore return promises.
 A promise is the standard mechanism for managing asynchronicity in JavaScript and TypeScript @parker15:javascript @madsen17:model.
 If the action is expected to return a response, the promise should contain the output.
-For #latch to run checks over this output, it needs to be of the *Assertable* type.
-#latch provides a function that can turn any object into an *Assertable* object.
+For #latch to run checks over this output, it needs to be of the _Assertable_ type.
+#latch provides a function that can turn any object into an _Assertable_ object.
 
 #snippet("lst.syntax.action",
     columns: 1,
-    [#latch actions allow developers to execute arbitrary code in a test step. Output of such actions can be checked for correctness with the `Assertable<T>` interface.],
+    [#latch actions allow developers to execute arbitrary code in a test step. Output of such actions can be checked for correctness with the $mono("Assertable<T>")$ interface.],
     (```ts
 type Assertable<T extends Object | void> = {[index: string]: any};
 
@@ -453,11 +453,10 @@ However, this action returned no result, over which the test step could define a
 @lst.listen gives an second example of an action that does return a result.
 The action will listen for the next MQTT message for a specific topic.
 On #line(lines.listen.signature), the $mono("act")$ function returns a promise that resolves when the first message for the correct topic arrives.
-The promise contains the MQTT message of the application-specific
-*Message* type, including a topic and payload field.
+The promise contains the MQTT message of the application-specific _Message_ type, including a topic and payload field.
 This object can be used to define checks over the payload of the message with #latch assertions.
-However, for #latch to run checks against the message, the returned object must conform to the #emph[Assertable] interface.
-That is why on #line(lines.listen.assertable), the message object is wrapped in a #emph[Assertable] by the assertable function, shown in @lst.syntax.action.
+However, for #latch to run checks against the message, the returned object must conform to the _Assertable_ interface.
+That is why on #line(lines.listen.assertable), the message object is wrapped in a _Assertable_ by the assertable function, shown in @lst.syntax.action.
 
 #snippet("lst.listen",
     columns: 1,
@@ -478,9 +477,9 @@ function listen(topic: string): Action<Message> {
 
 Aside from the instruction, each step contains a list of zero or more assertions.
 These assertions are used to perform checks on the result of the step's instruction.
-The result of an instruction is always of the #emph[Assertable] type shown in @lst.syntax.assertion, which is an object that contains any number of properties that are indexed by strings.
+The result of an instruction is always of the _Assertable_ type shown in @lst.syntax.assertion, which is an object that contains any number of properties that are indexed by strings.
 
-For each string-indexed property of an #emph[Assertable] result, a test step can contain one or more assertions.
+For each string-indexed property of an _Assertable_ result, a test step can contain one or more assertions.
 The interface of the assertions is shown in @lst.syntax.assertion.
 The Assertions represent a check over a single property of the assertable object, specified by their string index.
 The assertions over the object's properties follow the $mono("Expect")$ interface, also shown in @lst.syntax.assertion.
@@ -528,7 +527,7 @@ The first checks whether the mode field in the state is set to pause, and the se
 
 #snippet("lst.dump",
     columns: 1,
-    [Example step that uses the *core dump* command to check that execution paused in the `echo` function.],
+    [Example step that uses the _core dump_ command to check that execution paused in the _echo_ function.],
     (```ts
 const step: Step = {
     title: "CHECK: entered *echo* function",
@@ -1056,15 +1055,14 @@ In this section we provide empirical evidence to support our research question:
 === Test suites
 
 To answer the question of performance, we execute a number of tests suites with #latch on an ESP32-WROVER IE and measure the runtime overhead compared to executing the same suites on a laptop.
-The test suites include the unit and debugging test suites presented in @sec:usecases, and an additional test suite which is more computationally intensive. %
+The test suites include the unit and debugging test suites presented in @sec:usecases, and an additional test suite which is more computationally intensive.
 We chose these three types of test suites in order to have a wide range of tests that are unique in different aspects.
 The specification test suites from @subsec:spec are structurally identical, but test very different aspects of computer programs, ranging from memory manipulation, to control flow.
 The suites also represent a very common test pattern, unit testing through single function invocation, which is ubiquitous in many modern testing practices.
 The debugging test suite on the other hand, does not limit itself to just the invoke command, but uses the entire range of #latch commands in its tests, which also contain multiple steps.
 The computing test suite is structurally similar to the specification test suites, but is computationally more intensive, with steps that generally take at least an order of magnitude longer to perform.
 
-\paragraph{Large Unit Test Suites}
-We use the WARDuino specification test suites as found in the public repository of the virtual machine, which we presented in @subsec:spec.
+#strong[Large Unit Test Suites.] We use the WARDuino specification test suites as found in the public repository of the virtual machine, which we presented in @subsec:spec.
 The collection contains 10,213 total tests across 25 test suites.
 The tests cover the operations on the numerical values, both integer and floating point, which are the only types of values in WebAssembly.
 The #emph[copy], #emph[load], #emph[align], and #emph[address] categories test the WebAssembly memory, while the #emph[local tee], #emph[local set], #emph[local get], #emph[nop], #emph[return], #emph[call indirect], and #emph[call] categories test stack manipulation.
@@ -1080,15 +1078,13 @@ This is already more than twice the size of the microcontroller's memory, withou
 This means, that the WARDuino developers cannot currently test on the microcontrollers they target.
 However, when comparing the outcome of this approach with the output of the #latch version, we found no differences, giving us confidence in the soundness of our framework.
 To assess the performance of #latch,
-we measure the overhead of executing the #latch test suites on a microcontroller compared with current practices, i.e. using a simulator.   %
+we measure the overhead of executing the #latch test suites on a microcontroller compared with current practices, i.e. using a simulator.
 
-\paragraph{WARDuino Debugger Test Suite}
-While the different specification test suites, test very different aspects, their structure are similar.
+#strong[WARDuino Debugger Test Suite.] While the different specification test suites, test very different aspects, their structure are similar.
 We therefore include the debugger test suite outlined in @sec:usecases, as an example that is not a traditional unit test suite.
 Rather than exclusively using the invoke command, this suite uses all commands available to #latch.
 
-\paragraph{Computing Test Suite}
-As a final example, we include a test suite that unit tests a few simple mathematical operations, calculate the factorial, get the nth number in the fibonacci sequence, find the greatest common divider, and check if a number is prime.
+#strong[Computing Test Suite.] As a final example, we include a test suite that unit tests a few simple mathematical operations, calculate the factorial, get the nth number in the fibonacci sequence, find the greatest common divider, and check if a number is prime.
 Similar to the specification test suites, the computing tests each include a single invoke step.
 However, while the steps in the other test suites are very fast, taking just a few milliseconds---the steps in this test suite can take several centiseconds.
 
@@ -1246,8 +1242,8 @@ However, the existing device farms heavily target mobile devices, and again limi
 
 Dependencies in #latch can be viewed as conditional skips for tests, where a test is skipped if any of the scenarios it depends on fail.
 Conditional skips have been around for some time in unit testing frameworks, such as the pytest framework for the Python language @krekel23:pytest, and the JUnit framework for Java @bechtold23:junit.
-Pytest includes a *skipif* annotation which takes a boolean expression as its argument.
-In JUnit developers can use the *Assume* class, which provides a set of methods for conditional execution of tests.
+Pytest includes a _skipif_ annotation which takes a boolean expression as its argument.
+In JUnit developers can use the _Assume_ class, which provides a set of methods for conditional execution of tests.
 Modern frameworks targeting constrained devices @platformio23:unit @murdoch23:arduinounit do not support conditional tests.
 
 #heading(numbering: none, level: 4, "Test prioritization and selection")
