@@ -215,13 +215,17 @@
     )
   ]
 
+#let trigger(payload) = [$"trigger"angle.l #payload angle.r$]
+
 #let eventsrules = [
     #table(columns: (1fr, 1fr), stroke: none, gutter: 1.0em,
-      tablehead("Evaluation rules"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.4em), prooftree(rule(
+      tablehead("Adjusted syntax rules"), "",
+      table.cell(colspan: 2,$    &"(Debug commands)"& m & colon.double.eq "play" ∣ "pause" ∣ "step" | trigger(j) $),
+      tablehead("New valuation rules"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.4em), prooftree(rule(
           $dbg dbgarrow dbg'$, $(wasmarrow) eq.not "interrupt"$, name: ""))),
         table.cell(colspan: 2, prooftree(rule(
           $
-          brackets.l halted, boxed(nothing) separator {s; v^*; e^*} separator boxed("trigger" j) bar.v S brackets.r dbgarrow brackets.l halted, boxed(nothing) separator K' separator boxed(nothing) bar.v S brackets.r
+          brackets.l halted, boxed(nothing) separator {s; v^*; e^*} separator boxed(trigger(j)) bar.v S brackets.r dbgarrow brackets.l halted, boxed(nothing) separator K' separator boxed(nothing) bar.v S brackets.r
           $,
           $
           xi = s_events(j)$,$
@@ -233,7 +237,7 @@
         ))),
         table.cell(colspan: 2, prooftree(rule(
           $
-          brackets.l halted, boxed(nothing) separator {s; v^*; e^*} separator boxed("trigger" j) bar.v S brackets.r dbgarrow \
+          brackets.l halted, boxed(nothing) separator {s; v^*; e^*} separator boxed(trigger(j)) bar.v S brackets.r dbgarrow \
               brackets.l halted, boxed(nothing) separator {s; v^*; e^*} separator boxed(nothing) bar.v S brackets.r
           $,
           $

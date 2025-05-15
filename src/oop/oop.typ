@@ -649,7 +649,7 @@ We therefore want full control over the impact that asynchronous events have on 
 @oop:sem:events shows the extended semantics of the out-of-place debugger for handling and controlling asynchronous events, defined as the relation ($attach(#dbgarrow, tr: alpha)$) which extends (#dbgarrow).
 To provide developers with control over the event and callback system, the out-of-place debugger disables the automatic dispatching of events, as shown at the top of @oop:sem:events.
 Specifically, the debugger will never take the _interrupt_ step.
-Instead it provides a new debug message _trigger_, which takes the index of a event in the queue to be dispatched.
+Instead it provides a new debug message $italic(trigger(j))$, which takes the index $j$ of a event in the queue to be dispatched.
 However, some events cannot occur before other events, the most straightforward case is where one MQTT message is the consequence of another.
 In such cases, reordering the events may result in execution paths that are impossible without the interference of the debugger.
 To prevent the debugger from causing such impossible scenario's, the semantics assumes there is a partial order relation #partialorder for the events in the queue.
