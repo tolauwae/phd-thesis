@@ -3,6 +3,7 @@
 #import "../lib/book.typ": is-page-empty, quote, toc
 #import "../lib/class.typ": s, t, e, f, note-padding, note-gutter, note
 #import "../lib/fonts.typ": serif, sans, mathfont, monospace, small, normal, script, codefont
+#import "../lib/colors.typ": colour
 
 #import "preamble/titlepage.typ": titlepage
 
@@ -227,6 +228,7 @@
     #show raw.where(block: true): set text(size: script)
     #show raw.where(block: true): set par(leading: 0.55em)
 
+    #show link: set text(fill: colour.links)
 
 #[
     #set page(numbering: none, footer: none)
