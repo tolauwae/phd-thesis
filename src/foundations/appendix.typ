@@ -4,7 +4,8 @@
 
 = Simply typed lambda calculus extensions<app:stlc>
 
-// todo figures should not be put top in the appendix
+The rules for simply typed lambda calculus taken from the definitive work, _Types and Programming Languages_ from Benjamin C. Pierce.
+
 #semantics(
     [#strong[Natural numbers and booleans for $lambda^arrow.r$.] The syntax, evaluation, and typing rules for the natural numbers and booleans @pierce02:types.],
     [#nat],

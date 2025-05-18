@@ -55,7 +55,7 @@ Finally, the $mono("digital_read")$ function takes a digital pin as argument, an
 				[#strong("digitalRead")\(pin\)], $"int" arrow.r "int"$
 ))]<fig.blink>
 
-#[
+#let text = [
 #let type = [@fig.blink:3]
 #let void = [@fig.blink:5]
 #let importStart = [@fig.blink:7]
@@ -194,7 +194,7 @@ Finally, the $mono("analogRead")$ function measures the voltage on a certain pin
 ]))<fig.pwm>
 
 // Fade example
-#[
+#let nnn = [
 #let loop = [@fig.pwm:6]
 #let init = [@fig.pwm:7]
 #let end = [@fig.pwm:22]

@@ -586,11 +586,11 @@ def_prim_reverse(rotate) {
 ),)
 
 #[
-#let encode = "lst.program.0:7"
-#let relative   = "lst.program.0:8"
-#let drive    = "lst.program.0:10"
-#let serialize    = "lst.program.1:4"
-#let set-angle      = "lst.program.1:12"
+#let encode = "lst.program:7"
+#let relative   = "lst.program:8"
+#let drive    = "lst.program:10"
+#let serialize    = "lst.program:4"
+#let set-angle      = "lst.program:12"
 
 To illustrate the implementation of reversible primitives, we will use the example of the #emph[rotate] primitive, which rotates a servo motor for a given number of degrees.
 The forwards implementation is shown on the left side of @fig:motor-impl.

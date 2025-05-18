@@ -1,4 +1,4 @@
-#import "../../lib/util.typ": code, snippet, algorithm, semantics, lineWidth, headHeight, tablehead, highlight, boxed, circled
+#import "../../lib/util.typ": code, snippet, algorithm, semantics, lineWidth, headHeight, tablehead, highlight, boxed, circled, illustration
 #import "../../lib/class.typ": note, theorem, proofsketch, proof, example, lemma, axiom
 #import "../../lib/fonts.typ": sans, script, serif
 
@@ -982,7 +982,7 @@ Upon receiving an interrupt, the `buttonPressed` function is called, which toggl
 While the code may not contain errors, the hardware can cause bugs in it.
 Consider the following bug scenario: when testing the application with a real button, the LED sometimes does not change despite the button being pressed.
 
-#figure(grid(columns: (1fr, 1fr), align: end, column-gutter: 2mm, snippet("oop:hardwareproblems",
+#figure(kind: illustration.hidden, supplement: [], grid(columns: (1fr, 1fr), align: end, column-gutter: 2mm, snippet("oop:hardwareproblems",
     columns: 2,
     [A simple AssemblyScript program that toggles an LED when a button is pressed.],
     (```ts

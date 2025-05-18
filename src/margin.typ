@@ -4,6 +4,7 @@
 #import "../lib/class.typ": s, t, e, f, note-padding, note-gutter, note
 #import "../lib/fonts.typ": serif, sans, mathfont, monospace, small, normal, script, codefont
 #import "../lib/colors.typ": colour
+#import "../lib/util.typ": illustration
 
 #import "preamble/titlepage.typ": titlepage
 
@@ -95,7 +96,13 @@
             text(weight: 600, style: "normal", size: 18pt, [#it.body])
             v(0.10em)
         }
-        [#metadata(none) <chapter-start>]
+        [
+          #metadata(none) <chapter-start>
+          #counter(figure.where(kind: illustration.algorithm)).update(0)
+          #counter(figure.where(kind: illustration.code)).update(0)
+          #counter(figure.where(kind: illustration.figure)).update(0)
+          #counter(figure.where(kind: illustration.table)).update(0)
+        ]
     }
 
     //#show ref.where(
@@ -205,7 +212,7 @@
     )
 
     //// style figures
-    #set figure(placement: top)
+    #set figure(placement: top, kind: illustration.figure, supplement: [Figure])
     #show figure.where(kind: "algorithm"): set figure(placement: none)  // top placement for algorithms breaks line labels
 
     #set figure.caption(separator: ". ")

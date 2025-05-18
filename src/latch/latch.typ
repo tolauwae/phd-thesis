@@ -1,6 +1,6 @@
 #import "@preview/lovelace:0.3.0": pseudocode, with-line-label, pseudocode-list, line-label
 
-#import "../../lib/util.typ": circled, line, snippet, algorithm, lineWidth
+#import "../../lib/util.typ": circled, line, snippet, algorithm, lineWidth, illustration
 #import "../../lib/class.typ": note
 #import "../../lib/fonts.typ": small
 
@@ -383,7 +383,7 @@ With _set local_ the programmer can change a local variable, this is especially 
      	"Meta"         , [pause,  set breakpoint, continue,
                           delete breakpoint, step, step over, _reset_],
         "Introspection", [core dump, dump callback mapping, dump locals]
-)], caption: [The #latch commands. Internal commands are in italic.])<tab:instructions>
+)], caption: [The #latch commands. Internal commands are in italic.], kind: illustration.table, supplement: [Table])<tab:instructions>
 
 The _reset_ and _upload module_ instructions are primarily for internal use in #latch, but are available in the test specification language.
 The upload module instruction loads a binary onto the testee, replacing any current program.

@@ -3,6 +3,15 @@
 #import "fonts.typ": serif, monospace, normal, script, tiny
 #import "colors.typ": colour
 
+#let illustration = (
+    algorithm: "algorithm",
+    code: "code",
+    figure: "image",
+    table: "table",
+    hidden: "unlist",
+    codly: "codly",
+)
+
 #let circled(body) = box(baseline: 0.24em, height: 1em, circle(stroke: 0.2mm)[
         #set align(center + horizon)
         #set text(size: 8pt)
@@ -14,16 +23,8 @@
     if prefix != none {
       prefix = prefix + " "
     }
-    show ref: it => {
-      let el = it.element
-      if el != none and el.has("kind") and el.kind == "codly-line" [#prefix#link(el.location(), [#numbering(
-          el.numbering,
-          ..counter(figure).at(el.location())
-        )])] else {
-        none
-      }
-    }
-    ref(label(tag))
+    let sp = tag.split(regex("[:]"))
+    [#text(fill: red, link(label(sp.at(0)), [#supplement #sp.at(sp.len() - 1)]))#label(tag)]
 }
 
 #let range(start, end, separator: " to ") = {
@@ -47,14 +48,14 @@
         #let snippets = ()
         #for (index, el) in content.enumerate() {
             let subtag = tag + "." + str(index)
-            snippets.push([#figure[#code(offset: cursor)[#el]]#label(subtag)])
+            snippets.push([#figure(kind: illustration.codly, supplement: [])[#code(offset: cursor)[#el]]#label(subtag)])
             if continuous {
                 cursor += el.at("text").split("\n").len()
             }
         }
 
         #if (headless) [
-            #figure(supplement: [Listing], kind: "code", placement: top)[
+            #figure(kind: illustration.hidden, supplement: [], placement: top)[
             #grid(
                 columns: columns,
                 column-gutter: 0.5mm,
@@ -62,7 +63,7 @@
                 ..snippets)
             ]#label(tag)
         ] else [
-          #figure(caption: caption, supplement: [Listing], kind: "code", placement: top)[
+          #figure(caption: caption, supplement: [Listing], kind: illustration.code, placement: top)[
             #grid(
                 columns: columns,
                 column-gutter: 0.5mm,
@@ -80,7 +81,7 @@
         #set text(8pt)
         #align(left)[
         #figure(
-            kind: "algorithm",
+            kind: illustration.algorithm,
             caption: caption,
             supplement: [Algorithm])[
                 #grid(
@@ -102,6 +103,7 @@
         #set text(8pt)
         #figure(
             caption: caption,
+            kind: illustration.figure,
             supplement: [Figure]
         )[
                 #grid(

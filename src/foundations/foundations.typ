@@ -1,5 +1,5 @@
 #import "../../lib/class.typ": note, theorem, proof, example, lemma
-#import "../../lib/util.typ": semantics
+#import "../../lib/util.typ": semantics, illustration
 #import "../../lib/fonts.typ": sans, small
 
 #import "figures/semantics.typ": *
@@ -420,7 +420,7 @@ The previous soundness criteria are defined in terms of the entire debugging ses
 This criterion can never be satisfied for all debugging session of an intercession debugger that can arbitrarily update the program code.
 We can illustrate this by the following example (@example), where we use the _substitution_ command to change the program at runtime.
 
-#figure(placement: none, [#example([
+#figure(placement: none, kind: illustration.hidden, supplement: none, [#example([
   The following shows a sequence of steps in the intercession debugger. Intercession commands are shown in bold. // Steps taken in the underlying semantics are shown in black, while debugger steps are shown in an italic red font.
 
   #set text(size: small)
