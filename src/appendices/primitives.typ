@@ -1,7 +1,16 @@
+#import "../../lib/class.typ": note
+#import "../../lib/util.typ": lineWidth
+
+#set figure(placement: top)
+#set rect(inset: 0mm)
+#set table.hline(stroke: lineWidth)
+
 = Built-in Modules<primitives>
 
-This appendix gives an overview of the WARDuino VM's built-in modules, which provide primitives for controlling peripheral hardware and other essential aspects of IoT applications.
+In this appendix, we give an overview of the WARDuino VM's built-in modules, which provide primitives for controlling peripheral hardware and other essential aspects of IoT applications.
 The examples are written in WebAssembly's textual format.
+
+#text(style: "normal", [This appendix is taken from the WARDuino overview paper @lauwaerts24:warduino, and is meant as a quick reference for @chapter:remote. However, the exact interfaces of the primitives are subject to changes, and many additional modules have been added since. The most up-to-date overview can be found on the official WARDuino #link("https://topllab.github.io/WARDuino/reference/primitives.html")[documentation website], which at the time of writing is still primarily maintained by myself.])
 
 == Input-Output Pins
 
@@ -13,8 +22,8 @@ The mode of a pin determines if it can be used for reading or writing, it is imp
 Arduino abstracts away the division between ports and pins through a simple API.
 This API allows us to set the pin mode, read the pin or write a value to it.
 In WARDuino we defined a native implementation of these functions in an IO module.
-The signatures of the functions in our IO module are listed on the right side of figure~@fig.blink.
-The first function, $mono("pin_mode")$ returns no values, but takes two $mono("i32")$#footnote[32 bit integer] arguments; the first argument identifies the pin and the second the mode, either $sans("input")$, $sans("output")$, or $sans("input_pullup")$.
+The signatures of the functions in our IO module are listed on the right side of figure @fig.blink.
+The first function, $mono("pin_mode")$ returns no values, but takes two $mono("i32")$#note[32 bit integers] arguments; the first argument identifies the pin and the second the mode, either $sans("input")$, $sans("output")$, or $sans("input_pullup")$.
 The second function $mono("digital_write")$ has no return value and takes two arguments.
 Again, the first argument specifies the pin, and this time the second argument provides the value to be written to the digital pin, either $sans("high")$ or $sans("low")$.
 Finally, the $mono("digital_read")$ function takes a digital pin as argument, and returns the value read from the specified pin, either $sans("high")$ or $sans("low")$, as an $mono("i32")$ value.
@@ -49,11 +58,11 @@ Finally, the $mono("digital_read")$ function takes a digital pin as argument, an
     (call $dig_write (i32.const 16) (i32.const 1)) (; on ;)
     (call $delay (i32.const 5000)) (; sleep 5s ;)
     (br $begin)))) (; jump back to start of $begin loop ;)
-```], table(columns: 2,  align: (left, right),
+```], rect(inset: 0mm, table(columns: 2,  align: (left, right),
 				[#strong("pinMode")\(pin,mode\)], $"int" times "int" arrow.r ()$,
 				[#strong("digitalWrite")\(pin, value\)], $"int" times "int" arrow.r ()$,
 				[#strong("digitalRead")\(pin\)], $"int" arrow.r "int"$
-))]<fig.blink>
+)))]<fig.blink>
 
 #let text = [
 #let type = [@fig.blink:3]
@@ -71,12 +80,12 @@ The program is defined as a module with four major sections.
 The first part, lines #type to #void, declares the types used throughout the program.
 WebAssembly byte code uses numerical indices to refer to other entities, such as function arguments, local variables, functions and so on.
 In the text format we can assign these entities a human-readable name prefixed with a dollar sign.
-For instance the first type gets the name $mono("\$int->int->vd")$ on #type.
+For instance the first type gets the name $mono("$int->int->vd")$ on #type.
 The name of the type is followed by the description of the type, which starts with the $mono("func")$ keyword signifying it is a function type.
 Next, all the parameters are listed,  each with a separate $mono("param")$ keyword followed by the parameter type.
 A parameter can only have a basic numeric type.
-For the $mono("\$int->int->vd")$, there are two 32-bit integer parameters ($mono("i32")$).
-A function which takes no arguments ($mono("\$vd->vd")$), has only one $mono("param")$ keyword without a type, as is the case on #void.
+For the $mono("$int->int->vd")$, there are two 32-bit integer parameters ($mono("i32")$).
+A function which takes no arguments ($mono("$vd->vd")$), has only one $mono("param")$ keyword without a type, as is the case on #void.
 After the parameters, the base numeric type of the return value is specified in a similar way.
 The $mono("result")$ keyword is followed by a basic numeric type, or by no type to indicate void (abbreviated $mono("vd")$), as is the case for all the types in the example.
 
@@ -87,14 +96,14 @@ This is followed by a declaration of the imported entity, which can be either a 
 In this example, we only import functions.
 Thus, each description consists of the $mono("func")$ keyword followed by an identifier referring to the type of the imported function.
 
-Next, the program exports the function $mono("\$blink")$ under the name "main" on #export.
+Next, the program exports the function $mono("$blink")$ under the name "main" on #export.
 When executing a WebAssembly module with WARDuino, our VM will automatically look for an exported function with the name ``main''.
 It considers this function the entry point of the program, and will automatically start executing it.
 
 The $mono("$blink")$ function is defined on lines #function to #end, it starts by setting the mode of the LED pin#footnote[In the example, we assume the LED is attached to pin 16.] to 1 ($sans("output")$).
 This is done by calling the $mono("pin_mode")$ primitive imported under the name $mono("$pin_mode")$.
-WebAssembly allows two different function call syntaxes, ``folded'' and ``unfolded''.
-In this case we used the ``folded syntax'' to make the call.
+WebAssembly allows two different function call syntaxes, "folded" and "unfolded".
+In this case we used the "folded syntax" to make the call.
 We placed the arguments to $mono("$pin_mode")$ in the brackets of the $mono("call")$ instead of placing these arguments on the stack first as one would usually do in a stack based language#footnote[The unfolded form is: $mono("(i32.const 16) (i32.const 1) (call $pin_mode)")$].
 The two notations are equivalent and we will use them interchangeably.
 After this, the function continuously blinks the LED every 10 seconds in an infinite loop, starting at #loop.
@@ -200,16 +209,16 @@ Finally, the $mono("analogRead")$ function measures the voltage on a certain pin
 #let end = [@fig.pwm:22]
 
 The left side of figure~@fig.pwm shows how we can use the PWM primitives to add a slow fade effect to a blinking led.
-Analogous to the code example for letting an LED light blink, the WebAssembly module contains a main function that takes no arguments and returns no values, but does contain one local variable $mono("\$i")$.
+Analogous to the code example for letting an LED light blink, the WebAssembly module contains a main function that takes no arguments and returns no values, but does contain one local variable $mono("$i")$.
 Local variables in WebAssembly are always defined at the start of the function alongside the arguments and return values.
 The main function first sets the pin mode of the LED pin to output.
 After the correct mode is set,  the code lets the LED fade on and off continuously in an infinite loop, starting on #loop.
-The body of our outer loop first initializes the variable $mono("\$i")$ to zero on #init.
-Then, a first inner loop increments the brightness of the LED from 0 to the maximum value 255 in steps of one, by writing the value of $mono("\$i")$ to the pin with the $mono("analog_write")$ primitive.
+The body of our outer loop first initializes the variable $mono("$i")$ to zero on #init.
+Then, a first inner loop increments the brightness of the LED from 0 to the maximum value 255 in steps of one, by writing the value of $mono("$i")$ to the pin with the $mono("analog_write")$ primitive.
 Each iteration of the loop waits five milliseconds before continuing.
-At the end of this inner loop, the $mono("br_if")$ instruction jumps back to the start of the loop if the loop iterator $mono("\$i")$ is less than 255.
-After the first loop when $mono("\$i")$ equals 255, a second inner loop decrements the brightness of the LED light in the same way.
-Once $mono("\$i")$ hits zero, we have reached the endremote the cycle and the unconditional branch instruction $mono("(br \$infinite)")$, at #end, jumps back to the start of the main loop.
+At the end of this inner loop, the $mono("br_if")$ instruction jumps back to the start of the loop if the loop iterator $mono("$i")$ is less than 255.
+After the first loop when $mono("$i")$ equals 255, a second inner loop decrements the brightness of the LED light in the same way.
+Once $mono("$i")$ hits zero, we have reached the endremote the cycle and the unconditional branch instruction $mono("(br $infinite)")$, at #end, jumps back to the start of the main loop.
 ]
 
 == Serial Peripheral Interface<sec:serial-peripheral-interface>
@@ -222,7 +231,7 @@ Software implementations are however, significantly slower than making use of th
 
 #figure(
   caption: [API of the WARDuino SPI module],
-  table(columns: 2, 
+  rect(inset: 0mm, table(columns: 2, 
     [spiBegin()                    ], $ ()  arrow.r ()           $,
     [spiBitOrder(bitorder)         ], $ "int" arrow.r ()           $,
     [spiClockDivider(divider)      ], $ "int" arrow.r ()           $,
@@ -232,7 +241,7 @@ Software implementations are however, significantly slower than making use of th
     [spiBulkTransfer8(count,data)  ], $ "int" times "int" arrow.r ()$,
     [spiBulkTransfer16(count,data) ], $ "int" times "int" arrow.r ()$,
     [spiEnd()                      ], $ () arrow.r ()            $
-))<fig.SPI>
+)))<fig.SPI>
 
 WARDuino's primitives governing access to the hardware SPI bus are shown in figure~@fig.SPI.
 The functions $mono("spiClockDivider")$, $mono("spi\-Bit\-Order")$, $mono("spiDataMode")$ are configuration functions to specify how data will be transferred.
@@ -244,7 +253,7 @@ The inclusion of the bulk operations can improve the performance of a display dr
 
 We have used the SPI module to implement a display driver in WARDuino.
 We leave out the specifics of that implementation here, not only for brevity, but because the code is originally written in C, rather than directly in WebAssembly like our other examples.
-We refer any interested reader to the first paper on WARDuino \cite{gurdeep-singh19}.
+We refer any interested reader to the first paper on WARDuino @gurdeep19:warduino.
 
 == Serial Port Communication<remote:serial-port-communication>
 
@@ -263,10 +272,11 @@ We refer any interested reader to the first paper on WARDuino \cite{gurdeep-sing
     (i32.const 0) (; start index of string ;)
     (i32.const 8) (; string length ;)
     (call $print)))
-```], table(columns: 3, 
-            [#strong[print]\(string\)    ], $"int" times "int"}^{"string"}$, $arrow.r ()$,
+```], rect(inset: 0mm, table(columns: 3,
+            "", $italic("string")$, "",
+            [#strong[print]\(string\)    ], $"int" times "int"$, $arrow.r ()$,
 	        [#strong[print_int]\(value\) ], $"i32"$, $arrow.r ()$
-)))<fig.serial>
+))))<fig.serial>
 
 Microcontrollers typically have at least one serial port.
 This port is used for flashing code to a microcontroller.
@@ -285,7 +295,7 @@ To pass a string as an argument to a function, it can be represented as a tuple 
 This is illustrated in figure~@fig.serial, which shows the interface of our two serial bus primitives.
 One primitive simply prints a numeric value, the other prints a string from linear memory.
 The example program on the left side of the figure shows how we can print a string to the serial port in WebAssembly.
-The code starts on line 2 by declaring a WebAssembly linear memory with the label $mono("\$text")$, followed by an initial size of one memory page (64 kiB).
+The code starts on line 2 by declaring a WebAssembly linear memory with the label $mono("$text")$, followed by an initial size of one memory page (64 kiB).
 This is more than enough space to store the simple message in the data section on the next line.
 This section is similar to the data sections found in native executable files.
 The string is written at offset 0 in linear memory at initialization time.
@@ -333,14 +343,14 @@ We represent those strings as pairs of integers as discussed in the section on t
     (call $print)
   ))
 ```], 
-table(
+rect(inset: 0mm, table(
   columns: 3,
   align: (left, center, right),
   [#strong[connect]], $"ssid"_{"start"}, "ssid"_{"length"}$, $"int"^4 & arrow.r ()$,
    [], $"pass"_{"start"}, "pass"_{"length"}$, [],
   [#strong[status]\(\)], [], $() arrow.r "int"$,
   [#strong[localip]\($"ip"_{"start"}$, $"ip"_{"max_length"}$\)], [], $"int"^2 & arrow.r "int"$
-)))<fig.wifi>
+))))<fig.wifi>
 
 #[
 #let memoryStart = [@fig.wifi:3]
@@ -365,7 +375,7 @@ This methodology is comparable to how C functions take a character buffer as an 
 
 A small piece of WebAssembly code that connects to a Wi-Fi network and prints the IP address is shown on the left of figure~@fig.wifi.
 The code first declares a memory of one page (64 kiB) and writes the network SSID and password to it (lines 3-5).
-The main function starts by connecting to the Wi-Fi network in the $mono("\$until_connected")$ loop (lines 9-16).
+The main function starts by connecting to the Wi-Fi network in the $mono("$until_connected")$ loop (lines 9-16).
 At the start of the loop, $mono("const")$-instructions place the offsets and lengths of the two strings on the stack.
 Then we call the $mono("connect")$ primitive, which tries to connect to the given network.
 The call blocks execution until it finishes or fails.
@@ -381,10 +391,10 @@ If the print primitive gets a zero length argument it will simply not print anyt
 
 == Hypertext Transfer Protocol<subsec:http>
 
-The Hypertext Transfer Protocol (HTTP) \cite{fielding14} drives the modern web.
+The Hypertext Transfer Protocol (HTTP) @fielding14:hypertext drives the modern web.
 Developers can use HTTP to access the entire web from a WebAssembly program running on a microcontroller with WARDuino.
-To keep the module small, we only add the most fundamental HTTP requests, GET, PUT, POST. %$sans("get")$, $sans("put")$, $sans("post")$.
-As before, we give the interface of the primitives in figure~@fig:http.
+To keep the module small, we only add the most fundamental HTTP requests, GET, PUT, POST. //%$sans("get")$, $sans("put")$, $sans("post")$.
+As before, we give the interface of the primitives in figure @fig:http.
 String arguments are given as pairs of integers representing memory slices.
 If the primitive returns a string, an extra pair of integers, pointing to a free slice of memory, is added to the arguments.
 
@@ -413,7 +423,7 @@ If the primitive returns a string, an extra pair of integers, pointing to a free
       (i32.const 1000)
       (call $delay)
       (br $loop))))
-```], table(columns: 4, 
+```], rect(inset: 0mm, table(columns: 4, 
             align: (left, left, center, right),
 			[#strong[get]\(], $"url"_{"start"}, "url"_{"length"}$, [], $"int"^4 arrow.r "int"$,
 			[], $"response"_{"start"}, "response"_{"length"})$, [], [],
@@ -426,7 +436,7 @@ If the primitive returns a string, an extra pair of integers, pointing to a free
 			[], $"payload"_{"start"}, "payload"_{"length"})$, [], [],
 			[], $"content type"_{"start"}, "content type"_{"length"})$, [], [],
 			[], $"response"_{"start"}, "response"_{"length"})$, [], []
-)))<fig:http>
+))))<fig:http>
 
 The code example in figure @fig:http prints an ASCII version of the Arduino logo retrieved from the internet with an HTTP GET request.
 To do this, it first adds the URL of the ASCII art logo in WebAssembly linear memory (lines 3-5).
@@ -438,14 +448,14 @@ After the ASCII text has been printed to the serial port, the microcontroller wa
 
 == MQTT Protocol<app:mqtt>
 
-HTTP was designed for the web and is not optimized for an embedded context \cite{naik17}.
-More suitable protocols have been developed for IoT applications, such as the widely used MQTT \cite{banks14} protocol.
+HTTP was designed for the web and is not optimized for an embedded context @naik17.
+More suitable protocols have been developed for IoT applications, such as the widely used MQTT @banks14 protocol.
 This is one of the most mature and widespread IoT protocols at the time of writing.
 It is more lightweight in several aspects compared to HTTP.
 The message overhead is a lot smaller, since headers only require 2 bytes per message.
 Another important difference with the client-server approach of HTTP, is the client-broker architecture of MQTT.
 By using a publish-subscribe paradigm, MQTT reduces the number of messages a microcontroller needs to send.
-The publish-subscribe paradigm is commonly used in IoT contexts because its simplicity and effectiveness at reducing network traffic \cite{gupta21,sidna20}.
+The publish-subscribe paradigm is commonly used in IoT contexts because its simplicity and effectiveness at reducing network traffic @gupta21@sidna20.
 The main idea of this paradigm is to disconnect communication in time and space.
 This means, that entities do not have to be reachable at the same time, and do not need to know each other, to communicate.
 Consequently, entities are free to halt execution or sleep.
@@ -458,12 +468,12 @@ Because MQTT clients do not know each other, they communicate through a shared t
 Communication starts when an MQTT client opens a persistent TCP connection with the MQTT Broker and sends an arbitrary string as its unique identifier to the server.
 Once connected, the MQTT client can both publish messages or subscribe to topics.
 The broker filters incoming (published) messages based on their topics and sends them asynchronously to every connected client subscribed to those specific topics.
-Topics need not be initialized, clients can send messages to any topic string of the right form. \\
+Topics need not be initialized, clients can send messages to any topic string of the right form.
 
 #figure(
   caption: [API and example code of the MQTT module in WARDuino.],
     grid(
-        columns: 2,     // 2 means 2 auto-sized columns
+        columns: (1fr, 1fr),     // 2 means 2 auto-sized columns
         gutter: 1mm,    // space between columns
         [
 ```wast
@@ -511,22 +521,21 @@ Topics need not be initialized, clients can send messages to any topic string of
       (call $delay (i32.const 1000))
       (call $reconnect)
       (br $waitloop))))
-```], table(columns: 4, align: (left, left, center, right),
+```], rect(inset: 0mm, table(columns: 3, align: (right, left, right), column-gutter: 0mm,
 
-			$"init"\($, $"server"_{"start"}, "server"_{"length"}, "port"\)$, [], $"int"^3 arrow.r \(\)$,
-			$"connect"\($, $"id"_{"start"}, "id"_{"length"}\)$, [], $"int"^2 arrow.r "int"$,
-			$"poll()"$, [], [], $\(\) arrow.r "int"$,
-			$"connected()"$, [], [], $\(\) arrow.r "int"$,
-            table.cell(colspan: 4)[],
-			$"subscribe("$, $"topic"_{"start"}, "topic"_{"length"}, "fidx)"$, [], $"int"^3 arrow.r "int"$,
-			$"unsubscribe("$, $"topic"_{"start"}, "topic"_{"length"}, "fidx)"$, [], $"int"^3 arrow.r "int"$,
-			$"publish("$, $"topic"_{"start"}, "topic"_{"length"}$, [], $"int"^4 arrow.r "int"$,
-			[], $"payload"_{"start"}, "payload"_{"length"}\)$, [], [],
-            table.hline(),
-			table.cell(colspan: 4)[Signature of MQTT callback functions:],
-			table.cell(colspan: 2)[$"fn_name"("topic"_{"start"}, "topic"_{"length"}$], [], $"int"^4 arrow.r ()$,
-			[], $"payload"_{"start"}, "payload"_{"length"})$, [], []
-)))<fig:mqtt>
+			$"init"\($, $"server"_"start", "server"_"length", "port"\)$, $"int"^3 arrow.r \(\)$,
+			$"connect"\($, $"id"_{"start"}, "id"_{"length"}\)$, $"int"^2 arrow.r "int"$,
+			$"poll()"$, [], $\(\) arrow.r "int"$,
+			$"connected()"$, [], $\(\) arrow.r "int"$,
+			$"subscribe("$, $"topic"_{"start"}, "topic"_{"length"}, "fidx)"$, $"int"^3 arrow.r "int"$,
+			$"unsubscribe("$, $"topic"_{"start"}, "topic"_{"length"}, "fidx)"$, $"int"^3 arrow.r "int"$,
+			$"publish("$, $"topic"_{"start"}, "topic"_{"length"}$, $"int"^4 arrow.r "int"$,
+			[], $"payload"_{"start"}, "payload"_{"length"}\)$, [],
+            table.hline(stroke: lineWidth),
+			table.cell(colspan: 3)[Signature of MQTT callback functions:],
+			table.cell(colspan: 2)[$"fn_name"("topic"_"start", "topic"_"length"$], $"int"^4 arrow.r ()$,
+			[], $"payload"_"start", "payload"_"length")$, []
+))))<fig:mqtt>
 
 
 The first four MQTT primitives shown on the right side of figure~@fig:mqtt, are administrative.
@@ -559,18 +568,18 @@ The code starts by declaring all the static strings used in the program (lines 2
 Our entry point is the main function defined on lines 26 to 44.
 First we initialize the MQTT module with the URL and port of the broker using the $mono("init")$ primitive (27-30).
 Note that we have omitted the Wi-Fi connection code for brevity, as we have already shown how to connect to a Wi-Fi network in figure~@fig.wifi.
-Once our module is initialized, we connect it to the MQTT broker by using the $mono("\$reconnect")$ function.
+Once our module is initialized, we connect it to the MQTT broker by using the $mono("$reconnect")$ function.
 This function is defined on lines 16 to 24.
 It calls the administrative $mono("poll")$ primitive and tries to connect to the broker until successful.
-After calling $mono("\$reconnect")$, our main function continues by subscribing to the $mono("helloworld")$ topic (lines 33-39).
-This is done in a loop labeled $mono("\$try_subscribing")$ which calls the $mono("subscribe")$ primitive repeatedly until it returns 1 (success).
+After calling $mono("$reconnect")$, our main function continues by subscribing to the $mono("helloworld")$ topic (lines 33-39).
+This is done in a loop labeled $mono("$try_subscribing")$ which calls the $mono("subscribe")$ primitive repeatedly until it returns 1 (success).
 In WebAssembly we cannot pass a function directly to another function.
 Instead, we must add the function to a table of function references.
 The code declares such a table of size one on line 12.
-On the next line the element section adds our callback function to the $mono("\$callbacks")$ table at index zero.
+On the next line the element section adds our callback function to the $mono("$callbacks")$ table at index zero.
 This is the zero we use on line 36 to refer to it.
 Lines 9 to 10 define the callback function we stored in our table.
 It takes two arguments, a message topic and a payload.
 With the $mono("local.get")$ instruction, the function places its last two arguments, corresponding to the payload string, on the stack and then it calls the $mono("print")$ primitive.
-Our main function ends with an infinite loop on lines 41 to 44 that calls $mono("\$reconnect")$ every second to check if the connection is still live and reconnect if necessary.
+Our main function ends with an infinite loop on lines 41 to 44 that calls $mono("$reconnect")$ every second to check if the connection is still live and reconnect if necessary.
 

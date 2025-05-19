@@ -18,7 +18,3 @@ The rules for simply typed lambda calculus taken from the definitive work, _Type
 
 = Full syntax and evaluation rules for the debugger <app:debuggers>
 
-= Progress and Preservation proofs<app:progress>
-
-Here we include all relevant progress and preservation proofs for the debugger semantics from @chapter:foundations.
-
