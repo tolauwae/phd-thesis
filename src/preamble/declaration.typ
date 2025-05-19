@@ -27,9 +27,11 @@ At the time of writing, the following prominently featured works were submitted 
 
 We list here the more formal presentations, and demonstrations not listed before. We have left out poster presentations and talks outside of international conferences.
 
+- *Tom Lauwaerts*, Robbert Gurdeep Singh, Christophe Scholliers. _Lightweight IOT abstractions for Embedded WebAssembly_. Presented at VMIL'21.
 - *Tom Lauwaerts*, Carlos Rojas Castillo, Elisa Gonzalez Boix, Christophe Scholliers. _Demo: Debugging Constraint Devices with EDWARD_. In MobiSys'23, pages 602-603. ACM, 2023.
 - *Tom Lauwaerts*, Carlos Rojas Castillo, Elisa Gonzalez Boix, and Christophe Scholliers. _Out-of-Place Debugging on Constraint Devices with the EDWARD Debugger (Demo)_. In DEBT'23, pages 3-4. ACM, 2023.
 - *Tom Lauwaerts*. _Out-of-place Multiverse Debugging for Constraint Device_. At the ACM Student Research Competition (SRC) at ECOOP/ISSTA. 3rd place. ACM, 2023.
+
 == Remainder
 
 Other publications that are not directly part of this dissertation:
