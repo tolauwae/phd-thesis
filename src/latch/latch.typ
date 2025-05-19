@@ -850,8 +850,8 @@ We discuss the results further in @sec:performance, in this section we focus on 
 
 Test files in the WARDuino test suite contain a number of WebAssembly modules, each of which has a number of assertions.
 These assertions are so called #emph[assert-return] tests, which invoke a WebAssembly function and specify the expected result.
-The assertions are written as S-expressions.\footnote{This conforms with the official WebAssembly specification tests, which can be found on: \url{https://github.com/WebAssembly/spec/tree/main/test/core}}
-\Cref{lst.specsource} shows two such assertions.
+The assertions are written as S-expressions.#footnote[This conforms with the official WebAssembly specification tests, which can be found on: #link("https://github.com/WebAssembly/spec/tree/main/test/core")].
+@lst.specsource shows two such assertions.
 
 #snippet("lst.specsource",
     columns: 1,
@@ -986,14 +986,14 @@ An AssemblyScript implementation is shown in @lst.mqtt.
     columns: 1,
     [Tiny MQTT program used to regression test the callback handling system in WARDuino.],
     (```ts
-function echo(topic: string, payload: string): void {'\label{line:mqtt:callback}'
+function echo(topic: string, payload: string): void {
     print(payload);
 }
 
 export function main(): void {
     // ...
-    mqtt_init("broker.hivemq.com", 1883);'\label{line:mqtt:init}'
-    mqtt_subscribe("echo", echo);'\label{line:mqtt:subscribe}'
+    mqtt_init("broker.hivemq.com", 1883);
+    mqtt_subscribe("echo", echo);
     // ...
 }
 ```,))
@@ -1045,12 +1045,10 @@ This fifth step retrieves a dump of the current virtual machine state, and check
 
 The goal of #latch is to allow large-scale testing of IoT software on microcontrollers, and to enable users to write a versatile range of tests.
 The testing scenarios in the previous section illustrate the versatility of #latch to implement many testing strategies.
-Sections @sec:details and @sec:language show how managed testing works, and what the #latch framework does to overcome the three challenges outlined in @sec:challenges.
+@sec:details and @sec:language show how managed testing works, and what the #latch framework does to overcome the three challenges outlined in @sec:challenges.
 In this section we provide empirical evidence to support our research question:
 
-\begin{description}
-    \item[Question] Is the managed testing approach, where tests are split into steps, sufficient for executing large-scale tests with #latch?
-\end{description}
+/ Question: Is the managed testing approach, where tests are split into steps, sufficient for executing large-scale tests with #latch?
 
 === Test suites
 
