@@ -232,6 +232,7 @@
     #show: codly-init.with()
     #set raw(syntaxes: "../lib/wast.sublime-syntax")
     #show raw: set text(size: codefont)
+    #show figure.caption: set text(size: normal)
     #show raw.where(block: true): set text(size: script)
     #show raw.where(block: true): set par(leading: 0.55em)
 
@@ -366,7 +367,7 @@
 #set heading(numbering: "A.1", supplement: [Appendix])
 #show heading.where(level: 1): set heading(supplement: [Appendix])
 
-#show heading: it => [
+#show heading.where(level: 1): it => [
   #set align(center)
   #set text(weight: 600)
   #pagebreak()
@@ -395,13 +396,19 @@
 ]
 
 #set heading(numbering: "A.1", supplement: [Appendix])
-#show heading: it => [
+#show heading.where(level: 1): it => [
   #set align(center)
   #set text(weight: 600)
   #pagebreak()
   #block(smallcaps[#counter(heading).display(). #it.body])
   #v(1.25em)
   #[#metadata(none) <chapter-start>]
+]
+
+#show heading.where(level: 2): it => [
+  #set align(left)
+  #set text(weight: 800, size: normal)
+  #it
 ]
 
 #counter(heading).update(0)
