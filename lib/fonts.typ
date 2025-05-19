@@ -8,7 +8,7 @@
 // text sizes
 #let normal = 10pt
 #let small = 8pt
-#let codefont = 10pt
+#let codefont = 9pt
 #let script = 6pt
 #let tiny = 6pt
 
