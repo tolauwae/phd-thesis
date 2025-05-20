@@ -1,5 +1,5 @@
 #import "../../lib/util.typ": code, snippet, algorithm, semantics, lineWidth, headHeight, tablehead, highlight, boxed, circled, illustration
-#import "../../lib/class.typ": note, theorem, proofsketch, proof, example, lemma, axiom
+#import "../../lib/class.typ": note, theorem, proofsketch, example, lemma, axiom
 #import "../../lib/fonts.typ": sans, script, serif
 
 #import "./figures/cetz/led.typ": ledcetz
@@ -17,7 +17,6 @@ This lead to an early publication at MPLR 2022 @lauwaerts22:event-based-out-of-p
 Subsequently, we explored how to support stateful actions on non-transferable resources, such as memory-mapped I/O devices.
 As part of this work, we developed the first formal model for out-of-place debugging, and proved its soundness and completeness.
 //While microcontrollers remained the initial motivation, with the formal aspect tacking the foreground, the work is much more general in scope than just embedded systems.
-
 
 == Introduction<oop:intro>
 
@@ -706,8 +705,8 @@ With these basic assumptions in mind, we can examine soundness and completeness 
     $ forall dbg : dbg_start attach(dbgarrow, tr: alpha comma ast) dbg arrow.double.r.long K multi(wasmarrow) K' $
 ]
 
-#theorem("Debugger soundness")[#theoremdebuggersoundness]<theorem:debugger-soundness>
-#proof[
+#theorem("Debugger soundness")[#theoremdebuggersoundness]<oop:theorem:debugger-soundness>
+#proofsketch[
     The proof proceeds by induction on the steps in the debugging session. // todo before one message was one step, but now there are also internal messages -> 
 
     _Base case._ Only a few cases need to be considered, since all other rules cannot be apply to $dbg_start$.
@@ -734,8 +733,8 @@ Next we consider the completeness of the out-of-place debugger.
 $ forall K' : K multi(wasmarrow) K' arrow.double.r.long dbg_start attach(dbgarrow, tr: alpha comma ast) dbg $
 ]
 
-#theorem("Debugger completeness")[#theoremdebuggercompleteness]<theorem:debugger-completeness>
-#proof[
+#theorem("Debugger completeness")[#theoremdebuggercompleteness]<oop:theorem:debugger-completeness>
+#proofsketch[
     The proof for completeness follows almost directly from the fact that for every transition in the underlying language semantics, the debugger can take a corresponding step.
     We can construct a sequence of step commands of the exact length as the number of steps in $K multi(wasmarrow) K'$. Each step command is handled in one of two ways.
 

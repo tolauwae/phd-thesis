@@ -258,7 +258,7 @@
         ))),
         table.cell(colspan: 2, prooftree(rule(
           $
-          brackets.l es, boxed(sync(Delta comma v)) separator K separator bar.v S brackets.r dbgarrow brackets.l Q, bp , (es, nothing, K' ) bar.v S brackets.r
+          brackets.l es, boxed(sync(Delta)) separator K separator bar.v S brackets.r dbgarrow brackets.l Q, bp , (es, nothing, K' ) bar.v S brackets.r
           $,
           $
           K = \{s; v^*; e^*\}$,$
