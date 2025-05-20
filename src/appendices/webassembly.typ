@@ -119,7 +119,7 @@ If these do not correspond, the call is aborted, and a trap is thrown.
 
 #figure(
   placement: top,
-  image("wasmtable.png", width: 80%), caption: [Indirect function call in WebAssembly via the `table` section.]
+  image("wasmtable.png", width: 100%), caption: [Indirect function call in WebAssembly via the `table` section.]
 )<fig:indirect>
 
 == WebAssembly Linear Memory <webassembly-linear-memory>
