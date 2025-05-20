@@ -147,11 +147,11 @@
                 ($client bar.v server$,),
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
 
-            definition(server, highlight(silver, "(server)"),
+            definition(server, "(server)",
                 ($boxed(operation) , boxed(message) separator t$,),
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
 
-            definition(client, highlight(silver, "(client)"),
+            definition(client, "(client)",
                 ($boxed(operation) , boxed(message)$,),
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
 
@@ -200,11 +200,9 @@
                 
                 prooftree(rule(rect(height: 3em, stroke: none, $globalrule(clientrule(boxed(operation) , boxed(nothing)), serverrule(boxed(nothing) , boxed(message), t)) \ dbgarrow globalrule(clientrule(boxed(operation), boxed(message)), serverrule(boxed(nothing) , boxed(nothing), t))$,))), "(Output)",
 
-                prooftree(rule($globalrule(client, server) dbgarrow globalrule(client, server)$, $client clientarrow client'$)), highlight(silver, "(Client)"),
+                prooftree(rule($globalrule(client, server) dbgarrow globalrule(client, server)$, $client clientarrow client'$)), "(Client)",
 
-                prooftree(rule($globalrule(client, server) dbgarrow globalrule(client, server)$, $server serverarrow server'$)), highlight(silver, "(Server)"),
-            // todo: gray background for messages
-            // rect(fill: blue, width: auto, height: auto, text(top-edge: "ascender", "ack step"))
+                prooftree(rule($globalrule(client, server) dbgarrow globalrule(client, server)$, $server serverarrow server'$)), "(Server)",
             )
         ])
 ]
@@ -379,32 +377,47 @@
     #show table.cell: set text(style: "italic")
     #set table.cell(align: horizon)
 
+    #let inset = 1mm
 
-    #grid(columns: (5fr, 7fr), stroke: none, align: top,
+    #grid(columns: (5fr, 5fr), stroke: none, align: top,
             table(columns: (1fr), align: (left), stroke: none,
                 tablehead("New syntactic forms"),
+                definition("t", "(terms)",
+                    ($dots$, highlight(silver, $sans("let") x=t sans("in") t$, inset: inset)),
+                    ("", "let binding"), division: (1.3em, 1.5em, 7fr, 5fr)),
             ),
-
             grid.vline(stroke: lineWidth),
 
             [
                 #set table(align: (x, y) => if x == 1 { right } else { center })
                 #set table(inset: (left: 0.3em))
-                #show math.equation: set text(style: "italic")
-
-                #let ifelse(t1, t2, t3) = [if #t1 then #t2 else #t3]
 
                 #table(columns: (3fr, 1fr), stroke: none,
+                  highlight(silver, prooftree(rule($sans("let") x = t_1 sans("in") t_2 arrow.r sans("let") x = t'_1 sans("in") t_2$, $t_1 arrow.r t'_1$))), "(Let)"
+                )
+            ],
+
+            [
+                #set table(align: (x, y) => if x == 1 { right } else { center })
+                #set table(inset: (left: 0.3em))
+
+                #table(columns: (3fr, 1.0fr), stroke: none,
                     tablehead("New evaluation rules"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.3em, bottom: 0.3em), $t arrow.r.long t'$),
 
-                    prooftree(rule($"if true then " t_1 " else " t_2 arrow.r.long t_1$)), "(IfTrue)", // 
-                    prooftree(rule($"if false then " t_1 " else " t_2 arrow.r.long t_2$)), "(IfFalse)",
-                    prooftree(vertical-spacing: 0.5em, rule(align(center, $"if " t_1 " then " t_2 " else " t_3 \ arrow.r.long "if " t'_1 " then " t_2 " else " t_3$), $t_1 arrow.r.long t'_1$)), "(If)",
+                    highlight(silver, $sans("let") x = v_1 sans("in") t_2 arrow.r [x arrow.r.bar v_1]t_2$), "(LetV)"
+            )],
 
-                    tablehead("Typing"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.3em, bottom: 0.3em), $Gamma tack.r t : T$),
+            [
+                #set table(align: (x, y) => if x == 1 { right } else { center })
+                #set table(inset: (left: 0.3em))
 
-                )
-            ])
+                #table(columns: (3fr, 1.2fr), stroke: none,
+                  tablehead("Typing"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.3em, bottom: 0.3em), $Gamma tack.r t : T$),
+
+                  highlight(silver, prooftree(rule($Gamma tack.r sans("let") x = t_1 sans("in") t_2 : T_2$, $Gamma tack.r t_1 : T_1$, $Gamma, x : T_1 tack.r t_2 : T_2$))), "(T-Let)"
+            )]
+    )
+
 ]
 
 #let subst = $"subst" t_1 t_2$
