@@ -83,7 +83,7 @@ In this appendix, we present the lemmas and proofs for the multiverse debugger s
 The first lemma states that the mocking of input values will not introduce states in the multiverse debugger that cannot be observed by the underlying language semantics.
 //Since the input values accepted by the #text(style: "italic")[register-mock] rule must be part of the codomain of the primitive, this will always be the case.
 
-#lemma("Mocking non-interference")[
+#lemma("Mocking non-interference", numbering: "A-1")[
     Given a debugging state $dbg$ and $dbg dbgarrow dbg'$, which uses the #text(style: "italic")[step-mock] rule, and $K$ in $dbg$, and $K'$ in $dbg'$, it holds that
     $
         dbg dbgarrow dbg' arrow.r.double.long K wasmarrow K'
@@ -97,7 +97,7 @@ Since the #text(style: "italic")[register-mock] rule only adds a new value to th
 
 A second lemma crucial to the soundness of the debugger, states that for any debugging state, there is a path in the underlying language semantics from the start to every snapshot in the snapshot list.
 
-#lemma["Snapshot soundness"][
+#lemma("Snapshot soundness", numbering: "A-1")[
     For any debugging state $dbg$ with program state $K_m$, and snapshots $S^*$, it holds that
     $
         dbg_"start" multi(dbgarrow) {es,msg,mocks,K_m,S^ast} arrow.r.double.long forall {K_n , r} in S^ast : K_0 multi(wasmarrow) K_n
@@ -123,7 +123,7 @@ A second lemma crucial to the soundness of the debugger, states that for any deb
 
 Now we give the proof for debugger soundness, where the snapshot soundness lemma will be crucial. //% followed by the auxiliary lemmas for snapshot soundness (@lemma:snapshot-soundness), checkpoint existence (@lemma:checkpoint-existence), and deterministic path (@lemma:deterministic-path).
 
-#theorem("Debugger soundness")[#theoremdebuggersoundness]
+#theorem("Debugger soundness", numbering: "A-1")[#theoremdebuggersoundness]
 
 #proof[
     By induction over the steps in the path $dbg_"start" multi(dbgarrow) dbg$.
@@ -149,7 +149,7 @@ Now we give the proof for debugger soundness, where the snapshot soundness lemma
     The case for the #text(style: "italic")[step-back-compensate] rule is identical.
 ]
 
-#theorem("Debugger completeness")[#theoremdebuggercompleteness]
+#theorem("Debugger completeness", numbering: "A-1")[#theoremdebuggercompleteness]
 
 #proof[
     For any step $K wasmarrow K'$ in the path $K_0 multi(wasmarrow) K'$, either we can apply the #text(style: "italic")[step-forward] or #text(style: "italic")[step-prim-out] rules to the debugging state $dbg$ with state $K$.
@@ -163,14 +163,14 @@ Now we give the proof for debugger soundness, where the snapshot soundness lemma
 Finally, we give the proof for compensation soundness (@theorem:compensate-soundness). //%, and the needed lemmas.
 But first, for completeness, we provide the definition of external effects equivalence for a series of debugging rules and a series of rules in the underlying language semantics.
 
-#definition("External effects equivalence")[
+#definition("External effects equivalence", numbering: "A-1")[
     Let $t$ be a series of rules in the debugging semantics, and $q$ a series of rules in the underlying language semantics.
     When for each #text(style: "italic")[step-prim-out] with $p$ in $external(t)$, either the next #text(style: "italic")[step-back-compensate] in $external(t)$ uses $p_cps$, or there is an #text(style: "italic")[output-prim] with $p$ in $external(q)$, we say that
 
     $ external(t) equiv external(q) $
 ]<def:external-effects>
 
-#theorem("Compensation soundness")[#theoremcompensationsoundness]
+#theorem("Compensation soundness", numbering: "A-1")[#theoremcompensationsoundness]
 
 #proof[
     The multiverse tree is a connected acyclic graph, where each edge is a step in the underlying language semantics.
