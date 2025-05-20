@@ -79,14 +79,14 @@
           {s; v^ast, v^ast_0 (call j)} wasmarrow {s; v^ast, v}
           $,
           $P(j) = p$, $p ∈ P^"In"$, $v in floor.l p(v_0^ast)_ret floor.r$,
-          name: "input-prim"
+          name: text(style: "italic", "input-prim")
         )),
         prooftree(rule(
           $
           {s; v^ast, v^ast_0 (call j)} wasmarrow {s; v^ast, v}
           $,
           $P(j) = p$,$p in P^"Out"$,$floor.l p(v_0^ast)_ret floor.r = v$,
-          name: "output-prim"
+          name: text(style: "italic", "output-prim")
         )),
       )),
     )
@@ -142,20 +142,20 @@
 //                \inferrule[(\textsc{run})]
 //       	            { 
 //                        \textsf{non-prim } K_n \\
-//                        K_n wasmarrow K_{n+1}
+//                        K_n wasmarrow K_n+1
 //                    }
 //                    { \langle \textsc{play}, \varnothing, mocks, K_n \; | \; S^ast \rangle
 //                      dbgarrow
-//                  \langle \textsc{play}, \varnothing, mocks, K_{n+1} \; | \; S^ast \rangle }
+//                  \langle \textsc{play}, \varnothing, mocks, K_n+1 \; | \; S^ast \rangle }
 //
 //                 \inferrule[(\textsc{step-forwards})]
 //       	            { 
 //                        \textsf{non-prim } K_n \\
-//                        K_n wasmarrow K_{n+1}
+//                        K_n wasmarrow K_n+1
 //                    }
 //                    { \langle \textsc{pause}, step, mocks, K_n \; | \; S^ast \rangle
 //                      dbgarrow
-//                  \langle \textsc{pause}, \varnothing, mocks, K_{n+1} \; | \; S^ast \rangle }
+//                  \langle \textsc{pause}, \varnothing, mocks, K_n+1 \; | \; S^ast \rangle }
 //
 //                  \inferrule[(\textsc{pause})]
 //       	            { 
@@ -181,18 +181,18 @@
 
         prooftree(rule(
           $
-          brackets.l "play", nothing, mocks, K_n bar.v S^* brackets.r dbgarrow brackets.l "play", nothing, mocks, K_{n+1} bar.v S^* brackets.r
+          brackets.l "play", nothing, mocks, K_n bar.v S^* brackets.r dbgarrow brackets.l "play", nothing, mocks, K_n+1 bar.v S^* brackets.r
           $,
-          $sans("non-prim") K_n$ ,$ K_n wasmarrow K_{n+1}$,
-          name: smallcaps("run")
+          $sans("non-prim") K_n$ ,$ K_n wasmarrow K_n+1$,
+          name: text(style: "italic", "run")
         )),
 
         prooftree(rule(
           $
-          brackets.l "pause", "step", mocks, K_n bar.v S^* brackets.r dbgarrow brackets.l "pause", nothing, mocks, K_{n+1} bar.v S^* brackets.r
+          brackets.l "pause", "step", mocks, K_n bar.v S^* brackets.r dbgarrow brackets.l "pause", nothing, mocks, K_n+1 bar.v S^* brackets.r
           $,
-          $sans("non-prim") K_n$, $K_n wasmarrow K_{n+1}$,
-          name: smallcaps("step-forwards")
+          $sans("non-prim") K_n$, $K_n wasmarrow K_n+1$,
+          name: text(style: "italic", "step-forwards")
         )),
 
         prooftree(rule(
@@ -200,7 +200,7 @@
           brackets.l "play", "pause", mocks, K_n bar.v S^* brackets.r dbgarrow brackets.l "pause", nothing, mocks, K_n bar.v S^* brackets.r
           $,
           "",
-          name: smallcaps("pause")
+          name: text(style: "italic", "pause")
         )),
 
         prooftree(rule(
@@ -208,7 +208,7 @@
           brackets.l "pause", "play", mocks, K_n bar.v S^* brackets.r dbgarrow brackets.l "play", nothing, mocks, K_n bar.v S^* brackets.r
           $,
           "",
-          name: smallcaps("play")
+          name: text(style: "italic", "play")
         ))
 
       )),
@@ -222,11 +222,11 @@
 //                        P(j) = p \\
 //                        p \in P^{In} \\
 //                        mocks(j, v^ast_0) = \varepsilon \\
-//                        K_n wasmarrow K_{n+1} \\
+//                        K_n wasmarrow K_n+1 \\
 //                    }
 //                    { \langle \textsc{play}, \varnothing, mocks, K_n \; | \; S^ast \rangle
 //                      dbgarrow
-//                  \langle \textsc{play}, \varnothing, mocks, K_{n+1} \; | \; S^ast \cdot \{K_{n+1} , r_{nop}\} \rangle }
+//                  \langle \textsc{play}, \varnothing, mocks, K_n+1 \; | \; S^ast \cdot \{K_n+1 , r_{nop}\} \rangle }
 //
 //                \inferrule[(\textsc{run-prim-out})]
 //       	            { 
@@ -234,11 +234,11 @@
 //                        P(j) = p \\
 //                        p \in P^{Out} \\
 //                        p(v^ast_0) = \{ \textsf{ret } v, \textsf{cps } r \} \\
-//                        K_{n+1} = \{ s ;v^ast; v \} \\
+//                        K_n+1 = \{ s ;v^ast; v \} \\
 //                    }
 //                    { \langle \textsc{play}, \varnothing, mocks, K_n \; | \; S^ast \rangle
 //                      dbgarrow
-//                  \langle \textsc{play}, \varnothing, mocks, K_{n+1} \; | \; S^ast \cdot \{K_{n+1} , r\} \rangle }
+//                  \langle \textsc{play}, \varnothing, mocks, K_n+1 \; | \; S^ast \cdot \{K_n+1 , r\} \rangle }
 //	\end{mathpar}
 //        \caption{The small-step rules describing forwards exploration for input and output primitives in the multiverse debugger for WebAssembly, without input mocking.}
 //	<fig:forwards-prim>
@@ -257,7 +257,7 @@
           $,
           $
           K_n = {s; v^*, v^*_0 (call j)}$, $P(j) = p$, $p in P^In$, $mocks(j, v^*_0) = epsilon$, $K_n wasmarrow K_(n+1)$,
-          name: smallcaps("run-prim-in")
+          name: text(style: "italic", "run-prim-in")
         )),
 
         prooftree(rule(
@@ -266,7 +266,7 @@
           $,
           $
           K_n = {s; v^*, v^*_0 (call j)}$, $P(j) = p$, $p in P^Out$, $p(v^*_0) = {ret v, cps r}$, $K_(n+1) = {s; v^*, v}$,
-          name: smallcaps("run-prim-out")
+          name: text(style: "italic", "run-prim-out")
         ))
 
       )),

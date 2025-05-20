@@ -511,13 +511,14 @@ There are only two options, the output primitive rules, and the rule that applie
 
 #let external = $italic("external")$
 
-#definition("External state effects")[
+#let extdef = definition("External state effects")[
     The function $external$ returns the steps affecting external state for any series of rules in the debugging or underlying language semantics.
     $ external(p) = cases(
             #[#h(0.4em)] s "for" s "in" p "where" s = "step-prim-out" #[#h(1em)] & "if" p = dbg multi(dbgarrow) dbg',
             #[#h(0.4em)] or s = "step-back-compensate",
             #[#h(0.4em)] s "for" s "in" p "where" s = "output-prim" & "if" p = K multi(wasmarrow) K') $
 ]
+#extdef
 
 Using this definition, we can prove that the external effects of any debugging session ending in a certain state, are the same as the effects of the regular execution of the program ending in that same state.
 The definition for the equivalence of external effects ($eq.triple$) is given in @app:proofs.
