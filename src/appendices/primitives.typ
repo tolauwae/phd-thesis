@@ -1,5 +1,5 @@
 #import "../../lib/class.typ": note
-#import "../../lib/util.typ": lineWidth
+#import "../../lib/util.typ": lineWidth, code
 
 #set figure(placement: top)
 #set rect(inset: 0mm)
@@ -126,7 +126,7 @@ Additionally, we will also omit the export of the main function, instead we assi
 == Pulse Width Modulation and Analog Reads
 
 A pulse width modulator (PWM) allows programmers to send out a square wave to one of the output pins without having to write a busy loop.
-Example waves are shown in figure @fig.pwm with duty cycles of 90\%, 50\% and 20\%.
+//Example waves are shown in figure @fig.pwm with duty cycles of 90\%, 50\% and 20\%.
 The duty cycle is the configurable fraction of time the wave is high.
 PWM is prototypically used to dim an LED, sending it a square wave makes it flash very fast, faster than perceivable by the eye.
 The higher the duty cycle, the brighter the LED appears.
@@ -139,7 +139,7 @@ Setting the duty cycle is done with $mono("analogWrite")$, an argument value of 
 Finally, the $mono("analogRead")$ function measures the voltage on a certain pin and returns it as an integral value.
 
 #figure(
-  caption: [#emph[Left]: Example of the PWM module in WARDuino. #emph[Top right]: PWM API of WARDuino. #emph[Bottom right]: Graphs of output voltages of over time for duty cycles set to 90%, 50% and 20%, the average output voltage is shown as a dashed line.],
+  caption: [#emph[Left]: Example of the PWM module in WARDuino. #emph[Top right]: PWM API of WARDuino. /*#emph[Bottom right]: Graphs of output voltages of over time for duty cycles set to 90%, 50% and 20%, the average output voltage is shown as a dashed line.*/],
     grid(
         columns: 2,     // 2 means 2 auto-sized columns
         gutter: 1mm,    // space between columns
@@ -313,6 +313,16 @@ We represent those strings as pairs of integers as discussed in the section on t
 
 // Example: connecting to Wi-Fi (in WebAssembly)
 
+//#show table.cell.where(x: 0): strong
+#show table.cell: it => {
+  if it.x == 0 or it.y == 0 {
+    set table.cell(inset: (right: 0mm))
+    it
+  } else {
+    it
+  }
+}
+
 #figure(
   caption: [API and example code of the Wi-Fi module in WARDuino. $"int"^2 = "int" times "int"$],
     grid(
@@ -345,11 +355,11 @@ We represent those strings as pairs of integers as discussed in the section on t
 ```], 
 rect(inset: 0mm, table(
   columns: 3,
-  align: (left, center, right),
-  [#strong[connect]], $"ssid"_{"start"}, "ssid"_{"length"}$, $"int"^4 & arrow.r ()$,
-   [], $"pass"_{"start"}, "pass"_{"length"}$, [],
-  [#strong[status]\(\)], [], $() arrow.r "int"$,
-  [#strong[localip]\($"ip"_{"start"}$, $"ip"_{"max_length"}$\)], [], $"int"^2 & arrow.r "int"$
+  align: (right, left, right), column-gutter: 0mm,
+  [#strong[connect]], $"ssid"_"start", "ssid"_"length"$, $"int"^4 & arrow.r ()$,
+   [], $"pass"_"start", "pass"_"length"$, [],
+  [#strong[status]], [()], $() arrow.r "int"$,
+  [#strong[localip]], [($"ip"_"start"$, $"ip"_"max_length"$)], $"int"^2 & arrow.r "int"$
 ))))<fig.wifi>
 
 #[
@@ -425,17 +435,17 @@ If the primitive returns a string, an extra pair of integers, pointing to a free
       (br $loop))))
 ```], rect(inset: 0mm, table(columns: 4, 
             align: (left, left, center, right),
-			[#strong[get]\(], $"url"_{"start"}, "url"_{"length"}$, [], $"int"^4 arrow.r "int"$,
-			[], $"response"_{"start"}, "response"_{"length"})$, [], [],
+			[#strong[get]\(], $"url"_"start", "url"_"length"$, [], $"int"^4 arrow.r "int"$,
+			[], $"response"_"start", "response"_"length")$, [], [],
             [], [], [], [],
-			[#strong[put]\(], $"url"_{"start"}, "url"_{"length"}$, [], $"int"^6 arrow.r "int"$,
-			[], $"payload"_{"start"}, "payload"_{"length"})$, [], [],
-			[], $"content type"_{"start"}, "content type"_{"length"})$, [], [],
+			[#strong[put]\(], $"url"_"start", "url"_"length"$, [], $"int"^6 arrow.r "int"$,
+			[], $"payload"_"start", "payload"_"length")$, [], [],
+			[], $"content type"_"start", "content type"_"length")$, [], [],
             [], [], [], [],
-			[#strong[post]\(], $"url"_{"start"}, "url"_{"length"}$, [], $"int"^8 arrow.r "int"$,
-			[], $"payload"_{"start"}, "payload"_{"length"})$, [], [],
-			[], $"content type"_{"start"}, "content type"_{"length"})$, [], [],
-			[], $"response"_{"start"}, "response"_{"length"})$, [], []
+			[#strong[post]\(], $"url"_"start", "url"_"length"$, [], $"int"^8 arrow.r "int"$,
+			[], $"payload"_"start", "payload"_"length")$, [], [],
+			[], $"content type"_"start", "content type"_"length")$, [], [],
+			[], $"response"_"start", "response"_"length")$, [], []
 ))))<fig:http>
 
 The code example in figure @fig:http prints an ASCII version of the Arduino logo retrieved from the internet with an HTTP GET request.
@@ -448,14 +458,14 @@ After the ASCII text has been printed to the serial port, the microcontroller wa
 
 == MQTT Protocol<app:mqtt>
 
-HTTP was designed for the web and is not optimized for an embedded context @naik17.
-More suitable protocols have been developed for IoT applications, such as the widely used MQTT @banks14 protocol.
+HTTP was designed for the web and is not optimized for an embedded context @naik17:choice.
+More suitable protocols have been developed for IoT applications, such as the widely used MQTT @banks14:mqtt protocol.
 This is one of the most mature and widespread IoT protocols at the time of writing.
 It is more lightweight in several aspects compared to HTTP.
 The message overhead is a lot smaller, since headers only require 2 bytes per message.
 Another important difference with the client-server approach of HTTP, is the client-broker architecture of MQTT.
 By using a publish-subscribe paradigm, MQTT reduces the number of messages a microcontroller needs to send.
-The publish-subscribe paradigm is commonly used in IoT contexts because its simplicity and effectiveness at reducing network traffic @gupta21@sidna20.
+The publish-subscribe paradigm is commonly used in IoT contexts because its simplicity and effectiveness at reducing network traffic @gupta21:survey@sidna20:analysis.
 The main idea of this paradigm is to disconnect communication in time and space.
 This means, that entities do not have to be reachable at the same time, and do not need to know each other, to communicate.
 Consequently, entities are free to halt execution or sleep.
@@ -473,7 +483,7 @@ Topics need not be initialized, clients can send messages to any topic string of
 #figure(
   caption: [API and example code of the MQTT module in WARDuino.],
     grid(
-        columns: (1fr, 1fr),     // 2 means 2 auto-sized columns
+        columns: (1.2fr, 1fr),     // 2 means 2 auto-sized columns
         gutter: 1mm,    // space between columns
         [
 ```wast
@@ -487,7 +497,7 @@ Topics need not be initialized, clients can send messages to any topic string of
   (; callback function ;)
   (func $callback (type $int->int->int->int->vd)
     (call $print (local.get 2) (local.get 3)))
-  (; add callback to callbacks table ;)
+  (; add callback to table ;)
   (table $callbacks 1 funcref)
   (elem (i32.const 0) $callback) (; fidx = 0 ;)
 
@@ -521,21 +531,52 @@ Topics need not be initialized, clients can send messages to any topic string of
       (call $delay (i32.const 1000))
       (call $reconnect)
       (br $waitloop))))
-```], rect(inset: 0mm, table(columns: 3, align: (right, left, right), column-gutter: 0mm,
+```], rect(inset: 0mm, table(columns: 2, align: (left, right), column-gutter: 0mm,
 
-			$"init"\($, $"server"_"start", "server"_"length", "port"\)$, $"int"^3 arrow.r \(\)$,
-			$"connect"\($, $"id"_{"start"}, "id"_{"length"}\)$, $"int"^2 arrow.r "int"$,
-			$"poll()"$, [], $\(\) arrow.r "int"$,
-			$"connected()"$, [], $\(\) arrow.r "int"$,
-			$"subscribe("$, $"topic"_{"start"}, "topic"_{"length"}, "fidx)"$, $"int"^3 arrow.r "int"$,
-			$"unsubscribe("$, $"topic"_{"start"}, "topic"_{"length"}, "fidx)"$, $"int"^3 arrow.r "int"$,
-			$"publish("$, $"topic"_{"start"}, "topic"_{"length"}$, $"int"^4 arrow.r "int"$,
-			[], $"payload"_{"start"}, "payload"_{"length"}\)$, [],
+			$"init"\(&"server"_"start", \ &"server"_"length", "port")$, $"int"^3 arrow.r \(\)$,
+			$"connect"\("id"_"start", "id"_"length"\)$, $"int"^2 arrow.r "int"$,
+			$"poll()"$, $\(\) arrow.r "int"$,
+			$"connected()"$, $\(\) arrow.r "int"$,
+			$"subscribe"\(&"topic"_"start", \ &"topic"_"length", "fidx)"$, $"int"^3 arrow.r "int"$,
+			$"unsubscribe"(&"topic"_"start", \ &"topic"_"length", "fidx)"$, $"int"^3 arrow.r "int"$,
+			$"publish"(&"topic"_"start", "topic"_"length" \ &"payload"_"start", "payload"_"length"\)$, $"int"^4 arrow.r "int"$,
             table.hline(stroke: lineWidth),
-			table.cell(colspan: 3)[Signature of MQTT callback functions:],
-			table.cell(colspan: 2)[$"fn_name"("topic"_"start", "topic"_"length"$], $"int"^4 arrow.r ()$,
-			[], $"payload"_"start", "payload"_"length")$, []
-))))<fig:mqtt>
+			table.cell(colspan: 2)[Signature of MQTT callback functions:],
+			[$"fn_name"(&"topic"_"start", "topic"_"length", \ &"payload"_"start", "payload"_"length")$], $"int"^4 arrow.r ()$,
+)),
+
+//    grid.cell(colspan: 2)[
+//      #code(offset: 20, 
+//```wast
+//      (i32.const 3)    (; client id length ;)
+//      (call $connect)
+//      (i32.ne (call $connected) (i32.const 1))
+//      (br_if $until_connected)))
+//
+//  (func $main (type $vd->vd)
+//    (i32.const 0)    (; url start ;)
+//    (i32.const 17)   (; url length ;)
+//    (i32.const 1883) (; port ;)
+//    (call $init)
+//    (call $reconnect)
+//
+//    (loop $try_subscribing
+//      (i32.const 25) (; topic start ;)
+//      (i32.const 10) (; topic length ;)
+//      (i32.const 0)  (; fidx ;)
+//      (call $subscribe)
+//      (i32.const 1)
+//      (br_if $try_subscribing (i32.ne)))
+//
+//    (loop $waitloop
+//      (call $delay (i32.const 1000))
+//      (call $reconnect)
+//      (br $waitloop))))
+//```)]
+
+  )
+
+)<fig:mqtt>
 
 
 The first four MQTT primitives shown on the right side of figure~@fig:mqtt, are administrative.

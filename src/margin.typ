@@ -379,7 +379,11 @@
       _Appendix #number._ #h(0.5em) #body // \[Chap. #number\]
     ]
 
-#set figure(placement: none)
+#set figure(placement: none, numbering: (..num) =>
+        numbering("A-1", counter(heading).get().first(), num.pos().first())
+    )
+
+
 
 #metadata(none) <appendix>
 

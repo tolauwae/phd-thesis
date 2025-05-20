@@ -1,14 +1,13 @@
 #import "../../lib/class.typ": lemma, proofsketch
 #import "../../lib/util.typ": snippet
 #import "../semantics/arrows.typ": *
-
 #import "figures/semantics.typ": dbg, msg, sync
 
-= Addedum to out-of-place debugging
+= Addendum to out-of-place debugging
 
-This appendix is an addedum to @chapter:oop.
+This appendix is an addendum to @chapter:oop.
 
-== Auxiliary out-of-place lemmas<app:oop>
+== Auxiliary out-of-place lemma<app:oop>
 
 //#lemma("Invoke uniqueness")[
 //]<theorem:uniqueness>
@@ -18,7 +17,7 @@ The following lemma states that indeed any $italic("sync")$ step is proceeded by
 
 To improve legibility, we write a step in the debugger that uses a specific evaluation rule with the name of the evaluation rule above the arrow, for instance $attach(dbgarrow, t: italic("sync"))$.
 
-#lemma("Invoke uniqueness")[
+#lemma("Invoke uniqueness", numbering: "A-1")[
   $ forall dbg: dbg_"start" multi(dbgarrow) dbg' attach(dbgarrow, t: italic("sync")) dbg \ arrow.r.double.long \ exists dbg'', dbg''': dbg'' attach(dbgarrow, t: italic("step")) dbg''' attach(dbgarrow, t: italic("invoke")) dbg' \ and (italic("step") = italic("step-transfer") or italic("step") = italic("run-transfer")) $
 ]<lemma:order>
 

@@ -6,7 +6,7 @@
 
 = WebAssembly Specification Summary <app:webassembly>
 
-In this appendix, we will discuss the elements of WebAssembly needed to understand the formalization of our extensions. A full and detailed account of all WebAssembly’s formal semantics can be found in the excellent paper of #cite(<haas17:bringing>, form: "prose");.
+In this appendix, we will discuss the elements of WebAssembly needed to understand the formalization of our extensions. A full and detailed account of all WebAssembly’s formal semantics can be found in the excellent paper of #cite(<haas17:bringing>, form: "prose").
 
 #let i8 = $sans("i8")$
 #let i16 = $sans("i16")$
@@ -117,8 +117,10 @@ Tables can hold functions of different types, so the instruction takes a statica
 At runtime, this encoded type is checked against the type of the function the index points to.
 If these do not correspond, the call is aborted, and a trap is thrown.
 
-#figure[
-]<fig:indirect>
+#figure(
+  placement: top,
+  image("wasmtable.png", width: 80%), caption: [Indirect function call in WebAssembly via the `table` section.]
+)<fig:indirect>
 
 == WebAssembly Linear Memory <webassembly-linear-memory>
 
@@ -202,7 +204,7 @@ The execution of a WebAssembly program is described by a small-step reduction re
 
 At the top of the figure, we list all the relevant syntax for the rules. The store $s$ consists of a set of module instances, table instances and memory instances. Tables and memories are only referenced by their index, since they can be shared between modules. A module instance consists of closures, global variables, tables and memories. A closure is the instantiated version of a function, and is represented by a tuple of the module instance and a code block. Values consist of constants. To elegantly represent the semantics a number of administrative operators are added to the list of instructions. The most important ones are #strong[local] and #strong[label];. The #strong[local] operator indicates a call frame for function invocation (possibly over module boundaries), while the #strong[label] operator marks the extent of a control construct.
 
-In the lower part of figure~@fig:WebAssemblyMR, we show some important small-step reduction rules for WebAssembly execution in WARDuino. Aside from the configuration ${ s , v^ast , e^ast }$, the small step reduction rules operate on the currently executing instance. That is why the small-step reduction is indexed by the address $i$ of that instance. The first two reduction rules govern the order of evaluation. The #smallcaps[step-i] rule splits a configuration into its context $L^k$ and its focus and takes one step of the $wasmarrow$ relation. The second rule #smallcaps[step-local] explains how to evaluate a function that might reside in a different module. Note that this step changes the currently executing module, indicated by the two indices of the small-step relation $dbgarrow$. The last two rules are included because they are particularly relevant to our callback handling extension. The first rule, #smallcaps[step-indirect];, transforms a instruction into a standard instruction. The #smallcaps[step-indirect] rule takes a runtime index $j$, and an immediate function type #emph[tf];. The index $j$ must correspond to a function of the given type in the table of the current module $s_tab (i , j)$. If this is the case, the indirect call is replaced with a call to the function. On the other hand, when no correct function is found, the indirect call is replaced by a as shown by #smallcaps[step-indirect-trap];. This means the program will stop executing. When all goes well, the resulting call can be reduced further. We omit any further reduction rules from the WebAssembly standard, because they are not changed or not relevant to the further discussion in this section. The interested reader can find all WebAssembly reduction rules in the original WebAssembly article@haas17:bringing.
+In the lower part of figure~@fig:WebAssemblyMR, we show some important small-step reduction rules for WebAssembly execution in WARDuino. Aside from the configuration ${ s , v^ast , e^ast }$, the small step reduction rules operate on the currently executing instance. That is why the small-step reduction is indexed by the address $i$ of that instance. The first two reduction rules govern the order of evaluation. The #smallcaps[step-i] rule splits a configuration into its context $L^k$ and its focus and takes one step of the $wasmarrow$ relation. The second rule #smallcaps[step-local] explains how to evaluate a function that might reside in a different module. Note that this step changes the currently executing module, indicated by the two indices of the small-step relation $dbgarrow$. The last two rules are included because they are particularly relevant to our callback handling extension. The first rule, #smallcaps[step-indirect];, transforms a instruction into a standard instruction. The #smallcaps[step-indirect] rule takes a runtime index $j$, and an immediate function type #emph[tf];. The index $j$ must correspond to a function of the given type in the table of the current module $s_tab (i , j)$. If this is the case, the indirect call is replaced with a call to the function. On the other hand, when no correct function is found, the indirect call is replaced by a as shown by #smallcaps[step-indirect-trap];. This means the program will stop executing. When all goes well, the resulting call can be reduced further. We omit any further reduction rules from the WebAssembly standard, because they are not changed or not relevant to the further discussion in this section. The interested reader can find all WebAssembly reduction rules in the original WebAssembly article @haas17:bringing.
 
 Now we have all the formal tools required to describe the extensions to WebAssembly implemented in WARDuino. We will discuss each extension in turn in the following sections.
 
