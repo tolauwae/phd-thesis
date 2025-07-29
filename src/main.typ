@@ -1,284 +1,76 @@
-// Main manuscript setup
-//
-// typst: v0.12.0
+#import "@preview/drafting:0.2.2": set-margin-note-defaults, set-page-properties, margin-note, rule-grid
+#import "@preview/codly:1.3.0": *
+#import "../lib/book.typ": is-page-empty, quote, toc
+#import "../lib/class.typ": s, t, e, f, note-padding, note-gutter, note
+#import "../lib/fonts.typ": serif, sans, mathfont, monospace, small, normal, script, codefont
+#import "../lib/colors.typ": colour
+#import "../lib/util.typ": illustration
 
-#import "../lib/book.typ": book, quote, is-page-empty, toc
-#import "../lib/comment.typ": comment
-#import "../lib/fonts.typ": serif, fonts, mass, normal, small
+#import "preamble/titlepage.typ": titlepage
 
-// code snippets
-#import "@preview/codly:1.2.0": *
-#show: codly-init.with()
-#set raw(syntaxes: "../lib/wast.sublime-syntax")
+#import "@preview/ctheorems:1.1.3": *
+#show: thmrules.with(qed-symbol: text(size: small, $space square$))
 
 #let maintitle = [Foundations for Constrained Debugging Techniques]
 #let subtitle = [Finding software faults in constrained environments with sound out-of-place and multiverse debugging techniques]
 #let title =  maintitle + ": " + subtitle
 
-#let print = false
-#if "print" in sys.inputs.keys() {
-    print = true // sys.inputs.print
-}
+#set document(title: maintitle)
 
-#let theme = "modern"
+#let theme = "modern" // "classic" "standard" "modern"
 
-#show: book.with(
-    title: title,
-    theme: theme,
-    print: print
-)
+//#show: book.with(
+//    title: title,
+//    theme: theme,
+//    print: false
+//)
 
-#set page(width: 170mm, height: 240mm)
+    //#let inside-margin = 18.88mm
+    //#let outside-margin = 37.76mm // this breaks it somehow in combination with justification
 
-// General styling rules
+    // paragraph styling
+    #set par(justify: true, leading: 0.55em)  // should come before page setup (or it breaks margin notes)
 
+    // setup page
 
-// Cover
-
-#set page(numbering: none)
-
-#[
-#align(center)[
-    #text(font: "UGent Panno Text", 2em, weight: 700, "Cover")
-]
-
-//// conform to golden ratio (just like penguin classics covers)
-
-#pagebreak(to: "odd")
-
-]
-
-// Title page
-
-#[
-    #set rect(
-      width: 100%,
-      height: 100%,
-      inset: 4pt,
-    )
-    
     #set page(
-      fill: rgb("#1E64C8"),
-      margin: (
-        top: 5cm,
-        right: auto,
-        left: auto
-      )
+        fill: none,
+        numbering: "1",
+        width: 170mm, height: 240mm,
+        margin: (inside: s, top: t, outside: e, bottom: f)
     )
 
+    // set font
     #set text(
-      fill: white,
-      font: "UGent Panno Text",
-      weight: 700
-    )
-    
-    #align(center)[
-        #text(2.4em, maintitle)
-    
-        #text(1.2em, hyphenate: false, subtitle) // TODO heterogenous environments?
-    ]
-
-    #v(4cm)
-
-    #align(center)[
-        #text(1.2em, weight: 700, "Tom Lauwaerts") \
-        #v(1em)
-        #text(1.0em)[
-            Doctor of Computer Science \
-            Theory and Operations of Programming Languages Lab \
-            Faculty of Sciences \
-            Ghent University \
-        ]
-        #v(.20em)
-        #text(font: "UGent Panno Text", fill: white, 1.0em, weight: 700, "2025") 
-    ]
-    
-    #v(0.25fr)
-    
-    #grid(
-      columns: (1fr, 1fr),
-      align(center)[#image("topl.png", width: 5cm)],
-      grid.vline(stroke: white),
-      align(center)[#image("ugent.png", width: 5cm)]
-    )
-]
-
-// Inside cover
-
-#[
-    #set page(
-      margin: (
-        right: 40%
-      )
-    )
-
-    #pagebreak()
-
-    #text(font: fonts, ligatures: true, discretionary-ligatures: false, size: small, weight: "regular")[
-
-    #v(1fr)
-
-    Dissertation submitted in partial fulfillment of the requirements for the degree of Doctor of Computer Science at Ghent University \
-    May, 2025
-    #v(.4em)
-    Advisor: Prof Dr. Christophe Scholliers \
-    Second advisor: Prof Dr. Peter Dawyndt
-
-    #v(.4em)
-    Ghent University \
-    Faculty of Sciences \
-    Department of Mathematics, Computer Science and Statistics \
-    Theory and Operations of Programming Languages Lab
-
-    #v(.4em)
-    This dissertation was typeset using Typst. \
-    Cover art #sym.copyright Tom Lauwaerts
-
-    ]
-]
-// Preamble
-#[
-
-#counter(page).update(1)
-
-#set page(
-    fill: none,
-    header: [
-        #set text(normal)
-    ],
-    numbering: "i",
-    )
-
-#set par(justify: true)
-#set text(
         font: serif,
         ligatures: true,
         discretionary-ligatures: false,
         size: normal,
-        lang: "en",
-        weight: mass)
+        lang: "en")
 
-#show heading: it => [
-  #set align(center)
-  #set text(weight: 600)
-  #block(smallcaps(it.body))
-  #v(1.25em)
-]
+    #show math.equation: set text(font: mathfont)
 
-= Acknowledgements
+    // setup margin notes
 
-// Christophe
+    #set-margin-note-defaults(margin-outside: e, stroke: none, side: auto)
 
-// Stefan
+    // Section headings styling
 
-// Elisa
+    #let heading-font = serif
+    #if theme == "modern" {
+        heading-font = sans
+    }
 
-// Robbert
-
-// Carlos
-
-// Matteo
-
-// Maarten
-// the new topl lab :)
-
-// (Peter)
-
-// The jury
-
-// Collega's: Jonathan, Charlotte, Niko, Steven, Jorg en anderen
-
-// de vakgroep (ook alle lesgevers van de opleiding)
-
-// Vrienden: Jorg, Max, Wout, Kieran, Jasper, Michiel, the maestro Tibo, Alex, Nicole, Christine
-
-// Internationale contacten: Octave Larose and Sophie Kaleba
-
-// Zussen en mama
-
-// Xiaoyu
-
-// TODO send email with thank you to Baudouin with pdf
-
-#lorem(64)
-
-#lorem(125)
-
-#lorem(45)
-
-#pagebreak()
-= Lay summary
-
-#lorem(340)
-
-#pagebreak()
-= Samenvatting
-
-#lorem(140)
-
-#lorem(128)
-
-#pagebreak()
-= Declaration <declaration>
-
-// Daniel hillerström has this kind of declaration in his thesis:
-// I declare that this thesis is composed by myself, that the work contained herein is my own except where explicitely stated otherwise in the text, and that this work has not been submitted for any other degree or professional qualification except as specified. This thesis was written in the period from 2021 to 2025.
-
-The following previously published work features prominently within this dissertation.
-
-- Tom Lauwaerts, Carlos Rojas Castillo, Robbert Gurdeep Singh, Matteo Marra, Christophe Scholliers, and Elisa Gonzalez Boix. Event-Based Out-of-Place Debugging. In MPLR, pages 85–97. ACM, 2022.
-- Tom Lauwaerts, Robbert Gurdeep Singh, Christophe Scholliers. WARDuino: An embedded WebAssembly virtual machine. In Journal of Computer Languages, Volume 79. Elsevier, 2024.
-- Tom Lauwaerts, Stefan Marr, Christophe Scholliers. Latch: Enabling large-scale automated testing on constrained systems. In Science of Computer Programming, Volume 238. Elsevier, 2024.
-
-At the time of writing, the following works were submitted at peer reviewed conferences or journals, and are still under review.
-
-- Tom Lauwaerts, Maarten Steevens, Christophe Scholliers. MIO: Multiverse Debugging in the face of Input/Output.
-
-The software developed as part of this dissertation is available publicly on the Theory and Operations of Programming Languages Lab's #link("https://github.com/TOPLLab")[GitHub page]. The following software was developed as part of this dissertation:
-
-// TODO make/use zenodo doi links
-
-- The WARDuino virtual machine. Available at #link("https://github.com/TOPLLab/WARDuino")[topllab/warduino]
-- WARDuino VSCode plugin. Available at #link("https://github.com/TOPLLab/WARDuino-VSCode")[topllab/warduino-vscode]
-- The Latch testing framework. Available at #link("https://github.com/TOPLLab/latch")[topllab/latch]
-
-#pagebreak()
-
-= Preface <preface>
-
-#lorem(80)
-
-// TODO short passionate defense of debuggers with clear arguments
-
-#pagebreak(to: "odd")
-
-#v(30%)
-#align(center)[
-To the apple of my eye  // TODO end dedication with a period?
-]
-
-#pagebreak(to: "odd")
-
-#toc()]
-
-#set par(justify: true)
-#set text(
-        font: fonts,
-        ligatures: true,
-        discretionary-ligatures: false,
-        size: normal,
-        lang: "en",
-        weight: mass)
-
-#set page(numbering: "1")
-#counter(page).update(1)
-
-#[
-    // Page mark up
-    // TODO fix page numbering mark up
+    #let big = 1.000em
+    #let mid = 0.494em
+    #let sml = 0.305em
+    #if theme == "modern" {
+        big = 1.294em
+        mid = 0.800em
+        sml = 0.494em
+    }
 
     // Headers mark up
-    #set heading(outlined: true)
 
     // make page breaks detectable
     #show pagebreak: it => {
@@ -304,53 +96,56 @@ To the apple of my eye  // TODO end dedication with a period?
             text(weight: 600, style: "normal", size: 18pt, [#it.body])
             v(0.10em)
         }
-        [#metadata(none) <chapter-start>]
+        [
+          #metadata(none) <chapter-start>
+          #counter(figure.where(kind: illustration.algorithm)).update(0)
+          #counter(figure.where(kind: illustration.code)).update(0)
+          #counter(figure.where(kind: illustration.figure)).update(0)
+          #counter(figure.where(kind: illustration.table)).update(0)
+        ]
     }
+
+    //#show ref.where(
+    //  form: "normal"
+    //): set ref(supplement: it => {
+    //  if (it.func() == heading) and (it.supplement != "Appendix") and it.level == 1 {
+    //    "Chapter"
+    //  } else {
+    //    it.supplement
+    //  }
+    //})
+
 
     // section titles
     #set heading(numbering: "1.1")
-    #counter(heading).update(0)
 
-    // page headers
-    #set page(
-        header: context {
-            if is-page-empty() {
-                return
-            }
+    #show heading.where(level: 1): set heading(supplement: [Chapter])
 
-            let i = here().page()
-            if query(selector.or(<chapter-start>)).any(it => (it.location().page() == i)) {
-                return
-            }
+    #show heading: set text(font: heading-font, hyphenate: false)
+    #show heading: set par(justify: false)
+    #show heading.where(level: 2): it => {
+        v(big)
+        it
+        v(mid)
+    }
 
-            // Retrieve all headings in the document
-            let headings = query(heading.where(level: 1).before(here()))
+    #show heading.where(level: 3): it => {
+        v(mid)
+        it
+        v(sml)
+    }
 
-            // Find the last heading before or on the current page
-            if calc.odd(here().page()) {
-                // Odd: a.b.c section title
-                if headings.len() > 0 {
-                    align(right)[#text(style: "italic")[#headings.last().body] #h(2mm) #counter(page).display()]
-                } else {
-                    // If no heading is found, return a default header or none
-                    none
-                }
-            } else {
-                // Even pages : Chapter a. title
-                // Retrieve all level 1 headings before the current position
+    #show heading.where(level: 4).or(heading.where(level: 5)): it => {
+        set text(style: "italic", weight: 400, size: normal) if theme != "modern"
+        v(mid)
+        it
+        v(sml)
+    }
 
-                // Check if there are any such headings
-                if headings.len() > 0 {
-                  [#counter(page).display() #h(2mm) #text(style: "italic")[Chapter #counter(heading.where(level: 1)).display()]]
-                } else {
-                  // Fallback content if no level 1 heading is found
-                  none
-                }
-            }
-        },
-    ) if theme == "classic" or theme == "standard"
-
-    // page headers
+    // running headers
+    #let runningheader(number, body) = [
+      _Chapter #number._ #h(0.5em) #body // \[Chap. #number\]
+    ]
     #set page(
         header: context {
             if is-page-empty() {
@@ -375,7 +170,10 @@ To the apple of my eye  // TODO end dedication with a period?
             if calc.odd(here().page()) {
                 // Odd: a.b.c section title
                 if last_heading != none {
-                    [#last_heading.body #h(1fr) #counter(page).display()]
+                    [
+                        #h(1fr)#last_heading.body //#h(1fr) #counter(page).display()
+                        #v(0.5em)
+                    ]
                 } else {
                     // If no heading is found, return a default header or none
                     none
@@ -387,7 +185,11 @@ To the apple of my eye  // TODO end dedication with a period?
     
                 // Check if there are any such headings
                 if headings.len() > 0 {
-                  [#counter(page).display() #h(1fr) #headings.last().body \[Chap. #counter(heading.where(level: 1)).display()\]]
+                  [
+                    //#counter(page).display()
+                    #runningheader(counter(heading.where(level: 1)).display(), headings.last().body) #h(1fr)
+                    #v(0.5em)
+                  ]
                 } else {
                   // Fallback content if no level 1 heading is found
                   none
@@ -398,161 +200,270 @@ To the apple of my eye  // TODO end dedication with a period?
 
     // page footers
     #set page(
-        margin: (inside: 3.0cm, outside: 2cm),
         footer: context {
-            if query(selector.or(<chapter-start>)).any(it => (it.location().page() == here().page())) {
+            //if query(selector.or(<chapter-start>)).any(it => (it.location().page() == here().page())) {
+            if calc.odd(here().page()) {
                 align(right)[#counter(page).display()]
             } else {
-                none
+                //none
+                align(left)[#counter(page).display()]
             }
         }
     )
 
-= Introduction
+    //// style figures
+    #set figure(placement: top, kind: illustration.figure, supplement: [Figure])
+    #show figure.where(kind: "algorithm"): set figure(placement: none)  // top placement for algorithms breaks line labels
 
-//#quote("Bertie Wooster", source: "Right Ho, Jeeves")[I don’t know if you have had the same experience, but the snag I always come up against when I’m telling a story is this dashed difficult problem of where to begin it.]
+    #set figure.caption(separator: ". ")
+    #show figure.caption: set text(size: normal)
+    #show figure.caption: it => context {
+        align(left)[*#it.supplement~#it.counter.display()#it.separator*#it.body]
+    }
+
+    // captions
+    #set figure(numbering: (..num) =>
+        numbering("1-1", counter(heading).get().first(), num.pos().first())
+    )
+
+    #show figure.caption: set block(below: 5em)
+
+    // style code snippets
+    #show: codly-init.with()
+    #set raw(syntaxes: "../lib/wast.sublime-syntax")
+    #show raw: set text(size: codefont)
+    #show figure.caption: set text(size: normal)
+    #show raw.where(block: true): set text(size: script)
+    #show raw.where(block: true): set par(leading: 0.55em)
+
+    #show link: set text(fill: colour.links)
+
+#[
+    #set page(numbering: none, footer: none)
+
+    #titlepage(maintitle, subtitle: subtitle)
+    #pagebreak(to: "odd")
+]
+
+// Preamble
+#[
+
+#counter(page).update(1)
+
+#set page(
+    fill: none,
+    header: [
+        #set text(normal)
+    ],
+    numbering: "i",
+    )
+
+#set par(justify: true)
+#set text(
+        font: serif,
+        ligatures: true,
+        discretionary-ligatures: false,
+        size: normal,
+        lang: "en",
+        weight: 400)
+
+#show heading.where(level: 1): it => [
+  #set align(center)
+  #set text(weight: 600)
+  #block(smallcaps(it.body))
+  #v(1.25em)
+]
+
+#show heading.where(level: 2): it => [
+  #set text(weight: 800, size: normal)
+  #it
+]
+
+#set heading(numbering: none)
+
+#include "preamble/samenvatting.typ"
+
+#pagebreak()
+#include "preamble/summary.typ"
+
+#pagebreak()
+#include "preamble/declaration.typ"
+
+//#pagebreak(to: "odd")
+//
+//#v(30%)
+//#align(center)[
+//    #text(style: "italic")[for the apple of my eye]  // TODO end dedication with a period?
+//]
+
+#pagebreak(to: "odd")
+
+#toc()
+
+]
+
+#counter(page).update(1)
+#counter(heading).update(0)
+
+
+// Chapters
+
+// Chapter 1
+= Introduction<chapter:introduction>
+
 #quote("Edsger W. Dijkstra", theme: theme)[If debugging is the process of removing software bugs,\ then programming must be the process of putting them in.]
 
-// todo the very first sentence should say something about bugs
+#include "introduction/introduction.typ"
 
-The modern world is becoming more and more saturated by computers, digital solutions, and smart devices.
+// Chapter 2
+= Foundations for Debugging Techniques<chapter:foundations>
 
-As computational costs have continued to decrease, so increased the opportunities to extend any part of our world with computational capabilities.
-Pushed by the self-fulfilling prophecy postulated in 1965 by George Moore @moore65, 
+#quote("Donald Knuth", source: "personal communication c. 1970", theme: theme)[Beware of bugs in the above code;\ I have only proved it correct, not tried it.]
 
-With the fast rise of artificial intelligence solutions in industry and daily life, solutions for edge devices and AI-powered smart devices are also surely to rise quickly.
+#include "foundations/foundations.typ"
 
-== The nature of programming mistakes
-
-#lorem(140)
-
-== The history of debugging
-
-#lorem(126)
-
-== The challenges of resource-constraints
-
-#lorem(130)
-
-== The challenges of non-determinism
-
-#lorem(115)
-
-== The promise of universal bytecode interpreters
-
-#lorem(1293)
-
-= Foundations for Debugging Techniques
-
-#quote("Donald Knuth", theme: theme)[Beware of bugs in the above code;\ I have only proved it correct, not tried it.]
-
-#lorem(128)
-
-== Semantics of debuggers
-
-#lorem(512)
-
-== A debugger for $lambda^arrow.r$
-
-#lorem(1024)
-
-== Debugger correctness
-
-#lorem(256)
-
-== Proof of correctness for the $lambda^arrow.r$ debugger
-
-#lorem(512)
-
-= A Remote Debugger for WebAssembly  // An embedded WebAssembly virtual machine
+// Chapter 3
+= A Remote Debugger for WebAssembly<chapter:remote>  // An embedded WebAssembly virtual machine
 
 #quote([#text(style: "italic", [adapted from]) George Orwell], theme: theme)[Those who abjure debugging can only do so by others debugging on their behalf.]
-// no single language is perfect, we want to enable any language on microcontrollers
 
 #include "remote/remote.typ"
 
-//== Developing embedded programs with WARDuino
-//
-//== Virtual machine architecture
-//
-//== Support for high-level languages
-//
-//== Extending the virtual machine
-//
-//#comment("Note")[Replace paper section with the small language developed for primitives]
-//
-//== Formal specification
-//
-//
-//== Tool support for WARDuino
-//
-//== Evaluation
-//
+// Chapter 4
+= Stateful Out-of-place debugging<chapter:oop> // todo make title more specific?
 
-= Out-of-place debugging
+#quote("Tony Hoare")[Some problems are better evaded than solved.]
 
 #include "oop/oop.typ"
 
-= Multiverse debugging on microcontrollers
+// Chapter 5
+
+= Multiverse debugging on microcontrollers<chap:multiverse>
 
 #quote("Karl Popper", source: "Knowledge without Authority", theme: theme)[Our knowledge can only be finite, while our ignorance must necessarily be infinite.]
 
-#comment("Note")[PLDI paper chapter]
+#include "multiverse/multiverse.typ"
 
-#lorem(120)
+// Chapter 6
 
-== Defining multiverse debuggers
+= Managed Testing<chapter:testing>
 
-#comment("Note")[In this section we give definitions for multiverse debugging and also explain what a multiverse graph is, show how it is a rooted tree, and provide a proof for it (useful for later proofs)]
+#quote("Miyamoto Musashi", source: "The Book of Five Rings", theme: theme)[If you know the way broadly, you will see it in everything.] // TODO find a better quote
 
-== Challenges in the face of input/output
+#include "latch/latch.typ"
 
-=== Output: Inconsistent external state during backwards exploration
+// Chapter 7
 
-=== Input: Exploring non-deterministic input in multiverse debuggers
-
-When a program's execution path is determined by the input from the external environment, the possible execution paths are often too many to explore.
-
-=== Performance: Snapshot explosion in multiverse debuggers
-
-// Checkpointing strategies in multiverse debuggers
-
-= Managed testing
-
-//#quote("Laozi", theme: theme)[Anticipate the difficult by managing the easy.]
-
-#quote("Miyamoto Musashi", theme: theme)[If you know the way broadly, you will see it in everything.] // TODO find a better quote
-
-#comment("Note")[Latch paper]
-
-= Validation
-
-#quote([Attributed to Rutherford B. Hayes#footnote[It is often reported that the 19#super[th] president of the United states Rutherford B. Hayes spoke these words upon seeing a telephone for the first time, however, this is almost definitely not true. In fact, Hayes was a technology buff who had the first telephone installed in the White House @kessler12.]], theme: theme)[An amazing invention#box(sym.dash.em)but who would ever want to use one?] // TODO add a reference to the footnote
-
-#lorem(70)
-
-= Conclusions and future work
+= Conclusion<chapter:conclusion>
 
 #quote("Terry Pratchet", source: "A Hat Full of Sky", theme: theme)[Why do you go away? So that you can come back. So that you can see the place you came from with new eyes and extra colors. And the people there see you differently, too. Coming back to where you started is not the same as never leaving.]
 //#quote("P.G. Wodehouse", source: "Jeeves Takes Charge", theme: theme)[I pressed down the mental accelerator. The old lemon throbbed fiercely. I got an idea.]
 
-#lorem(57)
+#include "conclusion/conclusion.typ"
 
+// Appendices and references
+
+#[
+#set heading(numbering: "A.1", supplement: [Appendix])
+#show heading.where(level: 1): set heading(supplement: [Appendix])
+
+#show heading.where(level: 1): it => [
+  #set align(center)
+  #set text(weight: 600)
+  #pagebreak()
+  #block(smallcaps(it.body))
+  #v(1.25em)
 ]
 
-#pagebreak()
+    #let runningheader(number, body) = [
+      _Appendix #number._ #h(0.5em) #body // \[Chap. #number\]
+    ]
+
+#set figure(placement: none, numbering: (..num) =>
+        numbering("A-1", counter(heading).get().first(), num.pos().first())
+    )
+
+
+
 #metadata(none) <appendix>
 
-#bibliography("references.bib", style: "elsevier-harvard")<bibliography>
+#[
+  // no running header for bibliography
+  #set page(header: context {
+    if calc.even(here().page()) [
+      _Bibliography_ #h(1fr)
+      #v(0.5em)
+    ]
+  })
+  
+  #bibliography("references.bib", style: "elsevier-harvard")<bibliography>
+]
+
+#set heading(numbering: "A.1", supplement: [Appendix])
+#show heading.where(level: 1): it => [
+  #set align(center)
+  #set text(weight: 600)
+  #pagebreak()
+  #block(smallcaps[#counter(heading).display(). #it.body])
+  #v(1.25em)
+  #[#metadata(none) <chapter-start>]
+]
+
+#show heading.where(level: 2): it => [
+  #set align(left)
+  #set text(weight: 800, size: normal)
+  #it
+]
 
 #counter(heading).update(0)
-#set heading(numbering: "A.1")
 
-#include "appendices/webassembly.typ"
+    #set page(
+        header: context {
+            if is-page-empty() {
+                return
+            }
+    
+            let i = here().page()
+            if query(selector.or(<chapter-start>)).any(it => (it.location().page() == i)) {
+                return
+            }
+    
+            // Retrieve all headings in the document
+            let headings = query(heading);
+    
+            // Find the last heading before or on the current page
+            if headings.filter(h => h.level == 2).filter(h => h.location().page() <= here().page()).len() == 0 {
+                return
+            }
 
-#include "appendices/primitives.typ"
+            let last_heading = headings.filter(h => h.level == 2).filter(h => h.location().page() <= here().page()).last();
+    
+            if calc.even(here().page()) {
+                // Even pages : Chapter a. title
+                // Retrieve all level 1 headings before the current position
+                let headings = query(heading.where(level: 1).before(here()))
+    
+                // Check if there are any such headings
+                if headings.len() > 0 {
+                  [
+                    //#counter(page).display()
+                    #runningheader(counter(heading).display(), headings.last().body) #h(1fr)
+                    #v(0.5em)
+                  ]
+                } else {
+                  // Fallback content if no level 1 heading is found
+                  none
+                }
+            }
+        }
+    ) if theme == "modern"
 
-#include "appendices/updates.typ"
+#include "foundations/appendix.typ"
 
-#include "appendices/benchmarks.typ"
+#include "remote/appendix.typ"
 
+#include "oop/appendix.typ"
+
+#include "multiverse/appendix.typ"
+
+]

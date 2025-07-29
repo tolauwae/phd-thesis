@@ -284,7 +284,13 @@ We can consider out-of-place debugging as the spectrum of debuggers that lie bet
 Previous implementations of out-of-place debugging, lie squarely on the side of local online debugging, where no internal state changes are allowed on the client, or only very few exceptions are made.
 This approach has been implemented previously by two different debuggers.
 
-#figure(image("../placeholder.png", height: 30%),
+#let overview = cetz.canvas({
+  import cetz.draw: *
+  // Your drawing code goes here
+  rect((0,0), (1,1), name: "client")
+})
+
+#figure(overview,
     caption: [Schematic showing the spectrum of out-of-place debugging.]
 )<oop:fig:spectrum>
 

@@ -42,7 +42,7 @@ To give the reader more context, we will briefly discuss the history of debugger
 == The history of debuggers
 #note(text(weight: 400)[Actually, the term _bug_ was already used to refer to a fault in a machine in the late nineteenth century @wills22:bug.])Debugging has been central to programming since the earliest days of computer science. The term itself is often traced to _Grace Hopper’s famous 'bug' story_ from 1947, when a literal moth was found shorting a relay in the Harvard Mark II computer @cohen94:use.
 
-No history of debugging is complete without also mentioning Maurice Wilkes' famous anecdote, describing the first time he experienced a need for debugging back in 1949: _"As soon as we started programming, [...] we found to our surprise that it wasn’t as easy to get programs right as we had thought it would be. [...] Debugging had to be discovered. I can remember the exact instant [...] when I realized that a large part of my life from then on was going to be spent in finding mistakes in my own programs."_ @wilkes79:birth @spinellis18:modern
+No history of debugging is complete without also mentioning Maurice Wilkes' famous anecdote, describing the first time he experienced the need for debugging back in 1949: _"As soon as we started programming, [...] we found to our surprise that it wasn’t as easy to get programs right as we had thought it would be. [...] Debugging had to be discovered. I can remember the exact instant [...] when I realized that a large part of my life from then on was going to be spent in finding mistakes in my own programs."_ @wilkes79:birth @spinellis18:modern
 The term _debugging_ came into circulation shortly after Wilkes' famous encounter. //, and continues to be an integral part of programming today.
 From that point on, debuggers evolved alongside programming languages and computer systems, from the early days of assembly language and punch cards to the high-level languages we use today.
 Wilkes' description still sums up the need for debugging perfectly today.
@@ -141,7 +141,7 @@ Instead developers turn to print statement debugging @beller18:on, which is ofte
 
 Another interesting debugger-less debugging technique, is called _rubber duck debugging_, where programmers try and explain their code---possibly to a rubber duck---to help them understand the problem better @hunt99:pragmatic.
 
-While not without merit, given the complexity of the debugging task, debugging without the use of debuggers is often far too cumbersome, and can only get you so far. // todo citation?
+While not without merit, debugging without the use of debuggers is often far too cumbersome, and can only get you so far given the complexity of the debugging task.
 Especially, print statement debugging, despite its popularity, should be considered bad practice for any serious debugging task.
 Even in the 1950s, computer systems already included breakpoints improving on print statement debugging by allowing programmers to debug live programs @smith58:design.
 Since then, debuggers have come a long way.
