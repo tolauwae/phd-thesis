@@ -16,7 +16,7 @@ Unfortunately, defining the semantics of debuggers has always received less atte
 This lack of interest, has resulted in quite a sparse collection of existing semantics, which focus on very different aspects, and are defined in very different ways.
 To this day, there is no clear consensus on what constitutes correctness for debuggers, or even, which are the essential aspects for a tool to fall under the broad category of debuggers.
 
-Whether or not such a consensus is possible, is an interesting question in itself.
+Whether or not such a consensus is possible is an interesting question in itself.
 This is not the focus of this dissertation, but we are interested in what constitutes correctness for the operations of manual debuggers.
 We believe that the soundness and completeness criteria we define in this chapter are a good starting point for defining correctness for such debuggers.
 
@@ -46,7 +46,7 @@ While an interesting formalization, it does not say anything about the debugging
 
 A more recent work by #cite(form: "prose", <li12:formal>) focussed on automatic debuggers.
 Its formalization is based on a kernel of the C language, and defines operational semantics for tracing, and for backwards searching based on those traces.
-The work proofs that its trace and search operations terminate, but defines no general correctness criteria.
+The work proves that its trace and search operations terminate, but defines no general correctness criteria.
 
 However, most works after 2000 have largely used the approach first presented by #cite(form: "prose", <bernstein95:operational>), such as a number of recent works @ferrari01:debugging @torres17:principled @lauwaerts24:warduino @holter24:abstract that inspired and informed this dissertation.
 While there are still large differences in the way debuggers are formalised in recent works, it is clear that defining their semantics in terms of the underlying language is now accepted as the canonical approach.
@@ -176,8 +176,8 @@ The first three steps are server steps, which describe the operation of the debu
 
 / Inspect: The inspect step outputs a snapshot of the current term $t$.
 
-To lift these server steps to describe the operation of a remote debugger, we only need to describe how they are interact with the client, or debugger backend.
-The rest of the rules are therefore mostly concerned with how input and output are process.
+To lift these server steps to describe the operation of a remote debugger, we only need to describe how they interact with the client, or debugger backend.
+The rest of the rules are therefore mostly concerned with how input and output are processed.
 We model the debugger frontend with a single client rule, _Process_.
 
 / Process: The client takes the server message $message$ from its input message box, and replaces it with $nothing$, indicating that the output was used to update the user interface.
@@ -200,7 +200,7 @@ Now that we have the formal semantics for a remote debugger that can step throug
 // todo motivate/argue for this as our correctness theorem more
 Since we define our debugger in terms of the underlying language, the most intuitive definition of correctness for a debugger is that it should not change the semantics of the program being debugged.
 //In other words, the debugger and language semantics form a bisimulation.
-An intuition shared by the earliest works on debugger correctness such as #cite(form: "prose", <da-silva92:correctness>).
+This intuition is shared by the earliest works on debugger correctness such as #cite(form: "prose", <da-silva92:correctness>).
 We develop the idea into two correctness criteria, _debugger soundness_ and _debugger completeness_.
 
 Debugger soundness demands that for any debug session that begins at the start of the program, there is a path in the underlying language semantics that leads to the same final program state.
@@ -239,7 +239,7 @@ we will discuss them for a two interesting debuggers built on our tiny remote se
 
 == #conventionaldbg: A conventional debugger for #stlc<sec:conventional>
 
-The tiny remote debugger $remotedbg$ is perhaps to simple to be really considered---what we conventionally call---a live remote debugger.
+The tiny remote debugger $remotedbg$ is perhaps too simple to be really considered---what we conventionally call---a live remote debugger.
 The most obvious missing pieces are #pause and #play commands, and support for _breakpoints_.
 The semantics so far consider the program to be paused at all times, and the debugger only moves forward when the user issues a _step_ command.
 
@@ -501,11 +501,11 @@ Therefore---analogous to the previous extensions to the semantics---the addition
 == Discussion: general debugger correctness
 
 //As this chapter shows,
-Given the wide variety of debuggers and the vagueness around what constitutes as a debugger, it is not possible to formally define a general correctness criterion that is the same for all types of debuggers.
+Given the wide variety of debuggers and the vagueness around what constitutes a debugger, it is not possible to formally define a general correctness criterion that is the same for all types of debuggers.
 However, the _soundness_ and _completeness_ criteria presented in this chapter do present the same general principle, which is that the debugger should observe the same semantics as the program being debugged.
 This does not mean that no case can be made for the usefulness of unsound debuggers, however, their unsoundness is important to keep in mind as a user of such debuggers.
 
-The extensive discussion of the different debugger semantics for the #stlc in this chapter serve to show the general applicability of debugger soundness and completeness, and support our claim that these are the most essential correctness properties for any type of debugger.
+The extensive discussion of the different debugger semantics for the #stlc in this chapter serves to show the general applicability of debugger soundness and completeness, and support our claim that these are the most essential correctness properties for any type of debugger.
 The same criteria will be used throughout this dissertation, as we explore how to develop sound out-of-place and multiverse debugging techniques for constrained environments. //, we will test our models with the correctness criteria presented in this chapter.
 These debuggers bridge a wide spectrum of debugger types, and intercede in the program's execution in intricate ways.
 They present semantics that are much more complex than the simple semantics we presented in this chapter.

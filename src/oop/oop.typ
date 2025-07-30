@@ -946,7 +946,7 @@ Additionally, the extension features a view of the current events in the event q
 These events can be triggered at any point by the developer, similar to performing a step.
 
 We tested the prototype implementation, by checking the invoke non-interference as described in @oop:semantics.
-To test this empirically, we randomly generating a thousand simple WebAssembly programs, which included a number of actions that changed the memory in the WebAssembly module.
+To test this empirically, we randomly generated a thousand simple WebAssembly programs, which included a number of actions that changed the memory in the WebAssembly module.
 We ran the programs both with and with the out-of-place debugger, and verified that the memory at the end of the program was indeed identical for each program.
 //Secondly, we extended the existing unit testing framework from the WARDuino project to support testing of our stateful out-of-place debugger, and extended the existing test suite for the WARDuino remote debugger with tests specific to stateful out-of-place debugging.
 //We show a small part of the test suite's output on the left of \cref{fig:implementation}.
@@ -1182,7 +1182,7 @@ Much effort has been put into developing solutions for (strong) eventual consist
 A common approach is to use conflict-free replicated data types (CRDTs) @shapiro11:conflict-free-replicated-data-types, which allow for concurrent updates to data without the need for any coordination @almeida24:approaches.
 It is an open question whether eventual consistency is enough for out-of-place debugging, or whether stronger consistency guarantees are needed.
 However, many other forms of consistency exist, such as sequential consistency @lamport79:how, causal consistency @terry94:session @perrin16:causal, and linearizability @herlihy90:linearizability.
-It is our believe that the type of consistency used in out-of-place debugging is tied strongly to its application context.
+It is our belief that the type of consistency used in out-of-place debugging is tied strongly to its application context.
 //guarantees such as linearizability~@herlihy90:linearizability are certain to suffice for out-of-place debugging of multiple devices.
 Yet given the vast amount of work in this field, we believe that the existing techniques for consistency can be used to generalize our formalization to multiple devices, and to further strengthen the formal guarantees.
 

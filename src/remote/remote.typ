@@ -66,13 +66,15 @@ Since WebAssembly is a universal compile target, it can enable programs written 
 The WARDuino virtual machine was first presented in 2019 by #cite(<gurdeep19:warduino>, form: "prose");, and addressed #emph[the slow development cycle] and the challenging #emph[debuggability] through the initial implementation of a remote debugger with over-the-air reprogramming capabilities. The paper presented these two features as extensions to the operational semantics of WebAssembly, in order to show their interaction and compatibility with the WebAssembly standard, and to ease re-implementation in other virtual machines. Additionally, WARDuino provided support for a limited set of hardware features through WebAssembly functions embedded in the virtual machine. It is necessary to embed this support in the virtual machine, since the #emph[bare-metal execution environments] of embedded devices provide no conventional interfaces to the hardware. Simultaneously, the primitives should be exposed at the level of WebAssembly in order to achieve the highest #emph[portability] possible. However, the paper left some important problems as future work.
 
 // todo add https://www.sciencedirect.com/science/article/pii/S1084804516000990?casa_token=oQSbZCnzdN8AAAAA:0Qnux5SJSO_tDkY0OpMkNOOpE13-w5JYRKeuyRabdTGtxS066s-GmQ3JCPnKKALIRUvyb12LPQ https://www.mdpi.com/1424-8220/14/10/19582 https://ieeexplore.ieee.org/abstract/document/9247996
-First, WebAssembly does not natively support asynchronous code, but many standard M2M protocols for IoT applications  such as MQTT @banks14:mqtt rely on asynchronous events. Similarly, IoT applications often rely on asynchronous handling of hardware interrupts. Due to this limitation in WebAssembly, WARDuino lacked any support for either hardware primitives that rely on asynchronicity, or M2M protocols. In this chapter, we extend the WebAssembly operational semantics with support for event-driven callback handling. Through this system, callback functions can subscribe to asynchronous events at the WebAssembly level. The functions will be executed whenever such an event occurs. While other proposals for asynchronous code in WebAssembly are being developed @webassembly-community-group22:webassembly, these proposals are still in early stages, and often focus heavily on browser applications, making them unsuitable for resource-constrained microcontrollers.
+First, WebAssembly does not natively support asynchronous code, but many standard machine-to-machine (M2M) protocols for IoT applications  such as MQTT @banks14:mqtt rely on asynchronous events. Similarly, IoT applications often rely on asynchronous handling of hardware interrupts. Due to this limitation in WebAssembly, WARDuino lacked any support for either hardware primitives that rely on asynchronicity, or M2M protocols. In this chapter, we extend the WebAssembly operational semantics with support for event-driven callback handling. Through this system, callback functions can subscribe to asynchronous events at the WebAssembly level. The functions will be executed whenever such an event occurs. While other proposals for asynchronous code in WebAssembly are being developed @webassembly-community-group22:webassembly, these proposals are still in early stages, and often focus heavily on browser applications, making them unsuitable for resource-constrained microcontrollers.
 
-Second, since hardware support is exposed at the WebAssembly level,paperthere is a language barrier that has to be bridged for every higher-level language. The original version of WARDuino did not address this issue, and in practice lacked any real support for high-level languages. In this chapter, we show that WARDuino can practically solve the #emph[low-level coding] challenge as promised in the original paper @gurdeep19:warduino. We illustrate how WARDuino can support high-level languages through language symbiosis, by showing different levels of language integration for AssemblyScript, a TypeScript-like language. These examples serve as a general recipe for implementing other language libraries.
+Second, since hardware support is exposed at the WebAssembly level there is a language barrier that has to be bridged for every higher-level language. The original version of WARDuino did not address this issue, and in practice lacked any real support for high-level languages. In this chapter, we show that WARDuino can practically solve the #emph[low-level coding] challenge as promised in the original paper @gurdeep19:warduino. We illustrate how WARDuino can support high-level languages through language symbiosis, by showing different levels of language integration for AssemblyScript, a TypeScript-like language. These examples serve as a general recipe for implementing other language libraries.
 
 Third, the formal rules for the debugger semantics were not used to prove any interesting properties or guarantees for the debugger. In this chapter, we improve the semantics for the debugging and over-the-air updates, and provide a proof for observational equivalence between the debugger semantics, and the underlying WebAssembly semantics. This equivalence means that the executions observed by the debugger semantics are precisely the same as those observed by the underlying language semantics.
 
-Fourth, the virtual machine was never used to implement a real-world IoT application, and its evaluation was limited to a comparison of execution speed with only one alternative approach. In this chapter, the evaluation of WARDuino has been expanded to include a comparison to another WebAssembly runtime that can run on microcontrollers We also present real-world IoT application written in AssemblyScript and developed using WARDuino.
+Fourth, the virtual machine was never used to implement a real-world IoT application, and its evaluation was limited to a comparison of execution speed with only one alternative approach.
+In this chapter, the evaluation of WARDuino has been expanded to include a comparison to another WebAssembly runtime that can run on microcontrollers.
+We also present a real-world IoT application written in AssemblyScript and developed using WARDuino.
 
 To further illustrate how WARDuino can provide an improved development experience, closer to conventional programming, we present how WebAssembly enables fast prototyping of emulators, and the improved tool support with the visual debugger plugin for WARDuino in the VS Code IDE. This plugin is an important contribution towards the increased #emph[debuggability] of IoT software in WARDuino. The chapter also includes additional code examples that explain how hardware peripherals can be accessed from WebAssembly, as well as a notably improved and expanded presentation of the WARDuino virtual machine architecture.
 
@@ -161,6 +163,8 @@ Our example highlights the goal of the WARDuino project: programming microcontro
 
 Underneath the high-level language library, the primitives are implemented in the WARDuino virtual machine as WebAssembly modules. The WebAssembly standard includes the use of custom WebAssembly modules, which can be used to expose functions designed to interact with the environment. In web browsers such custom modules provide interoperability with JavaScript. WARDuino uses the same mechanism to provide access to its primitives: the hardware functionalities of the microcontroller.
 
+#show "C++": box[C++]
+
 The implementation of the primitives is backed by Arduino libraries. Arduino @banzi08:getting is an open-source electronics platform that supports a wide range of microcontrollers. By providing a thin layer on top of C++, Arduino increases the portability of programs on microcontrollers. The Arduino platform does an excellent job of defining uniform libraries. For example, the code implementing the iconic blinking LED program is identical for all supported devices. This is made possible by the fact that these microcontroller boards implement a core set of libraries to access and address the input-output pins. The constant `LED_PIN` is one of those provided addresses, it holds the pin number of an LED on the board. By building on top of the Arduino libraries, we can bring the same kind of interoperability to programs compiled to WebAssembly.
 
 Our "built-in" modules provide the most important Arduino features for controlling peripheral devices. These include `GPIO`, `SPI`, `USART` and `PWM` as well as more advanced networking modules. Specifically, we have modules with primitives to connect to Wi-Fi networks and to use the HTTP and MQTT protocols. Currently, all our modules are exposed in one single custom WebAssembly module named "`env`". This is in line with the WebAssembly System Interface (WASI) specification @hickey20:webassemblywasi. An overview of these primitives and their WebAssembly interface can be found in @primitives.
@@ -208,7 +212,7 @@ This stack starts out empty.
     pseudocode-list[
 + #line-label(<alg.interpretation:require>) #strong[Require] module $m$ #strong[and] execution state $s$
 + done $arrow.l$ false, success $arrow.l$ true
-+ #line-label(<alg.interpretation:while>) *while* done #strong[and] success *do*
++ #line-label(<alg.interpretation:while>) *while* !done #strong[and] success *do*
     + #line-label(<alg.interpretation:debug>) resolveDebugMessage($s$) #tri Can update the execution state $s$
     + *if* $s =$ paused *then*
         + #line-label(<alg.interpretation:wait>) awaitDebugMessage() #tri Wait until debug queue is not empty
@@ -587,7 +591,7 @@ For instance, programs written in C, Rust, and AssemblyScript have been used wit
 //#show raw: set text(size: script, font: monospace)
 
 
-In the previous sections we explained that WARDuino has native support for the most significant features of the microcontroller, such as monot("GPIO->SPI"), $mono("PWM")$, $mono("SPI")$, as well as communication protocols, such as $mono("HTTP")$ and $mono("MQTT")$.
+In the previous sections we explained that WARDuino has native support for the most significant features of the microcontroller, such as $mono("GPIO->SPI")$, $mono("PWM")$, $mono("SPI")$, as well as communication protocols, such as $mono("HTTP")$ and $mono("MQTT")$.
 #note[For readers familiar with OS architectures, this is somewhat familiar to the unikernel approach.]However, we need to keep the memory constraints of the microcontrollers in mind.
 Given the #emph[hardware limitations] of embedded devices, it is important to keep the WARDuino virtual machine as small as possible.
 We therefore restricted the supported libraries to the most essential ones for embedded applications.
@@ -910,7 +914,7 @@ In order to improve the usability of the semantics, the over-the-air updates can
 "fig:red_update")
 
 
-/ upload-m: An _upload_ message instructs WebAssembly to restart execution with a new set of modules $m^ast$. We require all these modules to be well typed, $(tack.r m)^ast$. The meta-function bootstrap represents WebAssembly’s initialization procedure, described in the original WebAssembly chapter @haas17:bringing. Note that this procedure replaces the entire configuration, including the WebAssembly state, locals and stack. Furthermore, upon receiving the _upload_ message the debugger state is reset and all breakpoints removed.
+/ upload-m: An _upload_ message instructs WebAssembly to restart execution with a new set of modules $m^ast$. We require all these modules to be well typed, $(tack.r m)^ast$. The meta-function bootstrap represents WebAssembly’s initialization procedure, described in the original WebAssembly paper @haas17:bringing. Note that this procedure replaces the entire configuration, including the WebAssembly state, locals and stack. Furthermore, upon receiving the _upload_ message the debugger state is reset and all breakpoints removed.
 
 / update-f: The message to update a function specifies the function to update and its new code ($"code"_f$). To identify a function we must supply the ID of the instance $"id"_i$ it lives in and the index it exists at $"id"_f$ in that instance. The meta-function $italic("update")_f$ replaces the function in the state $s$ and validates that its type remains the same.
 
@@ -975,7 +979,7 @@ The topic of an event corresponds to the unique identifier of a category of even
 Additional data of the event can be stored as a second slice of memory, which we refer to as the event's payload.
 
 To register and deregister new functions in the callback environment, we add two new instructions; $"callback.set"$ and $"callback.drop"$.
-Unlike WebAssembly instructions such as we cannot use an index space to refer to callback functions, because callbacks are stored in a mapping from strings to table indices. For this reason, the instructions for adding, removing and retrieving callbacks, take a memory #emph[memslice] containing the topic string. Note that the map returns at most one function index for each topic string. We choose to limit the amount of callbacks per topic in this way, because the mapping would otherwise become too complicated for a simple low-level instruction set such as WebAssembly. However, we can achieve the same result for end-users by supporting multiple callbacks at the level of WebAssembly actions instead.
+Unlike WebAssembly instructions such as $"local.get"$ we cannot use an index space to refer to callback functions, because callbacks are stored in a mapping from strings to table indices. For this reason, the instructions for adding, removing and retrieving callbacks, take a memory #emph[memslice] containing the topic string. Note that the map returns at most one function index for each topic string. We choose to limit the amount of callbacks per topic in this way, because the mapping would otherwise become too complicated for a simple low-level instruction set such as WebAssembly. However, we can achieve the same result for end-users by supporting multiple callbacks at the level of WebAssembly actions instead.
 
 #semantics(
     [Small step reduction rules for the WARDuino callback handling system.],
@@ -1284,10 +1288,10 @@ We see that WASM3 executes the same WebAssembly program approximately forty time
 
 Although WASM3 is faster than WARDuino, the interpreter's architecture, comes with a significant drawback on memory-constrained devices.
 It trades memory space for time.
-Our \texttt{tak} benchmark cannot run on the ESP32 with WASM3 because the device runs out of memory.
+Our $mono("tak")$ benchmark cannot run on the ESP32 with WASM3 because the device runs out of memory.
 In contrast, this benchmarks runs well on WARDuino.
-We excluded the \texttt{tak} benchmark from the second graph in figure~\ref{fig:wasm3} for this reason.
-Note that the WebAssembly program implementing \texttt{tak} does run on the same device with WARDuino.
+We excluded the $mono("tak")$ benchmark from the second graph in @fig:wasm3 for this reason.
+Note that the WebAssembly program implementing $mono("tak")$ does run on the same device with WARDuino.
 
 ==== Comparison
 
@@ -1329,7 +1333,7 @@ Note that the WebAssembly program implementing \texttt{tak} does run on the same
   t,
   caption: [Left: Absolute execution times in seconds for all tests. Right: Execution time of tests normalized to the native C implementation. The means shown in the table are geometric means.])<tbl:allbench>
 
-The complete benchmarks results are shown in table~\ref{tbl:allbench}.
+The complete benchmarks results are shown in @tbl:allbench.
 In the first four columns of the table, we report the time that elapses between starting and ending the execution of the microbenchmark ten times for each platform.
 On the right, we list the execution times normalized to the execution time of the native C implementation.
 Because the C implementation does not run in a managed environment, it is much faster.

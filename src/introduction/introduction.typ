@@ -14,7 +14,7 @@ Others have deep, and complex causes such as timing issues in concurrent systems
 Crucially, many real-world bugs are not predictable or even known in advance @mogul06:emergent @ubayashi19:when.
 
 This is why automated verification @dsilva08:survey @rodriguez19:software, however powerful, has limits. Formal proofs and model checking work only when the system and its requirements can be fully specified and the relevant properties articulated.
-But many software systems today are too large, too dependent on external environments, or too hastily evolving f2r perfect formalization.
+But many software systems today are too large, too dependent on external environments, or too hastily evolving for perfect formalization.
 No model or simulation can capture every single aspect of the real world @roska90:limitations @khan11:limitations and so cannot detect every possible bug.
 In these cases, the only path forward is empirical investigation.
 //That is what debuggers make possible.
@@ -101,7 +101,7 @@ As the name suggests, multiverse debuggers allow programmers to explore multiple
 Yet, the start of this decade saw many new domain-specific debugger techniques.
 For example, reversible debugging was recently adapted for _graphical programming languages_, by two projects for the Scratch language @maloney10:scratch-programming-language, Blink~@strijbol24:blink and NuzzleBug~@deiner24:nuzzlebug.
 
-Only last year, a PhD thesis by #cite(form: "author", <whitington24:debugging>) presented a novel debugger solution for _functional programming_, which allows users to inspect the behavior of OCAML programs as they are interpreted #cite(form: "normal", <whitington24:debugging>).
+Only last year, a PhD thesis by #cite(form: "author", <whitington24:debugging>) presented a novel debugger solution for _functional programming_, which allows users to inspect the behavior of OCaml programs as they are interpreted #cite(form: "normal", <whitington24:debugging>).
 
 Another recent trend in debugger research is to use static analysis or model checking techniques in conjunction with debuggers, such as the _abstract debugger_ by #cite(form: "prose", <holter24:abstract>) or the _symbolic debugger_ by #cite(form: "prose", <karmios23:symbolic>).
 
