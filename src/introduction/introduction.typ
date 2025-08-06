@@ -210,15 +210,17 @@ However, each chapter is motivated by a larger challenge which tie all the chapt
 We present each of these main challenges here, and sketch the outline of their associated chapter below.
 
 #let C1 = [
-/ C1: Embedded software development is limited to _bare-metal development tools and environments_, characterized by low-level programming languages, specific hardware requirements for debuggers, and slow code updates. //, partly because reflashing the device after each change is time-consuming, and setting up typical hardware debuggers is cumbersome.
+/ C1: Current embedded software development is limited to bare-metal development tools and environments, and low-level compiled programming languages, which make it difficult to instrument the software running on the constrained devices.
+  //characterized by low-level programming languages, specific hardware requirements for debuggers, and slow code updates. //, partly because reflashing the device after each change is time-consuming, and setting up typical hardware debuggers is cumbersome.
 ]
 
 #let C2 = [
-/ C2: The _hardware limitations_ of embedded devices make it difficult to run debuggers alongside the target software. //traditional debuggers, and make advanced debugging techniques often infeasible.
+/ C2: The _memory limitations_ of embedded devices make it difficult to run debuggers alongside the target software, and the _processing constraints_ prevent the adoption of more advanced debugging techniques.
+ //traditional debuggers, and make advanced debugging techniques often infeasible.
 ]
 
 #let C3 = [
-/ C3: Typical _interrupt-driven programs_ interfere with the debugging process.
+/ C3: Typical _interrupt-driven programs_ interfere with live debugging processes by arbitrarily changing the execution flow of a program.
 ]
 
 #let C4 = [
@@ -231,36 +233,9 @@ We present each of these main challenges here, and sketch the outline of their a
 
 === A remote debugger as a platform#note[Chapter 3]
 
-Our first contribution is a novel WebAssembly-based virtual machine for embedded devices, called _WARDuino_, which is designed to address the first challenge (*C1*).
-We present the virtual machine in @chapter:remote, and show how it reduces the need to reflash software, and enables traditional remote debugging without the need to use a hardware debugger.
-The chapter will discuss the virtual machine in great detail, both its implementation and the formal semantics of its remote debugger.
-We shall highlight the components and design decisions that make WARDuino suitable as the basis for the novel debugging techniques we present in the following chapters.
-
-=== Overcoming constraints with out-of-place#note[Chapter 4]
-
-To overcome the second challenge (*C2*), we adapted the new stateful out-of-place debugging technique, which allows us to run most of the debugger on a separate device, while still debugging the target device.
-This reduces communication overhead and frees the debugger from the constraints of the target device.
-@chapter:oop shows exactly how we adapted the out-of-place debugging technique to embedded devices, and discusses the prototype built on top of the WARDuino virtual machine.
-As part of our research, we developed a novel out-of-place debugger that is able to handle stateful operations on non-transferable resources---a problem in out-of-place debugging that has not been addressed before.
-This lead to a novel _stateful out-of-place_ debugger.
-
-@chapter:oop likewise shows how our novel out-of-place debugger addresses the third challenge (*C3*), by capturing all asynchronous events, such as hardware interrupts, and allowing the debugger to control when these events are dispatched.
-
-Another major contribution of our novel out-of-place debugger, is the introduction of the first formal model of the technique.
-In @oop:soundness, we prove the soundness and completeness of our stateful out-of-place debugging technique, which shows that the debugger does not interfere with the behavior of the program, despite the execution being distributed over two devices, and controlling of asynchronous events.
-
-Finally, the stateful out-of-place debugger already allows for some control over the order and timing of asynchronous events, however, it does not fully address the difficulties associated with non-deterministic bugs, in particular, those bugs caused by very specific conditions of the environment.
-
-=== Debugging non-deterministic I/O applications#note[Chapter 5]
-
-This shortcoming is addressed by our multiverse debugger for microcontrollers, _MIO_, which we present in @chap:multiverse.
-The _MIO_ debugger presents the first multiverse debugger that works on a live execution of the program, and takes into account both input and output streams.
-The technique is unique in another way, as it allows for the debugger to reverse the program's execution as it explores the multiverse, while remaining sound and complete.
-Again, we prove the soundness and completeness of our multiverse debugger, particularly in @mult:correctness.
-
-
-
-==== delete
+The first major challenge (*C1*) to developing a new generation of debuggers for constrained devices, is the lack of a modern development environment and easy instrumentation of the software.
+Instrumenting the software to be debugged, is a crucial prerequisite for any debugger.
+For constrained devices where software is usually written in low-level compiled languages such as C and C++, this is usually done with the help of a hardware debugger.
 
 #C1
 
@@ -269,19 +244,48 @@ Secondly, in case developers wish to use a debugger, they usually need to setup 
 //Lesser challenges include the hardware limitations, bare-metal execution environments, bad portability of code over different devices, and the lack of high-level language support.
 We will discuss these, and other lesser challenges underlying the slow development cycle in more detail in @chapter:remote.
 
-#C2
+Our first contribution is a novel WebAssembly-based virtual machine for embedded devices, called _WARDuino_, which is designed to address the first challenge (*C1*).
+We present the virtual machine in @chapter:remote, and show how it reduces the need to reflash software, and enables traditional remote debugging without the need to use a hardware debugger.
+The chapter will discuss the virtual machine in great detail, both its implementation and the formal semantics of its remote debugger.
+We shall highlight the components and design decisions that make WARDuino suitable as the basis for the novel debugging techniques we present in the following chapters.
 
-Especially, limited memory and processing power are major concerns for embedded devices.
+=== Overcoming constraints with out-of-place debugging#note[Chapter 4]
+
+Limited memory and processing power are major concerns for embedded devices.
 The resource constraints not only impact the embedded programs, but also any debugger stub that is run alongside it.
 
-#C3
+#C2
 
+To overcome the second challenge (*C2*), we adapted the new stateful out-of-place debugging technique, which allows us to run most of the debugger on a separate device, while still debugging the target device.
+This reduces communication overhead and frees the debugger from the constraints of the target device.
+@chapter:oop shows exactly how we adapted the out-of-place debugging technique to embedded devices, and discusses the prototype built on top of the WARDuino virtual machine.
+As part of our research, we developed a novel out-of-place debugger that is able to handle stateful operations on non-transferable resources---a problem in out-of-place debugging that has not been addressed before.
+This lead to a novel _stateful out-of-place_ debugger.
+
+However, @chapter:oop has a secondary motivation.
 The debugging of interrupt-driven programs is challenging, since traditional debuggers no longer have full control over the flow of execution.
 Specific interleaving executions of interrupts can cause concurrency bugs, which are difficult to reproduce and debug @li23:empirical-study.
 More generally, arbitrary interrupts can trigger at any time, leading to non-deterministic behavior, and making it difficult to reproduce bugs.
-#C4
+
+#C3
+
+@chapter:oop shows how our novel out-of-place debugger addresses the third challenge (*C3*), by capturing all asynchronous events, such as hardware interrupts, and allowing the debugger to control when these events are dispatched.
+
+Another major contribution of our novel out-of-place debugger, is the introduction of the first formal model of the technique.
+In @oop:soundness, we prove the soundness and completeness of our stateful out-of-place debugging technique, which shows that the debugger does not interfere with the behavior of the program, despite the execution being distributed over two devices, and controlling of asynchronous events.
+
+Finally, the stateful out-of-place debugger already allows for some control over the order and timing of asynchronous events, however, it does not fully address the difficulties associated with non-deterministic bugs, in particular, those bugs caused by very specific conditions of the environment.
+
+=== Debugging non-deterministic I/O applications#note[Chapter 5]
 
 Non-deterministic bugs are very common on embedded systems, but are notoriously difficult to debug, as they often depend on the specific timing or order of events, on very specific input, or environmental conditions.
+
+#C4
+
+This shortcoming is addressed by our multiverse debugger for microcontrollers, _MIO_, which we present in @chap:multiverse.
+The _MIO_ debugger presents the first multiverse debugger that works on a live execution of the program, and takes into account both input and output streams.
+The technique is unique in another way, as it allows for the debugger to reverse the program's execution as it explores the multiverse, while remaining sound and complete.
+Again, we prove the soundness and completeness of our multiverse debugger, particularly in @mult:correctness.
 
 === Open-source prototype and usability
 
