@@ -40,7 +40,7 @@ Therefore, we first provide an overview of how out-of-place debugging works, and
 
 Out-of-place debugging was originally devised to minimize debugging interference of remote debuggers for big data applications @marra18:out-of-place, by moving the debugging session to another device.
 The first out-of-place debugger, IDRA, was developed for the Pharo language, and allowed for debugging of live distributed big data applications.
-By moving the debugging session out of place, IDRA could debug a node in the network without effecting the live execution of the distributed software.
+By moving the debugging session out of place, IDRA could debug a node in the network without affecting the live execution of the distributed software.
 The prototype showed how out-of-place debugging can reduce the debugging latency significantly in the context of large clusters.
 
 // todo motivation for out-of-place debugging on microcontrollers
@@ -323,7 +323,7 @@ To achieve this, out-of-place debuggers must necessarily lie somewhere in the mi
 
 In this section, we present the semantics of out-of-place debugging for WebAssembly. // todo add unifying section
 In order to have sound and complete semantics, we need to make two key assumptions about the stateful operations in the system. 
-These assumption are not specific for WebAssembly and can be ensured for a wide range of stateful operations expressed in any programming language:
+These assumptions are not specific for WebAssembly and can be ensured for a wide range of stateful operations expressed in any programming language:
 
 //Before delving into the formal semantics of our out-of-place debugger, we discuss 
 // followed by a brief discussion of the WebAssembly semantics underlying our formalization.
@@ -426,7 +426,7 @@ The changes are highlighted.
     invokeconfig,
 "oop:fig:invoking")
 
-The WebAssembly global store is extended with a #emph[global] action table $A$ contains all actions, each action $a$ is a named pair of a closure $cl$ and a transfer functions $t$ and $r$.
+The WebAssembly global store is extended with a #emph[global] action table $A$ containing all actions, each action $a$ is a named pair of a closure $cl$ and a transfer functions $t$ and $r$.
 The closure consists of the code which performs the action over the non-transferable resource. 
 #note[We use the terms _forward_ and _backward_ transfer to refer to the direction of the state changes, similar to program slicing.]The backward transfer function $t$, returns the state $s'$ needed to perform the action, given the arguments $v^*$ and the current state $s$ of the server. 
 The forward transfer function $r$, produces the state $s'$ that has been altered by execution the action given the state $s$ after executing the action on the client. 
@@ -573,9 +573,8 @@ Whenever an event arrives in the event queue, the WebAssembly runtime will inter
 Such callbacks cannot have a return type, to ensure that callbacks do not break a well-typed WebAssembly program.
 However, callbacks can update other internal state, such as global variables, or linear memory. // todo double check if this does not break our solution
 Asynchronous events and callbacks further introduce non-determinism into the WebAssembly languages, which can seriously complicate debugging of programs.
-However, simplifying debugging of non-deterministic bugs is beyond the scope of this chapter, andis
-simplifying debugging of non-deterministic bugs is an orthogonal problem to that of state desynchronization in out-of-place debugging, and beyond the scope of this chapter.
-We tackle this problem in the next chapter (@chap:multiverse), where we present our new multiverse debugger for I/O operations.
+However, simplifying debugging of non-deterministic bugs is beyond the scope of this chapter, and is an orthogonal problem to that of state desynchronization in out-of-place debugging.
+We consider this beyond the scope of this chapter, but tackle the problem in the next chapter (@chap:multiverse), where we present our new multiverse debugger for I/O operations.
 
 == Debugging Asynchronous Non-transferable Resources<oop:debugAsynchronous>
 
@@ -625,7 +624,7 @@ It is crucial to have these changes reflected on the client, since it has sole c
 However, these changes are still synchronous, so can be dealt with through the invocation rules already presented in @oop:invocation.
 
 It is important to note, that this synchronization is only necessary from server to client, since control over the callback system lies entirely with the latter.
-This means, that the server is not able to start a new WebAssembly callback execution autonomously, and therefore does not its callback map synchronized with any local changes on the client side.
+This means, that the server is not able to start a new WebAssembly callback execution autonomously, and therefore does not need its callback map synchronized with any local changes on the client side.
 
 // todo i should add an example where a action causes new events to be generated, and another function subscribes the callback, to illustrate that these thigns are independent from each other
 // todo because xtof found this confusing. Also this is not a problem right?
@@ -657,7 +656,7 @@ Specifically, the debugger will never take the _interrupt_ step.
 Instead it provides a new debug message $italic(trigger(j))$, which takes the index $j$ of a event in the queue to be dispatched.
 However, some events cannot occur before other events, the most straightforward case is where one MQTT message is the consequence of another.
 In such cases, reordering the events may result in execution paths that are impossible without the interference of the debugger.
-To prevent the debugger from causing such impossible scenario's, the semantics assumes there is a partial order relation #partialorder for the events in the queue.
+To prevent the debugger from causing such impossible scenarios, the semantics assumes there is a partial order relation #partialorder for the events in the queue.
 At any point in the debugging session, an event can only be dispatched if there is no undispatched event that is smaller under this relation.
 The _transfer-events_ rule describes how the client sends events to the server, as soon as the events are received.
 Since the event queue is an extension of the WebAssembly state, the same synchronization and updating mechanism is used as before.
@@ -1022,7 +1021,7 @@ Finally, most applications will not feature a busy loop as in our example, but t
 //%This means that the code in the main thread is running concurrently with the asynchronous invocations, making it harder to notice errors.
 //%\carlos{This argument feels weird to me. To show that remote debugging fig 10 is hard. We make up a complex application that consists of a greater amount of callbacks and a complex main and basically say "because it is hard to remote debug the complex application then we can conclude that it is also hard to debug the much simpler example i.e., fig 10".}
 
-Once the developer has stepped through all the asynchronous code letting the callbacks execute, the de developer might notice that the `buttonPressed` callback is strangely invoked multiple times.
+Once the developer has stepped through all the asynchronous code letting the callbacks execute, the developer might notice that the `buttonPressed` callback is strangely invoked multiple times.
 The reason is that a single button press can trigger multiple hardware interrupts due to a common problem of physical buttons called _contact bouncing_ @mcbride89:electrical.
 Contact bouncing happens when the voltage of a mechanical switch pulses rapidly, instead of performing a clean transition from high to low.
 In that case, the pin can register a falling edge multiple times in a row.
@@ -1038,7 +1037,7 @@ This information enables the developer to more easily detect the contact bouncin
 
 If the developer has not yet deduced the root cause of the bug, they could use stepping through the code in a similar way than when using the remote debugger.
 However, this time, stepping through the code is faster as debugging happens locally without incurring in network communication.
-Moreover, the frontend of _Edward_ support an early, naive implementation of backward debugging.
+Moreover, the frontend of _Edward_ supports an early, naive implementation of backward debugging.
 This means that during debugging when the LED does not turn on, the developer can step back to the previous step to diagnose what exactly went wrong during the execution.
 There is no need to restart the program and try to guess what the right conditions for the bug were.
 However, external changes are not reverted.

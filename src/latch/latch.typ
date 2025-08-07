@@ -17,7 +17,7 @@ Debuggers are only useful when you know you have a bug.
 There are naturally many ways to discover bugs in your software, however, the single most effective and widely used approach is unsurprisingly _testing_.
 Modern software uses continuous integration and regression testing to detect bugs as early as possible in the development cycle.
 
-Unfortunately, the same reasons that cause debugging techniques to lag behind for embedded devices, likewise make modern testing techniques hard to apply on constrained systems. In this chapter, we present a novel testing technique called managed testing, and a prototype implementation Latch, which aim to enable large-scale testing of embedded software directly on the constrained devices as part of continuous integration. The framework was also used to test the previously discussed debugger prototypes.
+Unfortunately, the same reasons that cause debugging techniques to lag behind for embedded devices, likewise make modern testing techniques hard to apply on constrained systems. In this chapter, we present a novel testing technique called _managed testing_, and a prototype implementation Latch, which aim to enable large-scale testing of embedded software directly on the constrained devices as part of continuous integration. The framework was also used to test the previously discussed debugger prototypes.
 
 == Introduction
 
@@ -779,7 +779,7 @@ In #latch every asynchronous action can time out, and each timeout has their own
 
 The asynchronicity and non-determinism introduced by #latch and the hardware testbeds, can cause any test to become flaky.
 These tests can both succeed and fail for the same version of the software under test.
-In #latch, we follow the recommendation of @harman18:from to considers all tests as flaky.
+In #latch, we follow the recommendation of #cite(<harman18:from>, form: "prose") to considers all tests as flaky.
 Indeed, flaky tests can hint at bugs.
 Therefore, we use an approach that improves
 the debuggability of flaky tests.
@@ -958,7 +958,7 @@ With this information, #latch can prevent unnecessary or unreliable tests from s
 Developers of embedded software rely heavily on manual testing of their programs on the targeted hardware.
 The goal of manual testing is to verify that both the hardware and software of the system work correctly.
 It is equally important to check that the effects on the environment and the interaction between the hardware and the environment, work as intended.
-This kind of comprehensive end-to-end testing of embedded systems requires extensive control over the environment and conditions the hardware operates under, such as simulating user interactions, or controlling the input for sensors. %
+This kind of comprehensive end-to-end testing of embedded systems requires extensive control over the environment and conditions the hardware operates under, such as simulating user interactions, or controlling the input for sensors.
 These requirements account in large part for the ubiquity of manual testing, since they make automation of testing much more difficult.
 
 #latch allows tests to control the behavior of the environment with local actions, and the behavior of the software under test through debugging instructions.
@@ -1071,7 +1071,7 @@ The developers of the WARDuino virtual machine use simulation to test against th
 However, the simulation ignores important hardware limitations.
 For instance, the memory of the simulated hardware is only limited by the amount of memory available to the host machine.
 Furthermore, to execute the specification tests, the WARDuino developers extended the simulator with a dedicated parsing library to parse the test suite written in S-expressions.
-This parsing library is too big to be run on the ESP32 and the S-expressions from the test suite alone, take up 713 KB of memory.
+This parsing library is too big to be run on the ESP32 and the S-expressions from the test suite alone, takes up 713 KB of memory.
 This is already more than twice the size of the microcontroller's memory, without including the WARDuino virtual machine, the parsing library, and the infrastructure to run the test suite.
 This means, that the WARDuino developers cannot currently test on the microcontrollers they target.
 However, when comparing the outcome of this approach with the output of the #latch version, we found no differences, giving us confidence in the soundness of our framework.
@@ -1109,7 +1109,10 @@ The way the TypeScript framework handles the interprocess communication is evide
 However, the flashing at the start remains much slower than starting a new process on the laptop, therefore the overhead of the specification test suites with the fewest steps, is dominated by the startup phase instead.
 This results in the highest overhead overall.
 
-#figure(image(width: 100%, "figures/benchmarks.svg"), caption: [The relative runtime overhead of #latch's WebAssembly specification test suite on hardware compared to a simulator for each test suite. Runtimes are calculated as sample means of 10 runs, and the exact relative overhead is shown next to each bar. The error bars show the confidence interval for the difference between the two means (normalized to the relative overhead) based on the Welch's t-test. The number of steps for each test suite is listed next to its name.])<fig:overhead>
+#import "figures/overhead.typ": overhead
+#import "../../lib/book.typ": text-width
+#import "../../lib/util.typ": scale-to-width
+#figure(scale-to-width(text-width, overhead), caption: [The relative runtime overhead of #latch's WebAssembly specification test suite on hardware compared to a simulator for each test suite. Runtimes are calculated as sample means of 10 runs, and the exact relative overhead is shown next to each bar. The error bars show the confidence interval for the difference between the two means (normalized to the relative overhead) based on the Welch's t-test. The number of steps for each test suite is listed next to its name.])<fig:overhead>
 
 The specification test suites taken separately in @fig:overhead, shows that fewer test steps results in higher overhead, because the execution time becomes dominated by the flashing process.
 This shows how important it is to prevent unnecessary flashing by using the #emph[upload module] command.

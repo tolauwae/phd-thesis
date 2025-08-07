@@ -61,7 +61,7 @@ Some high-level languages have been ported to embedded devices using small custo
 
 In this work we take a different approach aimed at enabling multiple high-level languages on microcontrollers while mitigating their downsides.
 To accomplish this goal, we created WARDuino @gurdeep19:warduino, a virtual machine (VM) designed to run WebAssembly @haas17:bringing on microcontrollers#note[WARDuino supports the first release of WebAssembly (MVP).]. // todo "we created" does this feel right given the introduction of this chapter?
-Since WebAssembly is a universal compile target, it can enable programs written in a wide variety of languages to run on low-end embedded devices. This is an important design choice to improve the #emph[portability] of our solution. The design of WebAssembly further focuses on a compact representation, since the byte code is intended to be streamable and efficient~@haas17:bringing. This compactness is especially important when executing programs within the #emph[hardware limitations] of the embedded devices. Additionally, WebAssembly can achieve performance speeds close to native code~@haas17:bringing@jangda19:not, potentially outperforming other interpreters for high-level languages on microcontrollers.
+Since WebAssembly is a universal compile-target, it can enable programs written in a wide variety of languages to run on low-end embedded devices. This is an important design choice to improve the #emph[portability] of our solution. The design of WebAssembly further focuses on a compact representation, since the byte code is intended to be streamable and efficient~@haas17:bringing. This compactness is especially important when executing programs within the #emph[hardware limitations] of the embedded devices. Additionally, WebAssembly can achieve performance speeds close to native code~@haas17:bringing@jangda19:not, potentially outperforming other interpreters for high-level languages on microcontrollers.
 
 The WARDuino virtual machine was first presented in 2019 by #cite(<gurdeep19:warduino>, form: "prose");, and addressed #emph[the slow development cycle] and the challenging #emph[debuggability] through the initial implementation of a remote debugger with over-the-air reprogramming capabilities. The paper presented these two features as extensions to the operational semantics of WebAssembly, in order to show their interaction and compatibility with the WebAssembly standard, and to ease re-implementation in other virtual machines. Additionally, WARDuino provided support for a limited set of hardware features through WebAssembly functions embedded in the virtual machine. It is necessary to embed this support in the virtual machine, since the #emph[bare-metal execution environments] of embedded devices provide no conventional interfaces to the hardware. Simultaneously, the primitives should be exposed at the level of WebAssembly in order to achieve the highest #emph[portability] possible. However, the paper left some important problems as future work.
 
@@ -174,7 +174,7 @@ Our "built-in" modules provide the most important Arduino features for controlli
 In this section we have shown a basic IoT program written in AssemblyScript running on top of our WARDuino VM. Our goal is to enable IoT developers to program microcontrollers in high-level languages. To facilitate this WARDuino allows developers to run WebAssembly on microcontrollers. The idea is that programs in high-level languages are compiled to WebAssembly, and executed by WARDuino. Unfortunately WebAssembly did not yet support interacting with the hardware of the microcontroller. To resolve this we provide `GPIO`, `SPI`, `USART` and `PWM` modules. Network related features are another lacuna of WebAssembly we filled with the `WiFi`, `HTTP`, and `MQTT` modules. Thanks to our modules, WebAssembly becomes a viable platform to program microcontrollers with WARDuino. In the next section we will take a closer look at the architecture of WARDuino.
 
 == WARDuino: Virtual Machine Architecture <remote:architecture>
-The WARDuino virtual machine is at heart a byte-code interpreter for WebAssembly, around which several components have been built to improve the development cycle of IoT software. WebAssembly is the compile target because it tackles both the challenges of #emph[portability] and #emph[low-level coding];. However, for WebAssembly to be a viable platform, we need a way to interact with the environment, i.e. control hardware peripherals, communicate over the internet, and so on. To address this WARDuino includes a set of primitives. Responsive IoT applications require these primitives to handle asynchronous events, standard WebAssembly does not support this. WARDuino is therefore extended with a callback handler to process asynchronous events, and pass them to user-defined callback functions. To tackle the challenge of #emph[debuggability];, WARDuino includes a remote debugger with support for over-the-air updates. Combined with standard debugging operations, the over-the-air updates allow developers to iterate quickly and test fixes while debugging. This way, WARDuino aims to significantly improve on the #emph[slow development cycle] of embedded software. In this section, we give an overview of the virtual machine architecture, and show how the components interact with the interpretation of the loaded program, as well as each other.
+The WARDuino virtual machine is at heart a byte-code interpreter for WebAssembly, around which several components have been built to improve the development cycle of IoT software. WebAssembly is the compile-target because it tackles both the challenges of #emph[portability] and #emph[low-level coding];. However, for WebAssembly to be a viable platform, we need a way to interact with the environment, i.e. control hardware peripherals, communicate over the internet, and so on. To address this WARDuino includes a set of primitives. Responsive IoT applications require these primitives to handle asynchronous events, standard WebAssembly does not support this. WARDuino is therefore extended with a callback handler to process asynchronous events, and pass them to user-defined callback functions. To tackle the challenge of #emph[debuggability];, WARDuino includes a remote debugger with support for over-the-air updates. Combined with standard debugging operations, the over-the-air updates allow developers to iterate quickly and test fixes while debugging. This way, WARDuino aims to significantly improve on the #emph[slow development cycle] of embedded software. In this section, we give an overview of the virtual machine architecture, and show how the components interact with the interpretation of the loaded program, as well as each other.
 
 === WARDuino Components <warduino-components>
 @fig:warduino gives a high-level overview of the virtual machine’s architecture, highlighting how the novel components (shown in red) relate to each other and interact with the running program (shown in blue). This program is a WebAssembly module, which will usually be compiled from a high-level language.
@@ -199,7 +199,7 @@ Whenever these events occur, our callback handler will invoke the registered fun
 In the rest of our chapter, we will refer to these functions as callback functions or simply callbacks.
 
 === WARDuino Interpretation <remote:executing>
-WebAssembly is a stack based language, defined over an implicit operand stack. This means WebAssembly runtimes do not have to explicitly use this stack. In WARDuino, however, we implement the VM as a stack based virtual machine based on the open source _wac_ C-project by Joel Martin#footnote[#link("https://github.com/kanaka/wac");];. Our WebAssembly operand stack is implemented as two separate stacks: the main operand stack, and a call stack. The call stack keeps track of the active functions and blocks of the program and where the execution should continue once they complete. When initializing the module, we seed the call stack with a call to the main entry point of the program.
+WebAssembly is a stack-based language, defined over an implicit operand stack. This means WebAssembly runtimes do not have to explicitly use this stack. In WARDuino, however, we implement the VM as a stack-based virtual machine based on the open source _wac_ C-project by Joel Martin#footnote[#link("https://github.com/kanaka/wac");];. Our WebAssembly operand stack is implemented as two separate stacks: the main operand stack, and a call stack. The call stack keeps track of the active functions and blocks of the program and where the execution should continue once they complete. When initializing the module, we seed the call stack with a call to the main entry point of the program.
 //#note[In WebAssembly `loop` and `if` instructions are also placed on the call stack as so-called "blocks". These blocks are needed to ensure that branch `(br)` instructions can only jump to safe locations.]
 The main operand stack holds a list of numeric values from which WebAssembly operations pop their arguments, and to which they push their results.
 This stack starts out empty.
@@ -312,7 +312,7 @@ In this section, we discuss how to implement high-level interfaces for WARDuino 
 This implementation strategy is similar for all languages compiling to WebAssembly.
 
 // Level 0
-=== AssemblyScript as Source Languages<remote:assemblyscript>
+=== AssemblyScript as Source Language<remote:assemblyscript>
 
 Let us first consider AssemblyScript code that does not use WARDuino features.
 @lst.assemblyscript.level0 shows a function that calculates the n-th Fibonacci number.
@@ -408,7 +408,7 @@ When AssemblyScript code is compiled to WebAssembly, the compiler translates str
 We created a similar translation from strings to numeric types when implementing primitives with strings in our VM.
 Unfortunately, we have no guarantee that these two translations are the same.
 AssemblyScript encodes strings with UTF-16 by default, which uses two bytes to encode most characters.
-But as we expect to use mostly ASCII characters, and we want to keep code sizes small for microcontrollers, we prefer to use UTF-8 encoding instead, where characters are represented primarily with only one byte.
+But as we expect to use mostly ASCII characters, and we want to keep code sizes small for microcontrollers, we prefer to use UTF-8 instead, where characters are represented primarily with only one byte.
 
 If we use the same approach as we did for the LED example we arrive at the code in @fig:assemblyscript.level2.
 It shows a simple AssemblyScript program that uses WARDuino's HTTP POST primitive.
@@ -561,7 +561,7 @@ function post(options: Options): string {
 
 Language interoperability is needed to facilitate access to WARDuino's primitives.
 We implement it as a library that can be easily imported by developers.
-Although we only highlighted the HTTP module in this section, our AssemblyScript library contains glue code for all the WARDuino primitives discussed in section~// todo @remote:modules.
+Although we only highlighted the HTTP module in this section, our AssemblyScript library contains glue code for all the WARDuino primitives discussed in @remote:modules.
 
 Because different programming languages follow different conventions or even different programming paradigms all together, language interoperability must be dealt with separately for each language.
 Luckily we can follow the same approach as we did for AssemblyScript to create interoperability libraries for other languages.
@@ -570,7 +570,7 @@ Rust encodes strings as UTF-8 by default, so our library for this language does 
 
 Interoperability can be provided at different levels.
 We have seen three implementations of AssemblyScript glue code for WARDuino's HTTP module.
-The first version simply exported the ``raw'' WARDuino primitives.
+The first version simply exported the "raw" WARDuino primitives.
 This meant that the developer needed to know the inner workings of WARDuino to use these functions.
 They needed to know how strings were represented, for example.
 Our second version abstracted the interface, and allows developers to use it without having to worry about WARDuino internals.
@@ -859,7 +859,7 @@ In our original publication @lauwaerts24:warduino, we proved observational equiv
 This more closely aligns with the definition of observational equivalence in previous work by #cite(<torres19:multiverse>, form: "prose").
 However, the soundness and completeness theorems we apply in future chapters is a stronger form of bisimulation, which in essence proves observational equivalence over a series of steps.
 
-In order to proof the observational equivalence between the debugger semantics and the base language semantics, we use the same proof method as #cite(<torres19:multiverse>, form: "prose");, which proves observational equivalence by a weak bisimulation argument. With this proof, we show that if an arbitrary WebAssembly program $P$ can take a step to a program $P'$, the debugging semantics allows the debugger to reach the program $P'$ from the program $P$ by one or more debugging steps. The other way around, if the debugger allows a program $P$ to transition to a program $P'$, the normal WebAssembly evaluation will also allow the program $P$ transition to the program $P'$.
+In order to prove the observational equivalence between the debugger semantics and the base language semantics, we use the same proof method as #cite(<torres19:multiverse>, form: "prose");, which proves observational equivalence by a weak bisimulation argument. With this proof, we show that if an arbitrary WebAssembly program $P$ can take a step to a program $P'$, the debugging semantics allows the debugger to reach the program $P'$ from the program $P$ by one or more debugging steps. The other way around, if the debugger allows a program $P$ to transition to a program $P'$, the normal WebAssembly evaluation will also allow the program $P$ transition to the program $P'$.
 
 In the semantics we leave out the specifics of the communication, and assume the incoming messages are added to the debugging state in the correct order. For the proof, we will reason over a stream of messages instead of a single one. Thanks to the recipe we follow for the debugger semantics, the proof follows almost directly by construction.
 
@@ -1254,7 +1254,7 @@ We include the program size, because the low-end microcontrollers we are targeti
 In fact, the measurements were performed on an ESP32-DevKitC V4 board#footnote[see: #link("https://docs.espressif.com/projects/esp-idf/en/latest/esp32/hw-reference/esp32/get-started-devkitc.html")[https://docs.espressif.com/projects/esp-idf/en/latest/esp32/hw-reference/esp32/get-started-devkitc.html]].
 This board features an ESP32 WROVER IE chip that operates at 240 MHz, with 520 KiB SRAM, 4 MB SPI flash and 8 MB PSRAM.
 This is a representative board for the kind of resource-constrained microcontrollers targeted by WARDuino.
-There exist more resource-rich devices that are used for IoT applications, such as the Raspberry Pi devices, but these are so powerful that many of the challenges outlined in this chapter are present to a far lesser extend.
+There exist more resource-rich devices that are used for IoT applications, such as the Raspberry Pi devices, but these are so powerful that many of the challenges outlined in this chapter are present to a far lesser extent.
 For example, as a Raspberry Pi has a full-fledged operating system, it is trivial to adapt the code remotely (with ssh).
 
 ==== Espruino
@@ -1340,7 +1340,7 @@ Because the C implementation does not run in a managed environment, it is much f
 To add two numbers for example, no stack access is needed in native C.
 Since WebAssembly is a stack machine, and our implementation does not yet feature a JIT compiler, memory access is required to perform all basic operations.
 Taking the geometric mean of the normalized execution times, shows that WASM3 is 11 times slower than its native C, while WARDuino is about 428 times slower and Espruino is 4992 times slower.
-We note that clang was instructed to optimize for size.
+We note that clang was instructed to optimize for size. // TODO find compiler options
 Setting the compiler to optimize more at the cost of binary size can have a big impact on the performance of WARDuino at the price of binary size code.
 Not optimizing for binary size reduces WARDuino's overhead compared to C to 312x.
 

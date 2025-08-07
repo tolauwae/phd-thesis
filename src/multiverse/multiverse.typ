@@ -44,7 +44,7 @@ In this chapter, we investigate how we can scale multiverse debugging to program
     // Third, we define our multiverse debugger as a _remote debugger_ with a sparse snapshotting semantics to accommodate the hardware limitations of the microcontrollers that we target.    
     // Finally, based on our formal semantics, we have implemented a prototype debugger, called MIO, on top of the WARDuino WebAssembly virtual machine~@lauwaerts24:warduino capable of debugging various microcontrollers such as the ESP32, STM32 and Raspberry Pi Pico.
 
-== MIO: Multiverse Input/Output Debugger in Prctice<mult:practice>
+== MIO: Multiverse Input/Output Debugger in Practice<mult:practice>
 
 Before we discuss the details of our contributions and the implementation, we give an overview of how our multiverse debugger, MIO, works in practice. We will use a simple example to illustrate the different concepts of our multiverse debugger.
 
@@ -614,11 +614,11 @@ It then uses the same #emph[drive] function to move the motor.
 The input mocking is implemented analogous to the debugger semantics, by adding a map to the in the virtual machine state.
 This map is used to store the mocked values for the input primitives, which are received by a new debug message in the remote debugger.
 In line with the semantics, there is also a new debug message to remove a mocked value from the map.
-Currently, the map only supports registering primitive calls with their first argument.  %but this can easily be extended to support multiple arguments.
+Currently, the map only supports registering primitive calls with their first argument.  // but this can easily be extended to support multiple arguments.
 This is sufficient for the current input primitives to be mocked, without any changes to their implementation.
 
 The virtual machine will check the map of mocked values for every primitive call.
-The prototype includes two input primitives that can be mocked in this way, the #emph[digitalRead] primitive which reads the value of a digital pin, and the #emph[colorSensor] primitive which reads a value from a uart color sensor.
+The prototype includes two input primitives that can be mocked in this way, the #emph[digitalRead] primitive which reads the value of a digital pin, and the #emph[colorSensor] primitive which reads a value from a UART color sensor.
 The digitalRead primitive enables the user to mock the value of a digital pin, and thereby the behavior of a wide range of possible peripherals.
 However, the range of possible input values is not always known statically, as it may be influenced by the output effects of the program.
 To handle this, the MIO debugger includes initial support for predictable dependencies that can be defined as simple conditions, for example, #emph["when the value of a digital pin $n$ is $x$, then input primitive $p$ with arguments $m$ will return the value $c$"].
@@ -629,7 +629,7 @@ To reduce memory usage, the MIO debugger only stores the snapshots at certain ch
 The semantics of MIO only takes snapshots after a call to a primitive, the prototype implementation follows this checkpointing policy precisely.
 As shown by the debugger semantics and the proof, this is the minimum number of snapshots needed to enable backwards and forwards exploration of the multiverse tree.
 To further reduce the performance impact on the microcontroller, snapshots are received and tracked by the desktop frontend of the MIO debugger.
-To have minimal traffic between the debugger backend and frontend, snapshots after primitive calls are sent automatically to the frontend.
+To have minimal traffic between the debugger backend and frontend, snapshots after primitive calls are sent automatically to the frontend.U
 Alternatively, the debugger frontend can request snapshots at will through the remote debugger interface.
 
 // remote debugger
@@ -889,6 +889,8 @@ In this article, we address these limitations by presenting a novel approach tha
 This is the first implementation that enables multiverse debugging for microcontrollers.
 Our approach improves current multiverse debuggers by being able to provide multiverse debugging in the face of a set of well-defined I/O actions. 
 We have formalized our approach and give a soundness and completeness proofs.
+
+#show "I/O": box[I/O]
 
 We have implemented our approach and have given various examples showcasing how our approach can deal with a wide range of specialized I/O actions, ranging from non-deterministic input sensors, to I/O pins and even steering motors.
 Our sparse snapshotting approach delivers reasonable performance even on a restricted microcontroller platform.

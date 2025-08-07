@@ -79,7 +79,7 @@ Therefore, we will present this thesis' approach in more detail in this chapter,
 === Four debuggers, four semantics
 
 Given the wide variety of debuggers, we will present our formal framework---for debugger semantics and their correctness---by discussing four different debuggers with each their own semantics.
-The last debugger serves as a counter example, illustrating a common type of debugger that is complete but not sound.
+The last debugger serves as a counterexample, illustrating a common type of debugger that is complete but not sound.
 Importantly, the semantics follow the same general design---presenting the overall formal framework we use in this dissertation.
 
 #let remotedbg = $lambda^ast.basic_DD$
@@ -130,7 +130,7 @@ In the simply typed version, each expression is assigned a type, and functions a
 
 == #remotedbg: A tiny remote debugger for #stlc
 
-We start by defining the syntax of a tiny remote debugger for #stlc with booleans and natural numbers, defined as peano numbers @peano91:sul @kennedy74:peanos.
+We start by defining the syntax of a tiny remote debugger for #stlc with booleans and natural numbers, defined as Peano numbers @peano91:sul @kennedy74:peanos.
 The complete set of syntax, evaluation, and typing rules for booleans and natural numbers for #stlc can be found in @app:stlc.
 Because the debuggers we discuss in this dissertation are each debuggers for distributed systems, and therefore remote debuggers of a kind, we start with a simple remote debugger.
 The easiest way to define such a debugger is as a distributed system with a _client_ and a _server_.// the evaluation rules can than be split into _client_, _server_, and _global_ rules.
@@ -170,7 +170,7 @@ When there is no next command in the message box, we write ($nothing$).
 The entire evaluation of the debugger ($global dbgarrow global'$) is captured by only eight rules.
 The first three steps are server steps, which describe the operation of the debugger backend.
 
-/ Step: When the current term $t$ can reduce to $t'$, than the debugger can take a step to $t'$, and output an acknowledgement of the successful step.
+/ Step: When the current term $t$ can reduce to $t'$, then the debugger can take a step to $t'$, and output an acknowledgement of the successful step.
 
 / Fallback: This fallback rule allows the debugger to drop _step_ messages in case there is no $t arrow.r.long t'$. For the #stlc, this means that the term must be a value $v$. In this case, we output an empty acknowledgement, to indicate that the command was processed, but did not have any effects.
 
@@ -191,7 +191,7 @@ The final four global rules describe how this works.
 
 / Client: Whenever a client rule applies, the client in $global$ can take a step.
 
-/ Serer: Analogously, whenever a server rule applies, the server in $global$ can take a step.
+/ Server: Analogously, whenever a server rule applies, the server in $global$ can take a step.
 
 Now that we have the formal semantics for a remote debugger that can step through and inspect a #stlc program, we can define what correctness means for such a debugger.
 
@@ -327,9 +327,9 @@ We list the new syntax and evaluation rules for the reversible debugger in @fig:
 
 We extend the syntax of the debugger server with a list of snapshots, which are tuples of program counters and terms.
 The commands are extended with a _backwards step_ command, which takes a single step backwards in the program.
-To handle this command we need five additional server rules, specifically, the _BackwardStep0_, _BackwardStep2_, and _BackwardStep2_ rules, along with two fallback rules.
+To handle this command we need five additional server rules, specifically, the _BackwardStep0_, _BackwardStep1_, and _BackwardStep2_ rules, along with two fallback rules.
 
-/ BackwardStep0: The _BackwardStep0_ rule applies when the program counter is not zero, but only the start snapshot is present in the snapshot list. In this case the program reduces $n$ times starting from the initial configuration, to arrive exactly one reductions before the current term $t$.
+/ BackwardStep0: The _BackwardStep0_ rule applies when the program counter is not zero, but only the start snapshot is present in the snapshot list. In this case the program reduces $n$ times starting from the initial configuration, to arrive exactly one reduction before the current term $t$.
 
 / BackwardStep1: The _BackwardStep1_ rule applies reduces the program counter by one, and reduces the term $t'$ from the last snapshot exactly $n-n'$ times, to the term $t''$.
 
@@ -352,7 +352,7 @@ To summarize the reversible semantics, when the reversible debugger is at a term
 
 Again, we apply the same soundness and completeness criteria to the reversible debugger as we did for the two previous debuggers.
 The proofs however, are slightly more involved, since we need to reason about the snapshots.
-To make this easier, we will first proof a lemma about the snapshots that is helpful in the proof of soundness.
+To make this easier, we will first prove a lemma about the snapshots that is helpful in the proof of soundness.
 
 #lemma("Snapshot preservation")[
   The semantics of a reconstruction-based reversible debugger is said to be _snapshot preserving_ if the following holds:
@@ -362,7 +362,7 @@ To make this easier, we will first proof a lemma about the snapshots that is hel
 ]<snapshotpreservation>
 
 Informally, the lemma states that for any debugger configuration $global$ that is reachable from the start configuration $global_"start"$, all snapshots in the debugger must contain a term $t$ that is reachable from the start state $t_"start"$, and a has a program counter lower or equal to the current program counter.
-Or in other words, snapshot in a debugging session contain only reachable states, from the past.
+Or in other words, snapshots in a debugging session contain only reachable states, from the past.
 
 #proof([Snapshot preservation for #reversibledbg])[
   The proof is straightforward by induction on steps taken in the debug session ($multi(dbgarrow)$).
@@ -402,7 +402,7 @@ In this work, we refer to these as _intercession debuggers_.
 
 Intercession debuggers are an interesting case to study in terms of our correctness criteria.
 Very few intercessions can be made while maintaining soundness, since soundness expects the debugger to observe the same semantics as the program.
-A clear example, is debuggers that allow the user to update the code during the debugging session.
+A clear example are debuggers that allow the user to update the code during the debugging session.
 We can illustrate this in the #stlc by allowing the debugger to substitute terms at runtime.
 
 #semantics(
