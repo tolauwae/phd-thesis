@@ -191,26 +191,8 @@ Consequently, debugging on embedded systems is frequently slow, cumbersome, and 
 There is a clear need for novel debugging techniques that can address the unique challenges of debugging embedded systems.
 In this dissertation, we present a novel virtual machine for programming embedded devices, called _WARDuino_, on top of which we develop three novel debuggers for addressing the specific challenges of debugging embedded systems.
 
-=== Laying the foundations#note[Chapter 2]
-
-
-The three novel debuggers presented in this dissertation, are described through a formal framework. // we developed during the writing of this dissertation.
-While common for programming languages, this is still too rarely done for debuggers.
-Yet, the benefits are the same.
-This motivated us to developed our own formal framework for describing remote debuggers.
-However, we are concious of the novelty and the complexity of our formalisations. Therefore dedicate @chapter:foundations of this book to present the formal framework we developed.
-We hope this chapter can help readers to more easily understand the following chapters.
-
-=== Contributions to debugging of constrained devices
-
-In the following three chapters we discuss our three novel debuggers.
-Each address several unique challenges to debugging.
-Some of these challenges are not exclusively tied to constrained systems, but represent broader scientific challenges in debugging.
-However, each chapter is motivated by a larger challenge which tie all the chapters together.
-We present each of these main challenges here, and sketch the outline of their associated chapter below.
-
 #let C1 = [
-/ C1: Current embedded software development is limited to bare-metal development tools and environments, and low-level compiled programming languages, which make it difficult to instrument the software running on the constrained devices.
+/ C1: Current embedded software development is limited to bare-metal development tools and environments, and low-level compiled programming languages, which makes it difficult to instrument the software running on the constrained devices.
   //characterized by low-level programming languages, specific hardware requirements for debuggers, and slow code updates. //, partly because reflashing the device after each change is time-consuming, and setting up typical hardware debuggers is cumbersome.
 ]
 
@@ -224,12 +206,35 @@ We present each of these main challenges here, and sketch the outline of their a
 ]
 
 #let C4 = [
-/ C4: Current embedded debuggers are not equipped to  _debug non-deterministic bugs_. //, yet they are common in embedded systems---but are hard to reproduce and examine using traditional techniques.
+/ C4: Current embedded debuggers are not equipped to _debug non-deterministic bugs_ caused by their I/O intensive nature. //, yet they are common in embedded systems---but are hard to reproduce and examine using traditional techniques.
 ]
 
-#let C5 = [
-/ C5: There are _no formal foundations_ for how to develop good debuggers, either for constrained or unconstrained devices.
+#let C0 = [
+/ C0: There are _no formal foundations_ for how to develop good debuggers on constrained or unconstrained devices, neither how to describe their operations or what correctness could mean for these operations.
 ]
+
+=== Laying the foundations#note[Chapter 2]
+
+The three novel debuggers presented in this dissertation, are described through a formal framework.
+We provide our own correctness criteria for each one. // we developed during the writing of this dissertation.
+While common for programming languages, this is still too rarely done for debuggers.
+Yet, the benefits are the same.
+This motivated us to developed our own formal framework for describing remote debuggers as an answer to the first challenge of this book.
+
+#C0
+
+This challenge is revisited throughout the dissertation, as we present the different debuggers and their formal semantics, and most importantly our correctness criteria for these debuggers.
+However, we are conscious of the novelty and the complexity of our formalisations.
+Therefore we dedicate @chapter:foundations of this book to present our formal framework as simply as possible before we delve into the real systems.
+We hope this chapter can help readers to more easily understand the following chapters.
+
+=== Contributions to debugging of constrained devices
+
+In chapters three, four and five we discuss our three novel debuggers.
+Each address several unique challenges to debugging.
+Some of these challenges are not exclusively tied to constrained systems, but represent broader scientific challenges in debugging.
+However, each chapter is motivated by a larger challenge which tie all the chapters together.
+We present each of these main challenges here, and sketch the outline of their associated chapter below.
 
 === A remote debugger as a platform#note[Chapter 3]
 
@@ -263,8 +268,10 @@ As part of our research, we developed a novel out-of-place debugger that is able
 This lead to a novel _stateful out-of-place_ debugger.
 
 However, @chapter:oop has a secondary motivation.
-The debugging of interrupt-driven programs is challenging, since traditional debuggers no longer have full control over the flow of execution.
-Specific interleaving executions of interrupts can cause concurrency bugs, which are difficult to reproduce and debug @li23:empirical-study.
+Software for embedded devices is often written using interrupts to ensures responsiveness even with harsh resource constraints, but the debugging of interrupt-driven programs is challenging.
+Traditional debuggers no longer have full control over the flow of execution, as interrupts let the program jump to seemingly arbitrary points.
+This can be very confusing for developers.
+Moreover, concurrency bugs can be caused by very specific interleaving of interrupts, which are difficult to reproduce and debug @li23:empirical-study.
 More generally, arbitrary interrupts can trigger at any time, leading to non-deterministic behavior, and making it difficult to reproduce bugs.
 
 #C3
@@ -304,9 +311,3 @@ In other words, while developing our novel debugger prototypes, we increasingly 
 Therefore, we developed our own testing framework for large-scale testing on constrained devices, called _Latch_, which implements a novel testing approach we call _managed testing_.
 We will discuss this framework in detail at the end of the dissertation in @chapter:testing.
 
-=== Structure of the dissertation
-
-// TODO update
-We have already summarized the contributions of this dissertation, and the chapters in which we discuss them.
-However, before we dive into the details, we will first present the general formal framework we use throughout the dissertation in @chapter:foundations. We hope this will help the reader to better understand the formal proofs we present in the later chapters.
-In the subsequent four chapters, we will discuss the main contributions, before concluding with a summary of the dissertation, and a discussion of future work in @chapter:conclusion.
