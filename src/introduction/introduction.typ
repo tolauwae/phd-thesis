@@ -244,15 +244,23 @@ For constrained devices where software is usually written in low-level compiled 
 
 #C1
 
-The slow development cycle has several causes, in the first place the need to reflash the device after each change can slow down the development cycle significantly---especially, when developers use print statements to debug their code.
-Secondly, in case developers wish to use a debugger, they usually need to setup a hardware debugger, which can be cumbersome and time-consuming.
-//Lesser challenges include the hardware limitations, bare-metal execution environments, bad portability of code over different devices, and the lack of high-level language support.
-We will discuss these, and other lesser challenges underlying the slow development cycle in more detail in @chapter:remote.
+This challenge is addressed by our first contribution, a novel WebAssembly-based virtual machine for embedded devices, called _WARDuino_.
+By using a virtual machine, it becomes much easier to instrument the running code.
+In fact, in @chapter:remote we present a remote debugger on top of WARDuino.
+The WARDuino virtual machine and remote debugger form the perfect platform to quickly prototype and build new debugger techniques on.
 
-Our first contribution is a novel WebAssembly-based virtual machine for embedded devices, called _WARDuino_, which is designed to address the first challenge (*C1*).
-We present the virtual machine in @chapter:remote, and show how it reduces the need to reflash software, and enables traditional remote debugging without the need to use a hardware debugger.
+However, it is incorrect to suggest that this is the only contribution of @chapter:remote.
+The remote debugger itself already improves much on the current development experience of most embedded developers.
+This experience is characterized by a slow development cycle.
+In the first place the need to reflash the device after each change can slow down the development cycle significantly---especially, when developers use print statements to debug their code.
+Secondly, in case developers wish to use a debugger, they usually need to setup a hardware debugger, which can be cumbersome and time-consuming.
+We discuss these, and other lesser challenges underlying the slow development cycle in more detail in @chapter:remote.
+
+@chapter:remote shows how the WARDuino remote debugger reduces the need to reflash software, and enables traditional remote debugging without the need to use a hardware debugger.
 The chapter will discuss the virtual machine in great detail, both its implementation and the formal semantics of its remote debugger.
 We shall highlight the components and design decisions that make WARDuino suitable as the basis for the novel debugging techniques we present in the following chapters.
+
+//Lesser challenges include the hardware limitations, bare-metal execution environments, bad portability of code over different devices, and the lack of high-level language support.
 
 === Overcoming constraints with out-of-place debugging#note[Chapter 4]
 
@@ -291,7 +299,9 @@ Non-deterministic bugs are very common on embedded systems, but are notoriously 
 
 This shortcoming is addressed by our multiverse debugger for microcontrollers, _MIO_, which we present in @chap:multiverse.
 The _MIO_ debugger presents the first multiverse debugger that works on a live execution of the program, and takes into account both input and output streams.
-The technique is unique in another way, as it allows for the debugger to reverse the program's execution as it explores the multiverse, while remaining sound and complete.
+While highly motivated by the embedded software setting, these challenges are not unique to constrained devices, but apply more generally to multiverse debugging as a principle.
+
+The MIO debugger is unique in another way, as it can reverse the program's execution including the output effects, while remaining sound and complete.
 Again, we prove the soundness and completeness of our multiverse debugger, particularly in @mult:correctness.
 
 === Open-source prototype and usability
