@@ -223,7 +223,7 @@
                 title: none,
                 indent: auto,
                 depth: 2,
-                target: selector(heading).after(selector(label("toc")), inclusive: false).before(selector(label("appendix")), inclusive: false),
+                target: selector(heading).after(selector(label("toc")), inclusive: false).before(selector(label("bibliography")), inclusive: false),
             )
         ]
 
@@ -235,6 +235,15 @@
             ): it => {
               emph(it)
             }
+
+            
+            #outline(title: none,
+                depth: 1,
+                target: selector(heading).after(selector(label("bibliography")), inclusive: true).before(selector(label("appendix")), inclusive: false),
+            )
+
+            #v(1em)
+
 
             #outline(title: none,
                 depth: 1,

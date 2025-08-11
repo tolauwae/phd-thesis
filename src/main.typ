@@ -384,9 +384,6 @@
     )
 
 
-
-#metadata(none) <appendix>
-
 #[
   // no running header for bibliography
   #set page(header: context {
@@ -398,6 +395,8 @@
   
   #bibliography("references.bib", style: "elsevier-harvard")<bibliography>
 ]
+
+#metadata(none) <appendix>
 
 #set heading(numbering: "A.1", supplement: [Appendix])
 #show heading.where(level: 1): it => [
