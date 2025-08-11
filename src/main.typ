@@ -268,10 +268,10 @@
         weight: 400)
 
 #show heading.where(level: 1): it => [
-  #set align(center)
+  #set align(left)
   #set text(weight: 600)
-  #block(smallcaps(it.body))
-  #v(1.25em)
+  #block(text(style: "italic", it.body))
+  #v(2.00em)
 ]
 
 #show heading.where(level: 2): it => [
@@ -368,11 +368,11 @@
 #show heading.where(level: 1): set heading(supplement: [Appendix])
 
 #show heading.where(level: 1): it => [
-  #set align(center)
+  #set align(left)
   #set text(weight: 600)
   #pagebreak()
-  #block(smallcaps(it.body))
-  #v(1.25em)
+  #block(text(style: "italic", it.body))
+  #v(2.00em)
 ]
 
     #let runningheader(number, body) = [
@@ -400,11 +400,10 @@
 
 #set heading(numbering: "A.1", supplement: [Appendix])
 #show heading.where(level: 1): it => [
-  #set align(center)
+  #set align(left)
   #set text(weight: 600)
-  #pagebreak()
-  #block(smallcaps[#counter(heading).display(). #it.body])
-  #v(1.25em)
+  #block(text(style: "italic", [#counter(heading).display(). #it.body]))
+  #v(2.00em)
   #[#metadata(none) <chapter-start>]
 ]
 
