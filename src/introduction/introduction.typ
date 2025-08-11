@@ -192,34 +192,41 @@ There is a clear need for novel debugging techniques that can address the unique
 In this dissertation, we present a novel virtual machine for programming embedded devices, called _WARDuino_, on top of which we develop three novel debuggers for addressing the specific challenges of debugging embedded systems.
 
 #let C1 = [
-/ C1: Current embedded software development is limited to bare-metal development tools and environments, and low-level compiled programming languages, which makes it difficult to instrument the software running on the constrained devices.
+/ C1: Current embedded software development uses low-level compiled programming languages and bare-metal execution environments that make it difficult to instrument the software running on the constrained devices.
   //characterized by low-level programming languages, specific hardware requirements for debuggers, and slow code updates. //, partly because reflashing the device after each change is time-consuming, and setting up typical hardware debuggers is cumbersome.
 ]
 
+#let C6 = [
+/ C2: Current embedded software development is characterized by a cumbersome development experience due to low-level coding, lack of portability across platforms, slow deployment, hardware limitations, and limited debugger options.
+]
+
 #let C2 = [
-/ C2: The _memory limitations_ of embedded devices make it difficult to run debuggers alongside the target software, and the _processing constraints_ prevent the adoption of more advanced debugging techniques.
+/ C3: The _memory limitations_ of embedded devices make it difficult to run debuggers alongside the target software, and the _processing constraints_ prevent the adoption of more advanced debugging techniques.
  //traditional debuggers, and make advanced debugging techniques often infeasible.
 ]
 
 #let C3 = [
-/ C3: Typical _interrupt-driven programs_ interfere with live debugging processes by arbitrarily changing the execution flow of a program.
+/ C4: Typical _interrupt-driven programs_ interfere with live debugging processes by arbitrarily changing the execution flow of a program.
 ]
 
 #let C4 = [
-/ C4: Current embedded debuggers are not equipped to _debug non-deterministic bugs_ caused by their I/O intensive nature. //, yet they are common in embedded systems---but are hard to reproduce and examine using traditional techniques.
+/ C5: Current embedded debuggers are not equipped to _debug non-deterministic bugs_ caused by their I/O intensive nature. //, yet they are common in embedded systems---but are hard to reproduce and examine using traditional techniques.
 ]
 
 #let C0 = [
-/ C0: There are _no formal foundations_ for how to develop good debuggers on constrained or unconstrained devices, neither how to describe their operations or what correctness could mean for these operations.
+/ C0: There are _no formal foundations_ for how to develop good debuggers on constrained or unconstrained devices; neither how to describe their operations or what correctness could mean for these operations.
+]
+
+#let C5 = [
+/ C6: How can multiverse debugging be applied to concrete executions and enable live exploration of the multiverse in the presence of I/O?
 ]
 
 === Laying the foundations#note[Chapter 2]
 
-The three novel debuggers presented in this dissertation, are described through a formal framework.
-We provide our own correctness criteria for each one. // we developed during the writing of this dissertation.
+The three novel debuggers presented in this dissertation, are described through formal semantics on top of which we provide our own correctness criteria. // we developed during the writing of this dissertation.
 While common for programming languages, this is still too rarely done for debuggers.
 Yet, the benefits are the same.
-This motivated us to developed our own formal framework for describing remote debuggers as an answer to the first challenge of this book.
+This motivated us to developed our own formal framework for describing remote debuggers as an answer to the following challenge.
 
 #C0
 
@@ -231,10 +238,10 @@ We hope this chapter can help readers to more easily understand the following ch
 === Contributions to debugging of constrained devices
 
 In chapters three, four and five we discuss our three novel debuggers.
-Each address several unique challenges to debugging.
-Some of these challenges are not exclusively tied to constrained systems, but represent broader scientific challenges in debugging.
-However, each chapter is motivated by a larger challenge which tie all the chapters together.
-We present each of these main challenges here, and sketch the outline of their associated chapter below.
+Each address several unique challenges.
+Some of these challenges are not exclusively tied to constrained systems, but represent broader scientific problems in debugging.
+However, each chapter is motivated by one or two larger challenges which tie the chapters together.
+We present each of these main challenges here as we sketch the outline of their associated chapter.
 
 === A remote debugger as a platform#note[Chapter 3]
 
@@ -249,16 +256,20 @@ By using a virtual machine, it becomes much easier to instrument the running cod
 In fact, in @chapter:remote we present a remote debugger on top of WARDuino.
 The WARDuino virtual machine and remote debugger form the perfect platform to quickly prototype and build new debugger techniques on.
 
-However, it is incorrect to suggest that this is the only contribution of @chapter:remote.
+However, this is far from the only contribution of @chapter:remote.
 The remote debugger itself already improves much on the current development experience of most embedded developers.
-This experience is characterized by a slow development cycle.
+
+#C6
+
 In the first place the need to reflash the device after each change can slow down the development cycle significantly---especially, when developers use print statements to debug their code.
 Secondly, in case developers wish to use a debugger, they usually need to setup a hardware debugger, which can be cumbersome and time-consuming.
+Thirdly, embedded development is usually limited to low-level programming languages such as C and C++, where manual memory management presents additional work and challenges for the developers.
 We discuss these, and other lesser challenges underlying the slow development cycle in more detail in @chapter:remote.
 
 @chapter:remote shows how the WARDuino remote debugger reduces the need to reflash software, and enables traditional remote debugging without the need to use a hardware debugger.
-The chapter will discuss the virtual machine in great detail, both its implementation and the formal semantics of its remote debugger.
-We shall highlight the components and design decisions that make WARDuino suitable as the basis for the novel debugging techniques we present in the following chapters.
+The chapter discusses the virtual machine in great detail, both its implementation and the formal semantics of its remote debugger.
+It likewise shows how using WebAssembly enables developers to use high-level languages to program embedded devices.
+Importantly, the chapter highlights the components and design decisions that make WARDuino suitable as the basis for the novel debugging techniques we present in the following chapters.
 
 //Lesser challenges include the hardware limitations, bare-metal execution environments, bad portability of code over different devices, and the lack of high-level language support.
 
@@ -269,7 +280,7 @@ The resource constraints not only impact the embedded programs, but also any deb
 
 #C2
 
-To overcome the second challenge (*C2*), we adapted the new stateful out-of-place debugging technique, which allows us to run most of the debugger on a separate device, while still debugging the target device.
+To overcome this challenge (*C3*), we adapted the new stateful out-of-place debugging technique, which allows us to run most of the debugger on a separate device, while still debugging the target device.
 This reduces communication overhead and frees the debugger from the constraints of the target device.
 @chapter:oop shows exactly how we adapted the out-of-place debugging technique to embedded devices, and discusses the prototype built on top of the WARDuino virtual machine.
 As part of our research, we developed a novel out-of-place debugger that is able to handle stateful operations on non-transferable resources---a problem in out-of-place debugging that has not been addressed before.
@@ -284,7 +295,7 @@ More generally, arbitrary interrupts can trigger at any time, leading to non-det
 
 #C3
 
-@chapter:oop shows how our novel out-of-place debugger addresses the third challenge (*C3*), by capturing all asynchronous events, such as hardware interrupts, and allowing the debugger to control when these events are dispatched.
+@chapter:oop shows how our novel out-of-place debugger addresses the third challenge (*C4*), by capturing all asynchronous events, such as hardware interrupts, and allowing the debugger to control when these events are dispatched.
 
 Another major contribution of our novel out-of-place debugger, is the introduction of the first formal model of the technique.
 In @oop:soundness, we prove the soundness and completeness of our stateful out-of-place debugging technique, which shows that the debugger does not interfere with the behavior of the program, despite the execution being distributed over two devices, and controlling of asynchronous events.
@@ -298,10 +309,13 @@ Non-deterministic bugs are very common on embedded systems, but are notoriously 
 #C4
 
 This shortcoming is addressed by our multiverse debugger for microcontrollers, _MIO_, which we present in @chap:multiverse.
-The _MIO_ debugger presents the first multiverse debugger that works on a live execution of the program, and takes into account both input and output streams.
-While highly motivated by the embedded software setting, these challenges are not unique to constrained devices, but apply more generally to multiverse debugging as a principle.
+The _MIO_ debugger presents the first multiverse debugger that works on a live execution of the program.
+This brings with it a number of challenges, foremost is how to take into account both input and output streams during live exploration of the multiverse.
+While highly motivated by the embedded software setting, this challenges is not unique to constrained devices, but applies more generally to multiverse debugging as a principle.
 
-The MIO debugger is unique in another way, as it can reverse the program's execution including the output effects, while remaining sound and complete.
+#C5
+
+The MIO debugger is unique in solving this issue by reversing both the program's execution and its output effects, while remaining sound and complete.
 Again, we prove the soundness and completeness of our multiverse debugger, particularly in @mult:correctness.
 
 === Open-source prototype and usability
@@ -320,4 +334,9 @@ Additionally, testing debuggers comes with its own challenges and specific requi
 In other words, while developing our novel debugger prototypes, we increasingly found ourselves in need of a new, dedicated testing framework for embedded software.
 Therefore, we developed our own testing framework for large-scale testing on constrained devices, called _Latch_, which implements a novel testing approach we call _managed testing_.
 We will discuss this framework in detail at the end of the dissertation in @chapter:testing.
+
+=== Reflections on the Future#note[Chapter 7]
+
+To conclude this dissertation we reflect in @chapter:conclusion on the lessons learned over the course of almost four years of research, and look ahead to what future research in this area may cover.
+
 
