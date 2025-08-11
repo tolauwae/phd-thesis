@@ -45,7 +45,7 @@ I really enjoyed working on the multiverse debugger together. Hopefully, we can 
 In fact I want to thank _Jonas Sys_ here too, as the other new TOPL member.
 The last year at the lab has been so rewarding with the arrival of our two latest members, and I am sure that the lab will produce a lot of fantastic research in the next few years thanks to Jonas and Maarten.
 
-//I wish to thank my other international collaborators, _Francisco Ferreira Ruiz_ and _Anthony Clark_, for their interest in the WARDuino project.
+I wish to thank _Francisco Ferreira Ruiz_ for providing the hardware that enabled the research on multiverse debugging in @chap:multiverse.
 
 // Collega's: Jonathan, Charlotte, Niko, Steven, Jorg en anderen
 I want to thank my past and present colleagues at WINST (formerly TWIST) for making the office really a joyful place to be.
@@ -53,7 +53,7 @@ I am reminded of a speech by Hugh Laurie, #note[Permit me to paraphrase.]_"I kno
 //My fellow PhD students are each of them great people, and I am grateful that I may call many of them my friends.
 
 There are too many names to list so allow me to limit myself to handful of people.
-Thanks go first to _Jonathan Peck_ for being a wonderful office mate.
+Thanks go first to _Jonathan Peck_ for being a wonderful office mate whose knowledge and intellect are always inspiring.
 I want to thank _Charlotte Van Petegem_ as the cornerstone of the wonderful atmosphere at TWIST during my time, _Niko Strijbol_ for the many laughs and his feedback on the typography of this book, and _Steven Van Overberghe_ for indulging my weird mathematics questions.
 Thanks likewise go to _Thomas Van Mullem_ for being an awesome master student and wonderful colleague.
 
@@ -67,7 +67,7 @@ I could always rely on Rien for a quick and helpful answer to any question I had
 I want to thank the entire WINST departement, and especially all the lecturers I had through my bachelor and master eduction at Ghent University.
 One should not admit to having favorites, but I do want to explicitly thank a few people not previously mentioned---_Felix Van der Jeugt_, _Nico Van Cleemput_, and _Jan Goedgebeur_.
 
-I would also like to thank the people who mean a great deal to me in a nonprofessional capacity, my friends and family.
+I would also like to thank the people who mean a great deal to me in a no professional capacity, my friends and family.
 
 // Vrienden: Jorg, Max, Wout, Kieran, Jasper, Michiel, the maestro Tibo, Alex, Nicole, Christine
 I want to thank Bachachus for being such an amazing and inseperable group of friends, thank you _Jorg_, _Max_, _Wout_, _Kieran_ and _Jasper_.
@@ -79,7 +79,7 @@ Special loving thanks go to my darling _Xiaoyu_ (#text(size: small, "晓雨")) f
 
 // Zussen en mama
 Finally, I want to thank my family, _mama_, _papa_, _Fien_ and _Anna_ for everything.
-Fien thank you for helping to proofread the early manuscript at a moments notice, and thank you Anna and mama for your help organizing.
+There is much to be thankful for, but for this dissertation I want to thank Fien for helping to proofread the early manuscript. // at a moment's notice.
 
 
 // TODO send email with thank you to Baudouin with pdf
