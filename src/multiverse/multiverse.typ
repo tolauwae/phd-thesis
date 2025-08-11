@@ -872,7 +872,7 @@ We believe that we can extend MIO to support concurrent languages, and that the 
 #heading(numbering: none, level: 4, "Remote debugging on microcontrollers")
 
 We discussed the related work on remote debuggers for embedded devices thoroughly in @remote:related-work.
-The MIO multiverse debugger is built on top of the same architeecture as _stub remote debuggers_.
+The MIO multiverse debugger is built on top of the same architecture as _stub remote debuggers_.
 
 #heading(numbering: none, level: 4, "Environment modeling")
 

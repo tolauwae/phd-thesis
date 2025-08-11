@@ -12,7 +12,7 @@ In this final chapter, we sum up the overarching challenges we set out to addres
 Using the WebAssembly virtual machine approach implemented by WARDuino, and presented in @chapter:remote, we are able to provide developers with a series of new tools that can speed up the development process significantly.
 Primarily, the remote debugger built on top of the WARDuino virtual machine eliminates the need to use laborious hardware debuggers, and provides partial over-the-air code updates to reduce the need for reflashing the entire software.
 By using WebAssembly as the target language, developers can choose from a wide range of high-level languages to write their embedded software.
-Additonally, we can leverage the existing tooling and ecosystem around WebAssembly to provide, for instance, easier ways to write emulators using existing web technology.
+Additionally, we can leverage the existing tooling and ecosystem around WebAssembly to provide, for instance, easier ways to write emulators using existing web technology.
 Finally, the portability of WebAssembly makes it much easier to support different platforms---making WARDuino programs much more portable than existing embedded software.
 
 == Stateful out-of-place debugging
