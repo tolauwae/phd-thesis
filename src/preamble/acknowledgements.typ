@@ -16,7 +16,7 @@ I want to thank my co-supervisor _Peter Dawyndt_, and // who is always generous 
 // The jury
 // #note[I would like to thank _Bart Mesuere_ for his readiness to serve on the board.]
 the members of the examination board, _Robert Hirschfeld_, _Quentin Stiévenart_, _Bart Coppens_, _Yvan Saeys_, and _Chris Cornelis_ for their time and valued feedback on the early manuscript. //I enjoyed the great discussion during the internal defence.
-I would like to thank _Bart Mesuere_ for his readiness to serve on the board. //and for being a great lecturer and colleague.
+I'm also grateful to _Bart Mesuere_, for his willingness to serve as backup on my committee.
 
 I wish to thank all my collaborators and co-authors.
 // Robbert
@@ -40,10 +40,9 @@ I would like to thank him and his students, _Octave Larose_ and _Sophie Kaleba_,
 // Internationale contacten: Octave Larose and Sophie Kaleba
 
 // Maarten
-Last but not least, I want to thank _Maarten Steevens_ for being a dream collaborator the past two years.
-I really enjoyed working on the multiverse debugger together. Hopefully, we can continue to work together in the future.
-In fact I want to thank _Jonas Sys_ here too, as the other new TOPL member.
-The last year at the lab has been so rewarding with the arrival of our two latest members, and I am sure that the lab will produce a lot of fantastic research in the next few years thanks to Jonas and Maarten.
+Finally, my thanks to _Maarten Steevens_. It was wonderful collaborating on the multiverse debugger.
+// Jonas
+I want to thank _Jonas Sys_ as well. The arrival of the new TOPL members has made this past year at the lab especially rewarding, and I’m confident they’ll produce fantastic research in the years ahead.
 
 I wish to thank _Francisco Ferreira Ruiz_ for providing the hardware that enabled the research on multiverse debugging in @chap:multiverse.
 
@@ -55,7 +54,7 @@ I am reminded of a speech by Hugh Laurie, #note[Permit me to paraphrase.]_"I kno
 There are too many names to list so allow me to limit myself to handful of people.
 Thanks go first to _Jonathan Peck_ for being a wonderful office mate whose knowledge and intellect are always inspiring.
 I want to thank _Charlotte Van Petegem_ as the cornerstone of the wonderful atmosphere at TWIST during my time, _Niko Strijbol_ for the many laughs and his feedback on the typography of this book, and _Steven Van Overberghe_ for indulging my weird mathematics questions.
-Thanks likewise go to _Thomas Van Mullem_ for being an awesome master student and wonderful colleague.
+Thanks likewise go to _Thomas Van Mullem_ for being an awesome graduate student and wonderful colleague, and _Jorg Van Renterghem_ for his stimulating political perspectives and discussions.
 
 I want to thank _Rien Maertens_ for all his help with the administrative challenges of finishing a PhD.
 I could always rely on Rien for a quick and helpful answer to any question I had.
@@ -79,7 +78,8 @@ Special loving thanks go to my darling _Xiaoyu_ (#text(size: small, "晓雨")) f
 
 // Zussen en mama
 Finally, I want to thank my family, _mama_, _papa_, _Fien_ and _Anna_ for everything.
-There is much to be thankful for, but for this dissertation I want to thank Fien for helping to proofread the early manuscript. // at a moment's notice.
+Particular thanks to Fien for proofreading the early manuscript.
+There is of course much more to be thankful for, one can hardly put it into words.
 
 
 // TODO send email with thank you to Baudouin with pdf
