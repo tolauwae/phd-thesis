@@ -211,7 +211,7 @@
             }
 
             #outline(title: none, depth: 1,
-                target: selector(heading).before(selector(label("toc")), inclusive: false),
+              target: selector(heading).after(selector(label("toc")), inclusive: false).before(selector(label("chapter:introduction")), inclusive: false),
             )
         ]
 
@@ -223,7 +223,7 @@
                 title: none,
                 indent: auto,
                 depth: 2,
-                target: selector(heading).after(selector(label("toc")), inclusive: false).before(selector(label("bibliography")), inclusive: false),
+                target: selector(heading).after(selector(label("chapter:introduction")), inclusive: true).before(selector(label("bibliography")), inclusive: false),
             )
         ]
 

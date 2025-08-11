@@ -242,7 +242,6 @@
     #set page(numbering: none, footer: none)
 
     #titlepage(maintitle, subtitle: subtitle)
-]
 
 #pagebreak(to: "odd")
 // French title page
@@ -252,10 +251,17 @@
   #set page(
     numbering: none
   )
-  #v(5cm)
+  #v(6cm)
   #text(size: large, maintitle)
   #v(0.4em)
   #text(style: "italic", subtitle)
+
+  #v(1fr)
+
+  #text("Universiteit Gent")
+  #v(0em)
+  #text("MMXXV")
+
   #pagebreak()
 ]
 
@@ -299,6 +305,15 @@
     #pagebreak()
 ]
 
+    #v(30%)
+    #align(center)[
+        #text(style: "italic")[for my darling cabbage] //[for the apple of my eye]  // TODO end dedication with a period?
+    ]
+
+    #pagebreak() //(to: "odd")
+
+]
+
 // Preamble
 #[
 
@@ -335,6 +350,9 @@
 
 #set heading(numbering: none)
 
+#toc()
+
+#pagebreak(to: "odd")
 #include "preamble/declaration.typ"
 
 #pagebreak()
@@ -346,16 +364,26 @@
 #pagebreak()
 #include "preamble/summary.typ"
 
-#pagebreak(to: "odd")
+#pagebreak(to: "even")
 
 #v(30%)
-#align(right)[
-    #text(style: "italic")[for my darling cabbage] //[for the apple of my eye]  // TODO end dedication with a period?
+#align(left)[
+  #text(style: "italic")[
+    I don’t know if you have had the same experience, \
+    but the snag I always come up against when I’m telling a story \
+    is this dashed difficult problem of where to begin it.
+    #v(0.5em)
+    #text(style: "normal")[Bertie Wooster], Right Ho, Jeeves
+  ]
+
+  // #text(style: "italic")[
+  //   If you can fill the unforgiving minute \
+  //   With sixty seconds' worth of distance run, \
+  //   Yours is the Earth and everything that's in it
+  //   #v(0.5em)
+  //   #text(style: "normal")[Rudyard Kipling], If—
+  // ]
 ]
-
-#pagebreak(to: "odd")
-
-#toc()
 
 ]
 
@@ -449,7 +477,7 @@
       #v(0.5em)
     ]
   })
-  
+
   #bibliography("references.bib", style: "elsevier-harvard")<bibliography>
 ]
 
