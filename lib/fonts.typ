@@ -1,5 +1,5 @@
 #let serif = ("STIX Two Text", "Libertinus Serif")  // "Noto Serif CJK SC", "Noto Sans Math", "JetBrainsMonoNL NFM", 
-#let sans = ("Source Sans 3", "Libertinus Sans")
+#let sans = ("Source Sans 3")
 #let mathfont = ("STIX Two Math")
 #let monospace = ("Source Code Pro")
 
