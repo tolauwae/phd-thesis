@@ -1112,7 +1112,8 @@ This results in the highest overhead overall.
 #import "figures/overhead.typ": overhead
 #import "../../lib/book.typ": text-width
 #import "../../lib/util.typ": scale-to-width
-#figure(scale-to-width(text-width, overhead), caption: [The relative runtime overhead of #latch's WebAssembly specification test suite on hardware compared to a simulator for each test suite. Runtimes are calculated as sample means of 10 runs, and the exact relative overhead is shown next to each bar. The error bars show the confidence interval for the difference between the two means (normalized to the relative overhead) based on the Welch's t-test. The number of steps for each test suite is listed next to its name.])<fig:overhead>
+// scale-to-width(text-width, overhead)
+#figure(image(width: 100%, "figures/benchmarks.svg"), caption: [The relative runtime overhead of #latch's WebAssembly specification test suite on hardware compared to a simulator for each test suite. Runtimes are calculated as sample means of 10 runs, and the exact relative overhead is shown next to each bar. The error bars show the confidence interval for the difference between the two means (normalized to the relative overhead) based on the Welch's t-test. The number of steps for each test suite is listed next to its name.])<fig:overhead>
 
 The specification test suites taken separately in @fig:overhead, shows that fewer test steps results in higher overhead, because the execution time becomes dominated by the flashing process.
 This shows how important it is to prevent unnecessary flashing by using the #emph[upload module] command.
