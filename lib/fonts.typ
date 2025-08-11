@@ -6,6 +6,7 @@
 #let mass = 400
 
 // text sizes
+#let large = 14pt
 #let normal = 10pt
 #let small = 8pt
 #let codefont = 9pt

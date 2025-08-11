@@ -47,5 +47,6 @@ The software developed as part of this dissertation is available publicly on the
 
 - WARDuino virtual machine and debuggers. #link("https://github.com/TOPLLab/WARDuino")[TOPLLab/WARDuino]
 - WARDuino VSCode plugin. #link("https://github.com/TOPLLab/WARDuino-VSCode")[TOPLLab/WARDuino-VSCode]
+- The MIO frontend. #link("https://github.com/TOPLLab/MIO")[TOPLLab/MIO]
 - The Latch testing framework. #link("https://github.com/TOPLLab/latch")[TOPLLab/latch]
 

@@ -2,7 +2,7 @@
 #import "@preview/codly:1.3.0": *
 #import "../lib/book.typ": is-page-empty, quote, toc
 #import "../lib/class.typ": s, t, e, f, note-padding, note-gutter, note
-#import "../lib/fonts.typ": serif, sans, mathfont, monospace, small, normal, script, codefont
+#import "../lib/fonts.typ": serif, sans, mathfont, monospace, small, normal, script, codefont, large
 #import "../lib/colors.typ": colour
 #import "../lib/util.typ": illustration
 
@@ -242,7 +242,61 @@
     #set page(numbering: none, footer: none)
 
     #titlepage(maintitle, subtitle: subtitle)
-    #pagebreak(to: "odd")
+]
+
+#pagebreak(to: "odd")
+// French title page
+
+#[
+  #set align(center)
+  #set page(
+    numbering: none
+  )
+  #v(5cm)
+  #text(size: large, maintitle)
+  #v(0.4em)
+  #text(style: "italic", subtitle)
+  #pagebreak()
+]
+
+// Inside cover
+
+#[
+    #set page(
+      margin: (
+        right: 42%
+      ),
+      numbering: none
+    )
+
+    #text(font: serif, ligatures: true, discretionary-ligatures: false, size: small, weight: "regular")[
+
+    #v(1fr)
+
+    Dissertation submitted in partial fulfillment of the requirements for the degree of Doctor of Computer Science at Ghent University. \
+    August, 2025
+
+    #v(.4em)
+    _Advisor:_ prof. dr. Christophe Scholliers \
+    _Second advisor:_ prof. dr. Peter Dawyndt
+
+    #v(.4em)
+    _Jury:_ prof. dr. Robert Hirschfeld,  prof. dr. Quentin Stiévenart,  prof. dr. Bart Coppens, prof. dr. Yvan Saeys, and prof. dr. Chris Cornelis.
+
+    //#v(.4em)
+    //No LLMs were used to write this dissertation, with the exception of the dutch summary where LLMs were used to speedup the translation process, and for the conversion from LaTeX to Typst.
+
+    #v(.4em)
+    Ghent University \
+    Faculty of Sciences \
+    Department of Mathematics, Computer Science and Statistics \
+    Theory and Operations of Programming Languages Lab
+
+    #v(.4em)
+    This dissertation was typeset using Typst. \
+    Cover art #sym.copyright Tom Lauwaerts
+    ]
+    #pagebreak()
 ]
 
 // Preamble
@@ -281,20 +335,23 @@
 
 #set heading(numbering: none)
 
+#include "preamble/declaration.typ"
+
+#pagebreak()
+#include "preamble/acknowledgements.typ"
+
+#pagebreak()
 #include "preamble/samenvatting.typ"
 
 #pagebreak()
 #include "preamble/summary.typ"
 
-#pagebreak()
-#include "preamble/declaration.typ"
+#pagebreak(to: "odd")
 
-//#pagebreak(to: "odd")
-//
-//#v(30%)
-//#align(center)[
-//    #text(style: "italic")[for the apple of my eye]  // TODO end dedication with a period?
-//]
+#v(30%)
+#align(right)[
+    #text(style: "italic")[for my darling cabbage] //[for the apple of my eye]  // TODO end dedication with a period?
+]
 
 #pagebreak(to: "odd")
 
