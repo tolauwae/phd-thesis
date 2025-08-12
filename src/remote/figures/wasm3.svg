@@ -1,1 +1,134 @@
-<?xml version="1.0" encoding="UTF-8"?><svg id="b" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 448.08 112.8"><defs><style>.f{fill:#b2b2ff;}.g{stroke:red;}.g,.h,.i,.j,.k,.l{fill:none;}.g,.i,.j,.k,.l{stroke-miterlimit:10;}.g,.i,.k,.l{stroke-width:.4px;}.m{letter-spacing:-.13em;}.n{letter-spacing:0em;}.o{font-size:9.96px;}.o,.p,.q{font-family: "STIX Two Text";}.p{font-size:5.98px;}.r{fill:#fff;}.i{stroke:blue;}.j{stroke:gray;stroke-width:.2px;}.q{font-size:8.97px;}.s{letter-spacing:-.13em;}.t{fill:#ffb2b2;}.u{letter-spacing:0em;}.v{clip-path:url(#d);}.w{clip-path:url(#e);}.x{letter-spacing:.33em;}.y{letter-spacing:.33em;}.k{stroke:#000;}.l{stroke:#bfbfbf;}.z{letter-spacing:-.11em;}.aa{letter-spacing:.33em;}.ab{letter-spacing:-.03em;}</style><clipPath id="d"><rect class="h" x="29.5" y="4.26" width="183.64" height="92.65"/></clipPath><clipPath id="e"><rect class="h" x="264.25" y="4.25" width="183.64" height="92.65"/></clipPath></defs><g id="c"><path class="l" d="M29.5,18.34h183.64M29.5,57.63h183.64M29.5,96.91h183.64"/><path class="j" d="M197.84.01v4.24M167.23.01v4.24M136.63.01v4.24M106.02.01v4.24M75.41.01v4.24M44.81.01v4.24M197.84,101.15v-4.24M167.23,101.15v-4.24M136.63,101.15v-4.24M106.02,101.15v-4.24M75.41,101.15v-4.24M44.81,101.15v-4.24"/><path class="j" d="M213.14,20.14h-2.83M213.14,22.15h-2.83M213.14,24.43h-2.83M213.14,27.06h-2.83M213.14,30.17h-2.83M213.14,33.98h-2.83M213.14,38.88h-2.83M213.14,45.8h-2.83M213.14,57.63h-2.83M213.14,59.42h-2.83M213.14,61.43h-2.83M213.14,63.71h-2.83M213.14,66.34h-2.83M213.14,69.45h-2.83M213.14,73.26h-2.83M213.14,78.17h-2.83M213.14,85.08h-2.83M213.14,96.91h-2.83M29.5,20.14h2.83M29.5,22.15h2.83M29.5,24.43h2.83M29.5,27.06h2.83M29.5,30.17h2.83M29.5,33.98h2.83M29.5,38.88h2.83M29.5,45.8h2.83M29.5,57.63h2.83M29.5,59.42h2.83M29.5,61.43h2.83M29.5,63.71h2.83M29.5,66.34h2.83M29.5,69.45h2.83M29.5,73.26h2.83M29.5,78.17h2.83M29.5,85.08h2.83M29.5,96.91h2.83"/><path class="j" d="M213.14,18.34h-4.25M213.14,57.63h-4.25M213.14,96.91h-4.25M29.5,18.34h4.25M29.5,57.63h4.25M29.5,96.91h4.25"/><rect class="k" x="29.5" y="4.26" width="183.64" height="92.65"/><text class="q" transform="translate(28.33 110.15)"><tspan x="0" y="0">catalan</tspan></text><text class="q" transform="translate(68.35 110.15)"><tspan x="0" y="0">fac</tspan></text><text class="q" transform="translate(98.96 110.15)"><tspan x="0" y="0">fib</tspan></text><text class="q" transform="translate(129.56 110.15)"><tspan x="0" y="0">gcd</tspan></text><text class="q" transform="translate(153.11 110.15)"><tspan x="0" y="0">primes</tspan></text><text class="q" transform="translate(190.78 110.15)"><tspan x="0" y="0">tak</tspan></text><text class="q" transform="translate(12.62 100.74)"><tspan x="0" y="0">10</tspan></text><text class="p" transform="translate(21.83 96.93)"><tspan x="0" y="0">0</tspan></text><text class="q" transform="translate(12.62 61.46)"><tspan x="0" y="0">10</tspan></text><text class="p" transform="translate(21.83 57.65)"><tspan x="0" y="0">1</tspan></text><text class="q" transform="translate(12.62 22.18)"><tspan x="0" y="0">10</tspan></text><text class="p" transform="translate(21.83 18.37)"><tspan x="0" y="0">2</tspan></text><g class="v"><path class="f" d="M187.88,96.91h9.96V31.54h-9.96v65.37ZM157.27,96.91h9.96V23.6h-9.96v73.31ZM126.66,96.91h9.96V29.11h-9.96v67.8ZM96.06,96.91h9.96V25.35h-9.96v71.56ZM65.45,96.91h9.96V30.53h-9.96v66.38ZM34.85,96.91h9.96V12.68h-9.96v84.23Z"/><path class="i" d="M187.88,96.91h9.96V31.54h-9.96v65.37ZM157.27,96.91h9.96V23.6h-9.96v73.31ZM126.66,96.91h9.96V29.11h-9.96v67.8ZM96.06,96.91h9.96V25.35h-9.96v71.56ZM65.45,96.91h9.96V30.53h-9.96v66.38ZM34.85,96.91h9.96V12.68h-9.96v84.23Z"/><path class="t" d="M167.23,96.91h9.96v-14.05h-9.96v14.05ZM136.63,96.91h9.96v-2.49h-9.96v2.49ZM106.02,96.91h9.96v-6.7h-9.96v6.7ZM75.41,96.91h9.96v-1.16h-9.96v1.16ZM44.81,96.91h9.96v-22.62h-9.96v22.62Z"/><path class="g" d="M167.23,96.91h9.96v-14.05h-9.96v14.05ZM136.63,96.91h9.96v-2.49h-9.96v2.49ZM106.02,96.91h9.96v-6.7h-9.96v6.7ZM75.41,96.91h9.96v-1.16h-9.96v1.16ZM44.81,96.91h9.96v-22.62h-9.96v22.62Z"/></g><text class="o" transform="translate(8.27 91.22) rotate(-90)"><tspan x="0" y="0">Executio</tspan><tspan class="x" x="35.81" y="0">n</tspan><tspan x="44.58" y="0">tim</tspan><tspan class="y" x="58.66" y="0">e</tspan><tspan x="66.93" y="0">(s)</tspan></text><path class="l" d="M264.25,23.62h183.64M264.25,60.26h183.64M264.25,96.9h183.64"/><path class="j" d="M432.58,0v4.25M394.32,0v4.25M356.06,0v4.25M317.81,0v4.25M279.55,0v4.25M432.58,101.15v-4.25M394.32,101.15v-4.25M356.06,101.15v-4.25M317.81,101.15v-4.25M279.55,101.15v-4.25"/><path class="j" d="M447.88,23.62h-4.25M447.88,60.26h-4.25M447.88,96.9h-4.25M264.25,23.62h4.25M264.25,60.26h4.25M264.25,96.9h4.25"/><rect class="k" x="264.25" y="4.25" width="183.64" height="92.65"/><text class="q" transform="translate(263.07 110.15)"><tspan x="0" y="0">catalan</tspan></text><text class="q" transform="translate(310.75 110.15)"><tspan x="0" y="0">fac</tspan></text><text class="q" transform="translate(349 110.15)"><tspan x="0" y="0">fib</tspan></text><text class="q" transform="translate(387.26 110.15)"><tspan x="0" y="0">gcd</tspan></text><text class="q" transform="translate(418.46 110.15)"><tspan x="0" y="0">primes</tspan></text><text class="q" transform="translate(256.12 99.79)"><tspan x="0" y="0">0</tspan></text><text class="q" transform="translate(251.51 63.15)"><tspan x="0" y="0">20</tspan></text><text class="q" transform="translate(251.51 26.51)"><tspan x="0" y="0">40</tspan></text><g class="w"><path class="f" d="M422.62,96.9h9.96v-59.08h-9.96v59.08ZM384.36,96.9h9.96V12.68h-9.96v84.23ZM346.1,96.9h9.96V14.87h-9.96v82.03ZM307.84,96.9h9.96V13.12h-9.96v83.79ZM269.59,96.9h9.96V29.09h-9.96v67.81Z"/><path class="i" d="M422.62,96.9h9.96v-59.08h-9.96v59.08ZM384.36,96.9h9.96V12.68h-9.96v84.23ZM346.1,96.9h9.96V14.87h-9.96v82.03ZM307.84,96.9h9.96V13.12h-9.96v83.79ZM269.59,96.9h9.96V29.09h-9.96v67.81Z"/><path class="t" d="M432.58,96.9h9.96v-1.83h-9.96v1.83ZM394.32,96.9h9.96v-1.83h-9.96v1.83ZM356.06,96.9h9.96v-1.83h-9.96v1.83ZM317.81,96.9h9.96v-1.83h-9.96v1.83ZM279.55,96.9h9.96v-1.83h-9.96v1.83Z"/><path class="g" d="M432.58,96.9h9.96v-1.83h-9.96v1.83ZM394.32,96.9h9.96v-1.83h-9.96v1.83ZM356.06,96.9h9.96v-1.83h-9.96v1.83ZM317.81,96.9h9.96v-1.83h-9.96v1.83ZM279.55,96.9h9.96v-1.83h-9.96v1.83Z"/></g><text class="o" transform="translate(247.16 102.22) rotate(-90)"><tspan x="0" y="0">O</tspan><tspan class="ab" x="6.62" y="0">v</tspan><tspan x="11" y="0">erhea</tspan><tspan class="x" x="34.78" y="0">d</tspan><tspan x="43.62" y="0">(re</tspan><tspan class="aa" x="55.04" y="0">l</tspan><tspan class="z" x="60.91" y="0">W</tspan><tspan x="67.64" y="0">ASM3)</tspan></text><rect class="r" x="370.78" y="6.3" width="73.23" height="28.01"/><rect class="k" x="370.78" y="6.3" width="73.23" height="28.01"/><path class="f" d="M379.94,16.47h2.99v-5.98h-2.99v5.98ZM373.97,16.47h2.99v-7.97h-2.99v7.97Z"/><path class="i" d="M379.94,16.47h2.99v-5.98h-2.99v5.98ZM373.97,16.47h2.99v-7.97h-2.99v7.97Z"/><text class="q" transform="translate(385.12 16.84)"><tspan class="m" x="0" y="0">W</tspan><tspan x="5.87" y="0">AR</tspan><tspan class="u" x="15.85" y="0">D</tspan><tspan class="n" x="21.38" y="0">uino</tspan></text><path class="t" d="M379.94,28.5h2.99v-5.98h-2.99v5.98ZM373.97,28.5h2.99v-7.97h-2.99v7.97Z"/><path class="g" d="M379.94,28.5h2.99v-5.98h-2.99v5.98ZM373.97,28.5h2.99v-7.97h-2.99v7.97Z"/><text class="q" transform="translate(392.56 28.83)"><tspan class="s" x="0" y="0">W</tspan><tspan x="5.88" y="0">ASM3</tspan></text></g></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="b" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 448.08 112.8">
+    <defs>
+        <style>
+            .f{fill:#b2b2ff;}.g{stroke:red;}.g,.h,.i,.j,.k,.l{fill:none;}.g,.i,.j,.k,.l{stroke-miterlimit:10;}.g,.i,.k,.l{stroke-width:.4px;}.m{letter-spacing:-.13em;}.n{letter-spacing:0em;}.o{font-size:9.96px;}.o,.p,.q{font-family:
+            "STIX Two
+            Text";}.p{font-size:5.98px;}.r{fill:#fff;}.i{stroke:blue;}.j{stroke:gray;stroke-width:.2px;}.q{font-size:8.97px;}.s{letter-spacing:-.13em;}.t{fill:#ffb2b2;}.u{letter-spacing:0em;}.v{clip-path:url(#d);}.w{clip-path:url(#e);}.x{letter-spacing:.33em;}.y{letter-spacing:.33em;}.k{stroke:#000;}.l{stroke:#bfbfbf;}.z{letter-spacing:-.11em;}.aa{letter-spacing:.33em;}.ab{letter-spacing:-.03em;}
+        </style>
+        <clipPath id="d">
+            <rect class="h" x="29.5" y="4.26" width="183.64" height="92.65"/>
+        </clipPath>
+        <clipPath id="e">
+            <rect class="h" x="264.25" y="4.25" width="183.64" height="92.65"/>
+        </clipPath>
+    </defs>
+    <g id="c">
+        <path class="l" d="M29.5,18.34h183.64M29.5,57.63h183.64M29.5,96.91h183.64"/>
+        <path class="j"
+              d="M197.84.01v4.24M167.23.01v4.24M136.63.01v4.24M106.02.01v4.24M75.41.01v4.24M44.81.01v4.24M197.84,101.15v-4.24M167.23,101.15v-4.24M136.63,101.15v-4.24M106.02,101.15v-4.24M75.41,101.15v-4.24M44.81,101.15v-4.24"/>
+        <path class="j"
+              d="M213.14,20.14h-2.83M213.14,22.15h-2.83M213.14,24.43h-2.83M213.14,27.06h-2.83M213.14,30.17h-2.83M213.14,33.98h-2.83M213.14,38.88h-2.83M213.14,45.8h-2.83M213.14,57.63h-2.83M213.14,59.42h-2.83M213.14,61.43h-2.83M213.14,63.71h-2.83M213.14,66.34h-2.83M213.14,69.45h-2.83M213.14,73.26h-2.83M213.14,78.17h-2.83M213.14,85.08h-2.83M213.14,96.91h-2.83M29.5,20.14h2.83M29.5,22.15h2.83M29.5,24.43h2.83M29.5,27.06h2.83M29.5,30.17h2.83M29.5,33.98h2.83M29.5,38.88h2.83M29.5,45.8h2.83M29.5,57.63h2.83M29.5,59.42h2.83M29.5,61.43h2.83M29.5,63.71h2.83M29.5,66.34h2.83M29.5,69.45h2.83M29.5,73.26h2.83M29.5,78.17h2.83M29.5,85.08h2.83M29.5,96.91h2.83"/>
+        <path class="j"
+              d="M213.14,18.34h-4.25M213.14,57.63h-4.25M213.14,96.91h-4.25M29.5,18.34h4.25M29.5,57.63h4.25M29.5,96.91h4.25"/>
+        <rect class="k" x="29.5" y="4.26" width="183.64" height="92.65"/>
+        <text class="q" transform="translate(28.33 110.15)">
+            <tspan x="0" y="0">catalan</tspan>
+        </text>
+        <text class="q" transform="translate(68.35 110.15)">
+            <tspan x="0" y="0">fac</tspan>
+        </text>
+        <text class="q" transform="translate(98.96 110.15)">
+            <tspan x="0" y="0">fib</tspan>
+        </text>
+        <text class="q" transform="translate(129.56 110.15)">
+            <tspan x="0" y="0">gcd</tspan>
+        </text>
+        <text class="q" transform="translate(153.11 110.15)">
+            <tspan x="0" y="0">primes</tspan>
+        </text>
+        <text class="q" transform="translate(190.78 110.15)">
+            <tspan x="0" y="0">tak</tspan>
+        </text>
+        <text class="q" transform="translate(12.62 100.74)">
+            <tspan x="0" y="0">10</tspan>
+        </text>
+        <text class="p" transform="translate(21.83 96.93)">
+            <tspan x="0" y="0">0</tspan>
+        </text>
+        <text class="q" transform="translate(12.62 61.46)">
+            <tspan x="0" y="0">10</tspan>
+        </text>
+        <text class="p" transform="translate(21.83 57.65)">
+            <tspan x="0" y="0">1</tspan>
+        </text>
+        <text class="q" transform="translate(12.62 22.18)">
+            <tspan x="0" y="0">10</tspan>
+        </text>
+        <text class="p" transform="translate(21.83 18.37)">
+            <tspan x="0" y="0">2</tspan>
+        </text>
+        <g class="v">
+            <path class="f"
+                  d="M187.88,96.91h9.96V31.54h-9.96v65.37ZM157.27,96.91h9.96V23.6h-9.96v73.31ZM126.66,96.91h9.96V29.11h-9.96v67.8ZM96.06,96.91h9.96V25.35h-9.96v71.56ZM65.45,96.91h9.96V30.53h-9.96v66.38ZM34.85,96.91h9.96V12.68h-9.96v84.23Z"/>
+            <path class="i"
+                  d="M187.88,96.91h9.96V31.54h-9.96v65.37ZM157.27,96.91h9.96V23.6h-9.96v73.31ZM126.66,96.91h9.96V29.11h-9.96v67.8ZM96.06,96.91h9.96V25.35h-9.96v71.56ZM65.45,96.91h9.96V30.53h-9.96v66.38ZM34.85,96.91h9.96V12.68h-9.96v84.23Z"/>
+            <path class="t"
+                  d="M167.23,96.91h9.96v-14.05h-9.96v14.05ZM136.63,96.91h9.96v-2.49h-9.96v2.49ZM106.02,96.91h9.96v-6.7h-9.96v6.7ZM75.41,96.91h9.96v-1.16h-9.96v1.16ZM44.81,96.91h9.96v-22.62h-9.96v22.62Z"/>
+            <path class="g"
+                  d="M167.23,96.91h9.96v-14.05h-9.96v14.05ZM136.63,96.91h9.96v-2.49h-9.96v2.49ZM106.02,96.91h9.96v-6.7h-9.96v6.7ZM75.41,96.91h9.96v-1.16h-9.96v1.16ZM44.81,96.91h9.96v-22.62h-9.96v22.62Z"/>
+        </g>
+        <text class="o" transform="translate(8.27 91.22) rotate(-90)">
+            <tspan x="0" y="0">Executio</tspan>
+            <tspan class="x" x="35.81" y="0">n</tspan>
+            <tspan x="44.58" y="0">tim</tspan>
+            <tspan class="y" x="58.66" y="0">e</tspan>
+            <tspan x="66.93" y="0">(s)</tspan>
+        </text>
+        <path class="l" d="M264.25,23.62h183.64M264.25,60.26h183.64M264.25,96.9h183.64"/>
+        <path class="j"
+              d="M432.58,0v4.25M394.32,0v4.25M356.06,0v4.25M317.81,0v4.25M279.55,0v4.25M432.58,101.15v-4.25M394.32,101.15v-4.25M356.06,101.15v-4.25M317.81,101.15v-4.25M279.55,101.15v-4.25"/>
+        <path class="j"
+              d="M447.88,23.62h-4.25M447.88,60.26h-4.25M447.88,96.9h-4.25M264.25,23.62h4.25M264.25,60.26h4.25M264.25,96.9h4.25"/>
+        <rect class="k" x="264.25" y="4.25" width="183.64" height="92.65"/>
+        <text class="q" transform="translate(263.07 110.15)">
+            <tspan x="0" y="0">catalan</tspan>
+        </text>
+        <text class="q" transform="translate(310.75 110.15)">
+            <tspan x="0" y="0">fac</tspan>
+        </text>
+        <text class="q" transform="translate(349 110.15)">
+            <tspan x="0" y="0">fib</tspan>
+        </text>
+        <text class="q" transform="translate(387.26 110.15)">
+            <tspan x="0" y="0">gcd</tspan>
+        </text>
+        <text class="q" transform="translate(418.46 110.15)">
+            <tspan x="0" y="0">primes</tspan>
+        </text>
+        <text class="q" transform="translate(256.12 99.79)">
+            <tspan x="0" y="0">0</tspan>
+        </text>
+        <text class="q" transform="translate(251.51 63.15)">
+            <tspan x="0" y="0">20</tspan>
+        </text>
+        <text class="q" transform="translate(251.51 26.51)">
+            <tspan x="0" y="0">40</tspan>
+        </text>
+        <g class="w">
+            <path class="f"
+                  d="M422.62,96.9h9.96v-59.08h-9.96v59.08ZM384.36,96.9h9.96V12.68h-9.96v84.23ZM346.1,96.9h9.96V14.87h-9.96v82.03ZM307.84,96.9h9.96V13.12h-9.96v83.79ZM269.59,96.9h9.96V29.09h-9.96v67.81Z"/>
+            <path class="i"
+                  d="M422.62,96.9h9.96v-59.08h-9.96v59.08ZM384.36,96.9h9.96V12.68h-9.96v84.23ZM346.1,96.9h9.96V14.87h-9.96v82.03ZM307.84,96.9h9.96V13.12h-9.96v83.79ZM269.59,96.9h9.96V29.09h-9.96v67.81Z"/>
+            <path class="t"
+                  d="M432.58,96.9h9.96v-1.83h-9.96v1.83ZM394.32,96.9h9.96v-1.83h-9.96v1.83ZM356.06,96.9h9.96v-1.83h-9.96v1.83ZM317.81,96.9h9.96v-1.83h-9.96v1.83ZM279.55,96.9h9.96v-1.83h-9.96v1.83Z"/>
+            <path class="g"
+                  d="M432.58,96.9h9.96v-1.83h-9.96v1.83ZM394.32,96.9h9.96v-1.83h-9.96v1.83ZM356.06,96.9h9.96v-1.83h-9.96v1.83ZM317.81,96.9h9.96v-1.83h-9.96v1.83ZM279.55,96.9h9.96v-1.83h-9.96v1.83Z"/>
+        </g>
+        <text class="o" transform="translate(247.16 102.22) rotate(-90)">
+            <tspan x="0" y="0">Overhead (rel. WASM3)</tspan>
+        </text>
+        <rect class="r" x="370.78" y="6.3" width="73.23" height="28.01"/>
+        <rect class="k" x="370.78" y="6.3" width="73.23" height="28.01"/>
+        <path class="f" d="M379.94,16.47h2.99v-5.98h-2.99v5.98ZM373.97,16.47h2.99v-7.97h-2.99v7.97Z"/>
+        <path class="i" d="M379.94,16.47h2.99v-5.98h-2.99v5.98ZM373.97,16.47h2.99v-7.97h-2.99v7.97Z"/>
+        <text class="q" transform="translate(385.12 16.84)">
+            <tspan x="0" y="0">WARDuino</tspan>
+        </text>
+        <path class="t" d="M379.94,28.5h2.99v-5.98h-2.99v5.98ZM373.97,28.5h2.99v-7.97h-2.99v7.97Z"/>
+        <path class="g" d="M379.94,28.5h2.99v-5.98h-2.99v5.98ZM373.97,28.5h2.99v-7.97h-2.99v7.97Z"/>
+        <text class="q" transform="translate(385.12 28.83)">
+            <tspan x="0" y="0">WASM3</tspan>
+        </text>
+    </g>
+</svg>
