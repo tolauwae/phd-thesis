@@ -1,4 +1,4 @@
-#import "../introduction/introduction.typ": C0, C1, C2, C3, C4, C5, C6
+#import "../introduction/introduction.typ": C1, C2, C3, C4, C5, C6, C7
 #import "../../lib/environments.typ": note
 
 This dissertation introduced three new ways of debugging embedded systems, based on a virtual machine approach with sound, and complete debugging semantics.
@@ -11,11 +11,11 @@ This is at the same time, the perfect moment to look ahead and reflect on the le
 The research in this dissertation touched on many different challenges of debugging and development on constrained devices.
 The work was built on top of the WARDuino virtual machine.
 WARDuino served both as the general instrumentation platform on which debuggers could be built, and as a more modern development environment to improve the programming experience of developers.
-In this way the virtual machine simultaneously addresses both challenges C1 and C2 introduced in @chapter:introduction.
+In this way the virtual machine simultaneously addresses both challenges C2 and C3 introduced in @chapter:introduction.
 
-#C1
+#C2
 
-#C6
+#C3
 
 WARDuino as a WebAssembly virtual machine is able to provide developers with a series of new tools that can speed up the development process significantly.
 Primarily, the remote debugger built on top of the WARDuino virtual machine eliminates the need to use laborious hardware debuggers, and provides partial over-the-air code updates to reduce the need for reflashing the entire software.
@@ -24,9 +24,9 @@ Additionally, we can leverage the existing tooling and ecosystem around WebAssem
 Finally, the portability of WebAssembly makes it much easier to support different platforms---making WARDuino programs much more portable than existing embedded software.
 
 However, the remote debugger is limited by the same resource constraints as the embedded software.
-This led us to challenge C3.
+This led us to challenge C4.
 
-#C2
+#C4
 
 In order to overcome the hardware limitations of embedded devices, we found that it is possible to largely evade the constraints by moving the debugging session from the constrained device _(server)_ to a more powerful host machine _(client)_.
 This corresponds to the out-of-place debugging approach, first developed for big data applications to reduce debugging interference.
@@ -36,7 +36,7 @@ Any non-transferable resources of the original constrained device, such as senso
 Such non-transferable resources can have both stateless and stateful natures, and access to them can be both synchronous and asynchronous.
 In our novel out-of-place solution, we are the first to address all of these aspects/* of non-transferable resources, and provide a clear formalization of our approach---in order to help other researchers apply our techniques to their own debugging problems, and application domains*/---leading to what we call _stateful out-of-place debugging_.
 
-#C3
+#C5
 
 Embedded software is generally written in an _interrupt-driven_ style, which means that execution flow during online debugging can be arbitrarily interrupted and diverted.
 This makes it very difficult to debug such programs.
@@ -49,14 +49,13 @@ On the _client_ side, developers can choose when to trigger the asynchronous eve
 Yet, the out-of-place debugger only touched the surface the challenges in debugging embedded interrupt-driven programs.
 The larger problem is how to deal with non-deterministic behavior of input and output in general.
 
-#C4
+#C6
 
 In @chap:multiverse, we presented the first multiverse debugger designed for microcontrollers, called _MIO_, addressing the challenge of non-deterministic bugs caused by unpredictable I/O.
 Unlike prior approaches limited to abstract settings, our debugger integrates with a full WebAssembly virtual machine and supports a range of concrete I/O primitives—including sensors, pins, and motors—while maintaining formal soundness.
 
 By introducing a sparse snapshotting strategy, we achieve practical performance on resource-constrained devices.
 This work demonstrates that multiverse debugging can work as an online debugger, and be made viable for real-world embedded systems.
-
 
 == Reflections on the General Implications
 
@@ -68,7 +67,7 @@ However, our formalization is already quite general, and includes very little We
 
 Similarly our solution to challenge C6 applies to online multiverse debugging in general.
 
-#C5
+#C7
 
 Our online multiverse debugger allows developers to freely navigate the multiverse of possible execution paths, without the need for a full program replay.
 Interactions with the external environment are automatically reversed and replayed as needed by the debugger, enabling developers to explore the impact of I/O operations on program behavior without worrying about interference from the debugger.

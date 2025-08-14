@@ -1,5 +1,4 @@
 #import "../../lib/environments.typ": note
-#import "../introduction/introduction.typ": C1, C2, C3, C4
 
 = Vulgariserende samenvatting
 
@@ -12,19 +11,19 @@ Er is een duidelijke behoefte aan betere debugging-tools bij de ontwikkeling van
 Echter, de aard van deze apparaten brengt verschillende obstakels met zich mee die de ontwikkeling van geavanceerdere debugging-technieken bemoeilijken.
 Deze obstakels kunnen worden onderverdeeld in zeven hoofduitdagingen.
 
-/ C0: Er is geen formeel raamwerk waarin debuggers bechreven en ontwikkeld kunnen worden, en geen formele definitie van hun correctheid.
+/ C1: Er is geen formeel raamwerk waarin debuggers bechreven en ontwikkeld kunnen worden, en geen formele definitie van hun correctheid.
 
-/ C1: Het is moeilijk om programma's op microcontrollers te instrumenteren doordat ze gecompileerde talen gebruiken en _bare-metal_ uitvoeringsomgevingen.
+/ C2: Het is moeilijk om programma's op microcontrollers te instrumenteren doordat ze gecompileerde talen gebruiken en _bare-metal_ uitvoeringsomgevingen.
 
-/ C2: Ontwikkeling van embedded software wordt gekenmerkt door een trage ontwikkelcyclus onder andere door eenvoudige programmeertalen, lage interoperabiliteit tussen hardwareplatformen, trage upload, hardwarelimitaties, en weinig opties voor debuggers.
+/ C3: Ontwikkeling van embedded software wordt gekenmerkt door een trage ontwikkelcyclus onder andere door eenvoudige programmeertalen, lage interoperabiliteit tussen hardwareplatformen, trage upload, hardwarelimitaties, en weinig opties voor debuggers.
 
-/ C3: De hardwarebeperkingen van embedded apparaten maken het moeilijk om debuggers naast de software uit te voeren, voornamelijk de gelimiteerde rekenkracht en geheugen.
+/ C4: De hardwarebeperkingen van embedded apparaten maken het moeilijk om debuggers naast de software uit te voeren, voornamelijk de gelimiteerde rekenkracht en geheugen.
 
-/ C4: Typische interrupt-gedreven programma’s verstoren het debugproces.
+/ C5: Typische interrupt-gedreven programma’s verstoren het debugproces.
 
-/ C5: Huidige embedded debuggers zijn niet uitgerust om niet-deterministische bugs te debuggen.
+/ C6: Huidige embedded debuggers zijn niet uitgerust om niet-deterministische bugs te debuggen.
 
-/ C6: Hoe kunnen we _multiverse debugging_ toepassen op een concrete uitvoering van een programma met veel I/O interacties.
+/ C7: Hoe kunnen we _multiverse debugging_ toepassen op een concrete uitvoering van een programma met veel I/O interacties.
 
 Op dit moment gebruiken ontwikkelaars van microcontrollers twee inefficiënte debugging-technieken, die niet voldoende zijn om deze uitdagingen te overkomen.
 
@@ -60,3 +59,4 @@ Om dit op te lossen, introduceert MIO een nieuwe benadering van multiverse debug
 Onze vierde bijdrage is een nieuw testframework, genaamd Latch, voor het testen van embedded apparaten, en in het bijzonder de in dit proefschrift ontwikkelde debuggers.
 Ten eerste implementeert het framework een nieuwe testmethode, die we _managed testing_ noemen, waarbij een debugger wordt gebruikt om geautomatiseerde tests op de microcontroller uit te voeren—gelijkaardig aan de handmatige testscenario’s die ontwikkelaars normaal zelf op de hardware uitvoeren.
 Ten tweede gebruikt Latch hetzelfde principe als stateful out-of-place debugging om grote test suites op microcontrollers uit te voeren.
+

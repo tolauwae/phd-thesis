@@ -1,5 +1,5 @@
 #import "../../lib/environments.typ": note
-#import "../introduction/introduction.typ": C0, C1, C2, C3, C4, C5, C6
+#import "../introduction/introduction.typ": C1, C2, C3, C4, C5, C6, C7
 
 = Lay summary
 
@@ -12,11 +12,7 @@ There is a clear need for better debugging tools in embedded software developmen
 However, the nature of the targeted devices poses several tough hurdles that stand in the way of more advanced debugging techniques.
 These obstacles can be split into seven main challenges.
 
-#C0
-
 #C1
-
-#C6
 
 #C2
 
@@ -25,6 +21,10 @@ These obstacles can be split into seven main challenges.
 #C4
 
 #C5
+
+#C6
+
+#C7
 
 Currently, developers of embedded devices use two inefficient debugging techniques, which are not well equipped to handle the challenges of debugging constrained devices.
 
