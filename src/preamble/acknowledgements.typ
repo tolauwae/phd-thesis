@@ -7,15 +7,13 @@
 This dissertation could not have been written without the help and support of a long list of people.
 My words of thanks could easily fill an entire book, but instead I limit my acknowledgements here to two pages.
 
-First and foremost, I must thank my supervisor _Christophe Scholliers_ for being a tremendous tutor and teacher. // these past four years.
-//Christophe truly wants his students to succeed, and saves no effort when introducing them to every aspect of the scientific world.
+First and foremost, I must thank my supervisor _Christophe Scholliers_ for being a tremendous tutor and teacher.
 I am forever grateful for the guidance, enthusiasm, and the opportunities Christophe provided.
 
 // (Peter)
-I want to thank my co-supervisor _Peter Dawyndt_, and // who is always generous with his time 
+I want to thank my co-supervisor _Peter Dawyndt_, and
 // The jury
-// #note[I would like to thank _Bart Mesuere_ for his readiness to serve on the board.]
-the members of the examination board, _Robert Hirschfeld_, _Quentin Stiévenart_, _Bart Coppens_, _Yvan Saeys_, and _Chris Cornelis_ for their time and valued feedback on the early manuscript. //I enjoyed the great discussion during the internal defence.
+the members of the examination board, _Robert Hirschfeld_, _Quentin Stiévenart_, _Bart Coppens_, _Yvan Saeys_, and _Chris Cornelis_ for their time and valued feedback on the early manuscript.
 I'm also grateful to _Bart Mesuere_, for his willingness to serve as backup on my committee.
 
 I wish to thank all my collaborators and co-authors.
@@ -35,9 +33,8 @@ Similar thanks go to _Carlos Rojas Castillo_ for his work on out-of-place debugg
 
 // Stefan
 Without _Stefan Marr_ and the research stay at his lab in Kent, @chapter:testing would not have been written.
+// Octave Larose and Sophie Kaleba
 I would like to thank him and his students, _Octave Larose_ and _Sophie Kaleba_, for their generous welcome.
-//Stefan had a bigger impact on this dissertation and on me as a young researcher than he would like to think, I am very thankful for his advice throughout the years.
-// Internationale contacten: Octave Larose and Sophie Kaleba
 
 // Maarten
 Finally, my thanks to _Maarten Steevens_. It was wonderful collaborating on the multiverse debugger.
@@ -49,7 +46,6 @@ I wish to thank _Francisco Ferreira Ruiz_ for providing the hardware that enable
 // Collega's: Jonathan, Charlotte, Niko, Steven, Jorg en anderen
 I want to thank my past and present colleagues at WINST (formerly TWIST) for making the office really a joyful place to be.
 I am reminded of a speech by Hugh Laurie, #note[Permit me to paraphrase.]_"I know everyone says they have wonderful [colleagues], and logically that can't be the case. Somebody somewhere is working with a crew of drunken thieves, but it is not me"_.
-//My fellow PhD students are each of them great people, and I am grateful that I may call many of them my friends.
 
 There are too many names to list so allow me to limit myself to handful of people.
 Thanks go first to _Jonathan Peck_ for being a wonderful office mate whose knowledge and intellect are always inspiring.
@@ -58,9 +54,7 @@ Thanks likewise go to _Thomas Van Mullem_ for being an awesome graduate student 
 
 I want to thank _Rien Maertens_ for all his help with the administrative challenges of finishing a PhD.
 I could always rely on Rien for a quick and helpful answer to any question I had.
-
-
-// Jorg, Simon, Feng, Heidi, Felix, Simon, Mustapha, ... // TODO ?
+And thanks to Oliver Dukes for his advice on the performance analysis in @sec:performance.
 
 // de vakgroep (ook alle lesgevers van de opleiding)
 I want to thank the entire WINST departement, and especially all the lecturers I had through my bachelor and master eduction at Ghent University.
@@ -76,13 +70,10 @@ Finally, I wish to thank my oldest friends, _Christine_, _Nicole_, and _Alex_ fo
 // Xiaoyu
 Special loving thanks go to my darling _Xiaoyu_ (#text(size: small, "晓雨")) for bringing a spark to my life that fuels me to reach higher and further than I ever could alone.
 
-// Zussen en mama
+// Family
 Finally, I want to thank my family, _mama_, _papa_, _Fien_ and _Anna_ for everything.
-Particular thanks to Fien for proofreading the early manuscript.
+Particular thanks to Fien for proofreading the early manuscript, and helping with the design of the cover.
 There is of course much more to be thankful for, one can hardly put it into words.
-
-
-// TODO send email with thank you to Baudouin with pdf
 
 #{
   set par(leading: 1.00em)

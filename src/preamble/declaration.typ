@@ -9,10 +9,11 @@ This dissertation was written in the period from 2021 to 2025, and the works the
 == Published works
 
 The following previously published work feature prominently within this dissertation.
-They are integrated in, respectively, @chapter:remote, @chapter:oop, and @chapter:testing.
+They are integrated in, respectively, @chapter:remote, @chapter:oop, @chap:multiverse, and @chapter:testing.
 
 - *Tom Lauwaerts*, Robbert Gurdeep Singh, Christophe Scholliers. _WARDuino: An embedded WebAssembly virtual machine._ In Journal of Computer Languages, Volume 79. Elsevier, 2024.
 - *Tom Lauwaerts*, Carlos Rojas Castillo, Robbert Gurdeep Singh, Matteo Marra, Christophe Scholliers, and Elisa Gonzalez Boix. _Event-Based Out-of-Place Debugging._ In MPLR, pages 85–97. ACM, 2022.
+- *Tom Lauwaerts*, Maarten Steevens, Christophe Scholliers. _MIO: Multiverse Debugging in the face of Input/Output._ In OOPSLA. ACM, 2025.
 - *Tom Lauwaerts*, Stefan Marr, Christophe Scholliers. _Latch: Enabling large-scale automated testing on constrained systems._ In Science of Computer Programming, Volume 238. Elsevier, 2024.
 
 
@@ -21,7 +22,6 @@ They are integrated in, respectively, @chapter:remote, @chapter:oop, and @chapte
 At the time of writing, the following prominently featured works were submitted at peer reviewed conferences or journals, and are still under review or being prepared for resubmission.
 
 - *Tom Lauwaerts*, Maarten Steevens, Christophe Scholliers. _Stateful Out-of-place Debugging._ (Recommended for resubmission by ECOOP'25)
-- *Tom Lauwaerts*, Maarten Steevens, Christophe Scholliers. _MIO: Multiverse Debugging in the face of Input/Output._ (Under review at OOPSLA'25)
 
 == Demonstrations and other presentations
 

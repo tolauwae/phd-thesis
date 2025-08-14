@@ -251,7 +251,7 @@
   #set page(
     numbering: none
   )
-  #v(6cm)
+  #v(30%)
   #text(size: large, maintitle)
   #v(0.4em)
   #text(style: "italic", subtitle)
@@ -426,6 +426,11 @@
 = Multiverse debugging on microcontrollers<chap:multiverse>
 
 #quote("Karl Popper", source: "Knowledge without Authority", theme: theme)[Our knowledge can only be finite, while our ignorance must necessarily be infinite.]
+
+#link("https://doi.org/10.5281/zenodo.15838624", text(style: "italic", size: small, top-edge: 1em)[
+  #set box(baseline: 15%)
+  #box(image("../static/artifacts_available.jpg", height: 1.1em))#h(0.5em)#box(image("../static/artifacts_evaluated_reusable.jpg", height: 1.1em))#h(0.5em)Artifact Available, and Reusable.])
+#v(0.2cm)
 
 #include "multiverse/multiverse.typ"
 

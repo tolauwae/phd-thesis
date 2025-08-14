@@ -1312,14 +1312,17 @@ Note that the WebAssembly program implementing $mono("tak")$ does run on the sam
 
 #let linewidth = 0.4pt
 
-#let content = ([name], table.vline(stroke: linewidth), [Espruino (s)], [WARDuino (s)], [WASM3 (s)], [C (s)], $"Espruino" / C$, $"WARDuino" / C$, $"WASM3" / C$, table.hline(stroke: linewidth))
+#let seconds = "(s)"
+#let columnheader(it) = text(size: script, it)
+
+#let content = ([], table.vline(stroke: linewidth), columnheader[Espruino #seconds], columnheader[WARDuino #seconds], columnheader[WASM3 #seconds], columnheader[C #seconds], $"Espruino" / C$, $"WARDuino" / C$, $"WASM3" / C$, table.hline(stroke: linewidth))
 #content.push(table.hline(stroke: linewidth))
 #for entry in data.flatten().map(entry => [#entry]) {content.push(entry)}
 #content.push(table.hline(stroke: linewidth))
 #content.push("mean")
 #let means = array.range(data.first().len() - 1).map(i => {
   let col = data.map(row => row.at(i + 1)).filter(j => not j.is-nan())
-  calc.round(calc.root(col.product(), col.len()), digits: 3)
+  calc.round(calc.root(col.product(), col.len()), digits: 2)
 })
 #for mean in means { content.push(str(mean)) }
 

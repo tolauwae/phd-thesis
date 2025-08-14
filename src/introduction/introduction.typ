@@ -1,7 +1,7 @@
 #import "../../lib/class.typ": note, definition
 // todo the very first sentence should say something about bugs
 
-As long as people write programs for computers, so will software continue to have bugs and mistakes.
+As long as people write programs for computers so will software continue to have bugs and mistakes.
 That is not pessimism; it is reality. After all we live in an imperfect world.
 No formal method, nor model checker, or type system can ever eliminate all mistakes---especially, for software which interacts with this imperfect, and unpredictable world.
 This is where debuggers---inevitably---come in.
@@ -16,7 +16,7 @@ Crucially, many real-world bugs are not predictable or even known in advance @mo
 This is why automated verification @dsilva08:survey @rodriguez19:software, however powerful, has limits. Formal proofs and model checking work only when the system and its requirements can be fully specified and the relevant properties articulated.
 But many software systems today are too large, too dependent on external environments, or too hastily evolving for perfect formalization.
 No model or simulation can capture every single aspect of the real world @roska90:limitations @khan11:limitations and so cannot detect every possible bug.
-In these cases, the only path forward is empirical investigation.
+In these cases the only path forward is empirical investigation.
 //That is what debuggers make possible.
 
 This kind of empirical investigation is what we call _"debugging"_, and was best described by Andreas Zeller in his definitive guide, _"Why Programs Fail: A Guide to Systematic Debugging"_ @zeller05:why, which provides a thorough overview of debugging as a part of software development.
