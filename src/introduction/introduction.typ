@@ -1,4 +1,4 @@
-#import "../../lib/class.typ": note, definition
+#import "../../lib/environments.typ": note, definition
 // todo the very first sentence should say something about bugs
 
 As long as people write programs for computers so will software continue to have bugs and mistakes.

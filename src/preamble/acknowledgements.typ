@@ -1,14 +1,12 @@
-#import "../../lib/class.typ": note
+#import "../../lib/environments.typ": note
 #import "../../lib/fonts.typ": small
 
 = Acknowledgements
 
 // Christophe
 This dissertation could not have been written without the help and support of a long list of people.
-My words of thanks could easily fill an entire book, but instead I limit my acknowledgements here to two pages.
-
 First and foremost, I must thank my supervisor _Christophe Scholliers_ for being a tremendous tutor and teacher.
-I am forever grateful for the guidance, enthusiasm, and the opportunities Christophe provided.
+I am forever grateful for your guidance, and enthusiasm; and for giving me the opportunities to write this dissertation.
 
 // (Peter)
 I want to thank my co-supervisor _Peter Dawyndt_, and
@@ -37,12 +35,11 @@ Without _Stefan Marr_ and the research stay at his lab in Kent, @chapter:testing
 I would like to thank him and his students, _Octave Larose_ and _Sophie Kaleba_, for their generous welcome.
 
 // Maarten
-Finally, my thanks to _Maarten Steevens_. It was wonderful collaborating on the multiverse debugger.
+Finally, my thanks to _Maarten Steevens_. It was wonderful collaborating on the multiverse debugger together, your hard work helped shape @chap:multiverse enormously.
 // Jonas
 I want to thank _Jonas Sys_ as well. The arrival of the new TOPL members has made this past year at the lab especially rewarding, and I’m confident they’ll produce fantastic research in the years ahead.
 
-I wish to thank _Francisco Ferreira Ruiz_ for providing the hardware that enabled the research on multiverse debugging in @chap:multiverse.
-And thanks to _Oliver Dukes_ for his advice on the performance analysis in @sec:performance.
+Aside from the co-authors who contributed to this dissertation, I wish to thank _Francisco Ferreira Ruiz_ for providing the hardware that enabled the research on multiverse debugging in @chap:multiverse, and _Oliver Dukes_ for his advice on the performance analysis in @chapter:testing.
 
 // Collega's: Jonathan, Charlotte, Niko, Steven, Jorg en anderen
 I want to thank my past and present colleagues at WINST (formerly TWIST) for making the office really a joyful place to be.
@@ -57,15 +54,15 @@ I want to thank _Rien Maertens_ for all his help with the administrative challen
 I could always rely on Rien for a quick and helpful answer to any question I had.
 
 // de vakgroep (ook alle lesgevers van de opleiding)
-I want to thank the entire WINST departement, and especially all the lecturers I had through my bachelor and master eduction at Ghent University.
+I want to thank all the lecturers I had through my bachelor and master eduction at Ghent University.
 One should not admit to having favorites, but I do want to explicitly thank a few people not previously mentioned---_Felix Van der Jeugt_, _Nico Van Cleemput_, and _Jan Goedgebeur_.
 
-I would also like to thank the people who mean a great deal to me in a no professional capacity, my friends and family.
+I would also like to thank the people who mean a great deal to me in a none professional capacity---my friends and family.
 
 // Vrienden: Jorg, Max, Wout, Kieran, Jasper, Michiel, the maestro Tibo, Alex, Nicole, Christine
-I want to thank Bachachus for being such an amazing and inseperable group of friends, thank you _Jorg_, _Max_, _Wout_, _Kieran_ and _Jasper_.
+I want to thank Bachachus for being such an amazing and inseparable group of friends, thank you _Jorg_, _Max_, _Wout_, _Kieran_ and _Jasper_.
 I want to thank _Tibo_ and _Michiel_ for our time at university together.
-Finally, I wish to thank my oldest friends, _Christine_, _Nicole_, and _Alex_ for their lifelong friendship.
+Finally, I wish to thank my longest friends, _Christine_, _Nicole_, and _Alex_ for their lifelong friendship.
 
 // Xiaoyu
 Special loving thanks go to my darling _Xiaoyu_ (#text(size: small, "晓雨")) for bringing a spark to my life that fuels me to reach higher and further than I ever could alone.

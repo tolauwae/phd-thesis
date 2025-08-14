@@ -1,4 +1,4 @@
-#import "../../lib/class.typ": lemma, proofsketch
+#import "../../lib/environments.typ": lemma, proofsketch
 #import "../../lib/util.typ": snippet
 #import "../semantics/arrows.typ": *
 #import "figures/semantics.typ": dbg, msg, sync

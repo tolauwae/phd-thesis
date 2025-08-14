@@ -1,5 +1,5 @@
 #import "../../lib/util.typ": semantics, tablehead
-#import "../../lib/class.typ": note
+#import "../../lib/environments.typ": note
 #import "../semantics/arrows.typ": *
 
 #import "@preview/curryst:0.5.0": rule, prooftree

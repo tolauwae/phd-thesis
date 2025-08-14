@@ -1,4 +1,4 @@
-#import "../../lib/class.typ": note
+#import "../../lib/environments.typ": note
 #import "../introduction/introduction.typ": C1, C2, C3, C4
 
 = Vulgariserende samenvatting
@@ -10,15 +10,21 @@ Dit geldt vooral voor _microcontrollers_, ofwel embedded apparaten---heel kleine
 
 Er is een duidelijke behoefte aan betere debugging-tools bij de ontwikkeling van embedded software.
 Echter, de aard van deze apparaten brengt verschillende obstakels met zich mee die de ontwikkeling van geavanceerdere debugging-technieken bemoeilijken.
-Deze obstakels kunnen worden onderverdeeld in vier hoofduitdagingen.
+Deze obstakels kunnen worden onderverdeeld in zeven hoofduitdagingen.
 
-/ C1: Ontwikkeling van embedded software wordt gekenmerkt door een trage ontwikkelcyclus.
+/ C0: Er is geen formeel raamwerk waarin debuggers bechreven en ontwikkeld kunnen worden, en geen formele definitie van hun correctheid.
 
-/ C2: De hardwarebeperkingen van embedded apparaten maken het moeilijk om debuggers naast de software uit te voeren.
+/ C1: Het is moeilijk om programma's op microcontrollers te instrumenteren doordat ze gecompileerde talen gebruiken en _bare-metal_ uitvoeringsomgevingen.
 
-/ C3: Typische interrupt-gedreven programma’s verstoren het debugproces.
+/ C2: Ontwikkeling van embedded software wordt gekenmerkt door een trage ontwikkelcyclus onder andere door eenvoudige programmeertalen, lage interoperabiliteit tussen hardwareplatformen, trage upload, hardwarelimitaties, en weinig opties voor debuggers.
 
-/ C4: Huidige embedded debuggers zijn niet uitgerust om niet-deterministische bugs te debuggen.
+/ C3: De hardwarebeperkingen van embedded apparaten maken het moeilijk om debuggers naast de software uit te voeren, voornamelijk de gelimiteerde rekenkracht en geheugen.
+
+/ C4: Typische interrupt-gedreven programma’s verstoren het debugproces.
+
+/ C5: Huidige embedded debuggers zijn niet uitgerust om niet-deterministische bugs te debuggen.
+
+/ C6: Hoe kunnen we _multiverse debugging_ toepassen op een concrete uitvoering van een programma met veel I/O interacties.
 
 Op dit moment gebruiken ontwikkelaars van microcontrollers twee inefficiënte debugging-technieken, die niet voldoende zijn om deze uitdagingen te overkomen.
 

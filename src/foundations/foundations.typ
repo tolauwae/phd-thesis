@@ -1,4 +1,4 @@
-#import "../../lib/class.typ": note, theorem, proof, example, lemma
+#import "../../lib/environments.typ": note, theorem, proof, example, lemma
 #import "../../lib/util.typ": semantics, illustration
 #import "../../lib/fonts.typ": sans, small
 

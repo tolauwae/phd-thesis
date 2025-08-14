@@ -4,7 +4,7 @@
 // code snippets
 #import "../../lib/util.typ": line, range, code, snippet, circled, algorithm, semantics, tablehead
 #import "../../lib/fonts.typ": monospace, small, script, monot
-#import "../../lib/class.typ": note, theorem, proofsketch
+#import "../../lib/environments.typ": note, theorem, proofsketch
 
 #import "../semantics/arrows.typ": *
 #import "../semantics/forms.typ": *

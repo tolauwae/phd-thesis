@@ -6,11 +6,6 @@
 #let note-padding = 11.78mm
 #let note-gutter = 3.93mm
 
-#let t = 21.98mm
-#let f = 35.40mm
-#let s = 19.08mm
-#let e = 38.16mm // outside margin
-
 #let note(body) = {
     let opposite(side) = if side == left { right } else { left }
 

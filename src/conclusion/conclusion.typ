@@ -1,5 +1,5 @@
 #import "../introduction/introduction.typ": C0, C1, C2, C3, C4, C5, C6
-#import "../../lib/class.typ": note
+#import "../../lib/environments.typ": note
 
 This dissertation introduced three new ways of debugging embedded systems, based on a virtual machine approach with sound, and complete debugging semantics.
 However, the dissertation had a wider purpose, to examine how to design debuggers well, and how to apply these techniques under tight constraints.

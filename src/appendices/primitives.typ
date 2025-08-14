@@ -1,4 +1,4 @@
-#import "../../lib/class.typ": note
+#import "../../lib/environments.typ": note
 #import "../../lib/util.typ": lineWidth, code
 
 #set figure(placement: top)

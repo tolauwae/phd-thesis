@@ -1,5 +1,5 @@
 #import "../../lib/util.typ": semantics, tablehead
-#import "../../lib/class.typ": note, theorem, lemma, definition, proof
+#import "../../lib/environments.typ": note, theorem, lemma, definition, proof
 #import "../semantics/arrows.typ": *
 #import "../semantics/forms.typ": brackets
 #import "./figures/semantics.typ": mocks, nop, call, cps, ret, In, Out, mocks, dbg, es, msg

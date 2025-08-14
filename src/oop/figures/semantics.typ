@@ -1,5 +1,5 @@
 #import "../../../lib/util.typ": code, snippet, algorithm, semantics, lineWidth, headHeight, tablehead, boxed, highlight
-#import "../../../lib/class.typ": lemma
+#import "../../../lib/environments.typ": lemma
 #import "../../semantics/arrows.typ": *
 
 #import "@preview/curryst:0.5.0": rule, prooftree

@@ -1,7 +1,7 @@
 #import "@preview/lovelace:0.3.0": pseudocode, with-line-label, pseudocode-list, line-label
 
 #import "../../lib/util.typ": circled, line, snippet, algorithm, lineWidth, illustration
-#import "../../lib/class.typ": note
+#import "../../lib/environments.typ": note
 #import "../../lib/fonts.typ": small
 
 #let latch = [#emph("Latch")]

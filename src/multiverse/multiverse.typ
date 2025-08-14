@@ -1,5 +1,5 @@
 #import "../../lib/util.typ": code, snippet, line, algorithm, semantics, lineWidth, headHeight, tablehead, highlight, boxed
-#import "../../lib/class.typ": note, definition, theorem
+#import "../../lib/environments.typ": note, definition, theorem
 #import "./figures/semantics.typ": *
 #import "../semantics/arrows.typ": *
 #import "../semantics/forms.typ": brackets

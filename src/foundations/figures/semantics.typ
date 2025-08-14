@@ -1,5 +1,5 @@
 #import "../../../lib/util.typ": semantics, lineWidth, headHeight, tablehead, highlight, boxed
-#import "../../../lib/class.typ": note
+#import "../../../lib/environments.typ": note
 #import "../../../lib/fonts.typ": small
 
 #import "@preview/curryst:0.5.0": rule, prooftree

@@ -1,5 +1,5 @@
 #import "../../lib/util.typ": code, snippet, algorithm, semantics, lineWidth, headHeight, tablehead, highlight, boxed, circled, illustration
-#import "../../lib/class.typ": note, theorem, proofsketch, example, lemma, axiom
+#import "../../lib/environments.typ": note, theorem, proofsketch, example, lemma, axiom
 #import "../../lib/fonts.typ": sans, script, serif
 
 #import "./figures/cetz/led.typ": ledcetz

@@ -2,11 +2,6 @@
 #import "colors.typ": colour
 #import "@preview/drafting:0.2.2": set-margin-note-defaults, set-page-properties, margin-note
 
-//#let inside-margin = 16.5mm
-//#let outside-margin = 49.5mm
-//#let note-padding = 49.5mm
-#let note-padding = 9.54mm
-
 #let t = 21.98mm
 #let f = 35.40mm
 #let s = 19.08mm

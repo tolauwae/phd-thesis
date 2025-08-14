@@ -1,7 +1,7 @@
 #import "@preview/drafting:0.2.2": set-margin-note-defaults, set-page-properties, margin-note, rule-grid
 #import "@preview/codly:1.3.0": *
-#import "../lib/book.typ": is-page-empty, quote, toc
-#import "../lib/class.typ": s, t, e, f, note-padding, note-gutter, note
+#import "../lib/book.typ": is-page-empty, quote, toc, s, t, e, f
+#import "../lib/environments.typ": note
 #import "../lib/fonts.typ": serif, sans, mathfont, monospace, small, normal, script, codefont, large
 #import "../lib/colors.typ": colour
 #import "../lib/util.typ": illustration
