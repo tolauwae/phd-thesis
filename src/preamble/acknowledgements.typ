@@ -42,6 +42,7 @@ Finally, my thanks to _Maarten Steevens_. It was wonderful collaborating on the 
 I want to thank _Jonas Sys_ as well. The arrival of the new TOPL members has made this past year at the lab especially rewarding, and I’m confident they’ll produce fantastic research in the years ahead.
 
 I wish to thank _Francisco Ferreira Ruiz_ for providing the hardware that enabled the research on multiverse debugging in @chap:multiverse.
+And thanks to _Oliver Dukes_ for his advice on the performance analysis in @sec:performance.
 
 // Collega's: Jonathan, Charlotte, Niko, Steven, Jorg en anderen
 I want to thank my past and present colleagues at WINST (formerly TWIST) for making the office really a joyful place to be.
@@ -49,12 +50,11 @@ I am reminded of a speech by Hugh Laurie, #note[Permit me to paraphrase.]_"I kno
 
 There are too many names to list so allow me to limit myself to handful of people.
 Thanks go first to _Jonathan Peck_ for being a wonderful office mate whose knowledge and intellect are always inspiring.
-I want to thank _Charlotte Van Petegem_ as the cornerstone of the wonderful atmosphere at TWIST during my time, _Niko Strijbol_ for the many laughs and his feedback on the typography of this book, and _Steven Van Overberghe_ for indulging my weird mathematics questions.
-Thanks likewise go to _Thomas Van Mullem_ for being an awesome graduate student and wonderful colleague, and _Jorg Van Renterghem_ for his stimulating political perspectives and discussions.
+I want to thank _Charlotte Van Petegem_ as the cornerstone of the wonderful atmosphere at TWIST during my time, _Niko Strijbol_ for the many laughs and his advice for the typography of this book, and _Steven Van Overberghe_ for indulging my weird mathematics questions.
+Thanks likewise go to _Thomas Van Mullem_ for being an awesome graduate student and wonderful colleague, and _Jorg Van Renterghem_ for many stimulating political discussions---it is always great to have assumptions challenged.
 
 I want to thank _Rien Maertens_ for all his help with the administrative challenges of finishing a PhD.
 I could always rely on Rien for a quick and helpful answer to any question I had.
-And thanks to Oliver Dukes for his advice on the performance analysis in @sec:performance.
 
 // de vakgroep (ook alle lesgevers van de opleiding)
 I want to thank the entire WINST departement, and especially all the lecturers I had through my bachelor and master eduction at Ghent University.
@@ -77,7 +77,7 @@ There is of course much more to be thankful for, one can hardly put it into word
 
 #{
   set par(leading: 1.00em)
-  v(2em)
+  v(1fr)
   set align(right)
   text(style: "italic")[Tom Lauwaerts \ August, 2025]
 }

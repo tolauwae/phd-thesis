@@ -300,7 +300,7 @@
 
     #v(.4em)
     This dissertation was typeset using Typst. \
-    Cover art #sym.copyright Tom Lauwaerts
+    Cover art #sym.copyright Fien Lauwaerts and Tom Lauwaerts
     ]
     #pagebreak()
 ]

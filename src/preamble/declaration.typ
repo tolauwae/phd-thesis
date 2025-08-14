@@ -17,7 +17,7 @@ They are integrated in, respectively, @chapter:remote, @chapter:oop, @chap:multi
 - *Tom Lauwaerts*, Stefan Marr, Christophe Scholliers. _Latch: Enabling large-scale automated testing on constrained systems._ In Science of Computer Programming, Volume 238. Elsevier, 2024.
 
 
-== Under submission
+== Preparing for submission
 
 At the time of writing, the following prominently featured works were submitted at peer reviewed conferences or journals, and are still under review or being prepared for resubmission.
 
@@ -36,7 +36,7 @@ We list here the more formal presentations, and demonstrations not listed before
 
 Other publications that are not directly part of this dissertation:
 
-- Maarten Steevens, *Tom Lauwaerts*, Christophe Scholliers. _Remote Concolic Multiverse Debugging_. (Under review at Onward! 2025)
+- Maarten Steevens, *Tom Lauwaerts*, Christophe Scholliers. _Remote Concolic Multiverse Debugging_. (Preparing for resubmission)
 - Maarten Steevens, *Tom Lauwaerts*, Francisco Ferreira Ruiz, Christophe Scholliers. _WARDuino on Open Bot Brain: Building and programming Lego robots in high-level languages using WebAssembly_ (Preparing for submission)
 
 == Software artifacts
