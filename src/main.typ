@@ -246,11 +246,14 @@
 #pagebreak(to: "odd")
 // French title page
 
+#counter(page).update(1)
+
 #[
   #set align(center)
   #set page(
     numbering: none
   )
+
   #v(30%)
   #text(size: large, maintitle)
   #v(0.4em)
@@ -316,8 +319,6 @@
 
 // Preamble
 #[
-
-#counter(page).update(1)
 
 #set page(
     fill: none,
@@ -385,6 +386,7 @@
   // ]
 ]
 
+//#pagebreak()
 ]
 
 #counter(page).update(1)
@@ -492,6 +494,7 @@
 #show heading.where(level: 1): it => [
   #set align(left)
   #set text(weight: 600)
+  #pagebreak()
   #block(text(style: "italic", [#counter(heading).display(). #it.body]))
   #v(2.00em)
   #[#metadata(none) <chapter-start>]
