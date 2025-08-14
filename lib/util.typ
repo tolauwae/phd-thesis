@@ -132,4 +132,19 @@
 
 #let highlight(fill, content, inset: (left: 1mm, top: 2mm, bottom: 2mm , right: 1mm), outset: 0mm) = rect(fill: fill, stroke: none, outset: outset, inset: inset, content)
 
+#let scale-to-width(width, body) = layout(page-size => {
+  let size = measure(body, ..page-size)
+  let target-width = if type(width) == ratio {
+    page-size.width * width
+  } else if type(width) == relative {
+    page-size.width * width.ratio + width.length
+  } else {
+    width
+  }
+  let multiplier = target-width.to-absolute()
+  if (size.width > 0mm) {
+    multiplier = multiplier / size.width
 
+  }
+  scale(reflow: true, multiplier * 100%, body)
+})

@@ -15,12 +15,15 @@
 #let inside-margin = s
 #let outside-margin = e
 
+#let paper-width = 148mm
+#let text-width = paper-width - s - e // 90.76mm
+
 #let book(
     title: [Book title],
 
     theme: "standard",
 
-    paper-width: 148mm,
+    paper-width: paper-width,
     paper-height: 210mm,
 
     print: true,
