@@ -241,9 +241,6 @@
 #[
     #set page(numbering: none, footer: none)
 
-    #titlepage(maintitle, subtitle: subtitle)
-
-#pagebreak(to: "odd")
 // French title page
 
 #counter(page).update(1)

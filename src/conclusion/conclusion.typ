@@ -4,7 +4,6 @@
 This dissertation introduced three new ways of debugging embedded systems, based on a virtual machine approach with sound, and complete debugging semantics.
 However, the dissertation had a wider purpose, to examine how to design debuggers well, and how to apply these techniques under tight constraints.
 While we have discussed the conclusions for each of the contributions in their respective chapters, we now consider the bigger picture one last time and look back at the journey taken in this dissertation.
-This is at the same time, the perfect moment to look ahead and reflect on the lessons learned during the writing of this dissertation may take us in the future.
 
 == Reflections on Debugging in Constrained Environments
 
