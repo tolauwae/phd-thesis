@@ -18,6 +18,9 @@
 #set document(title: maintitle)
 
 #let theme = "modern" // "classic" "standard" "modern"
+#let print = sys.inputs.keys().contains("print")
+
+#set raw(theme: "../lib/printable.thTheme") if print
 
 //#show: book.with(
 //    title: title,
@@ -236,7 +239,8 @@
     #show raw.where(block: true): set text(size: script)
     #show raw.where(block: true): set par(leading: 0.55em)
 
-    #show link: set text(fill: colour.links)
+    #show link: set text(fill: colour.links) if not print
+    #show link: set text(fill: black) if print
 
 #[
     #set page(numbering: none, footer: none)

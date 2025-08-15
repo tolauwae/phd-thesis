@@ -24,7 +24,7 @@
       prefix = prefix + " "
     }
     let sp = tag.split(regex("[:]"))
-    [#text(fill: red, link(label(sp.at(0)), [#supplement #sp.at(sp.len() - 1)]))#label(tag)]
+    [#text(fill: red, link(label(sp.at(0)), [#prefix#sp.at(sp.len() - 1)]))#label(tag)]
 }
 
 #let range(start, end, separator: " to ") = {
@@ -32,6 +32,7 @@
 }
 
 #let code(offset: 0, body) = {
+    //set raw(theme: "printable.thTheme")
     set text(font: monospace, weight: "regular")
     codly(zebra-fill: none, offset: offset, display-name: false, radius: 0pt, fill: none, stroke: none, number-align: right + top, reference-sep: "", breakable: true,
         number-format: (n) => text(size: tiny, baseline: 1pt, fill: colour.subtext)[#str(n)])

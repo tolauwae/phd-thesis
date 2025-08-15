@@ -1182,8 +1182,8 @@ There are two recognized MQTT payloads: "on" and "off".
 On the left side, we import the WARDuino primitives, and we define some constants and helper functions.
 On the right side, we have the main entry point of the program, starting at #line(main).
 The main function first sets the correct modes of the $mono("LED")$ and $mono("BUTTON")$ pins.
-Next, it connects to the Wi-Fi network and prints the local IP address of the device on success (#range(wifiStart, wifiEnd, separator: [--])).
-When the microcontroller is connected to the network, it connects to the MQTT broker (#range(wifiEnd, subscribe, separator: [--])).
+Next, it connects to the Wi-Fi network and prints the local IP address of the device on success (#range(wifiStart, wifiEnd, separator: [–])).
+When the microcontroller is connected to the network, it connects to the MQTT broker (#range(wifiEnd, subscribe, separator: [–])).
 In @remote:developing, we already discussed the code required to set up these connections.
 
 With an established connection, the microcontroller subscribes to the "LED" MQTT topic on #line(subscribe).
