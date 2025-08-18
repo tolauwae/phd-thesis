@@ -3,8 +3,8 @@
 
 #import "fonts.typ": small
 
-#let note-padding = 11.78mm
-#let note-gutter = 3.93mm
+#let note-padding = 9.00mm
+#let note-gutter = 3.00mm
 
 #let note(body) = {
     let opposite(side) = if side == left { right } else { left }

@@ -4,8 +4,8 @@
 
 #let t = 21.98mm
 #let f = 35.40mm
-#let s = 19.08mm
-#let e = 38.16mm ;; outside margin
+#let s = 23.39mm
+#let e = 33.85mm ;; outside margin
 
 #let inside-margin = s
 #let outside-margin = e
