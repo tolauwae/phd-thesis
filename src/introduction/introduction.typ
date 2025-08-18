@@ -196,7 +196,7 @@ In this dissertation, we present a novel virtual machine for programming embedde
 ]
 
 #let C2 = [
-/ C2: Current embedded software development uses low-level compiled programming languages and bare-metal execution environments that make it difficult to instrument the software running on the constrained devices.
+/ C2: Current embedded software uses low-level compiled programming languages and bare-metal execution environments that make it difficult to instrument the software running on the constrained devices.
   //characterized by low-level programming languages, specific hardware requirements for debuggers, and slow code updates. //, partly because reflashing the device after each change is time-consuming, and setting up typical hardware debuggers is cumbersome.
 ]
 

@@ -35,17 +35,17 @@ Any non-transferable resources of the original constrained device, such as senso
 Such non-transferable resources can have both stateless and stateful natures, and access to them can be both synchronous and asynchronous.
 In our novel out-of-place solution, we are the first to address all of these aspects/* of non-transferable resources, and provide a clear formalization of our approach---in order to help other researchers apply our techniques to their own debugging problems, and application domains*/---leading to what we call _stateful out-of-place debugging_.
 
-#C5
-
 Embedded software is generally written in an _interrupt-driven_ style, which means that execution flow during online debugging can be arbitrarily interrupted and diverted.
 This makes it very difficult to debug such programs.
+
+#C5
 
 Our stateful out-of-place debugger, captures all asynchronous events on the remote constrained device, and forwards them to the local _client_ debugger without triggering them.
 This means that debugging sessions are no longer arbitrarily interrupted by asynchronous events, but our stateful out-of-place debugger is not just able to capture and forward asynchronous resources.
 The debugger also provides developers with some control over the asynchronicity.
 On the _client_ side, developers can choose when to trigger the asynchronous events, allowing them some control over their order and timing within the program.
 
-Yet, the out-of-place debugger only touched the surface the challenges in debugging embedded interrupt-driven programs.
+Yet, the out-of-place debugger only scratched the surface of the challenges in debugging embedded interrupt-driven programs.
 The larger problem is how to deal with non-deterministic behavior of input and output in general.
 
 #C6
@@ -54,17 +54,17 @@ In @chap:multiverse, we presented the first multiverse debugger designed for mic
 Unlike prior approaches limited to abstract settings, our debugger integrates with a full WebAssembly virtual machine and supports a range of concrete I/O primitives—including sensors, pins, and motors—while maintaining formal soundness.
 
 By introducing a sparse snapshotting strategy, we achieve practical performance on resource-constrained devices.
-This work demonstrates that multiverse debugging can work as an online debugger, and be made viable for real-world embedded systems.
+MIO demonstrates that multiverse debugging can work as an online debugger, and be made viable for real-world embedded systems.
 
 == Reflections on the General Implications
 
 The works in this dissertation provide more general contributions not limited to embedded systems.
 
 Our formalization of stateful out-of-place debugging, is the first formalization of the technique, and is not limited to embedded systems.
-The state synchronisation problem is a general issue for out-of-place debugging, and our solution is likewise ; we hope in future work to formalize the approach in a more fundamental way, by using a more general underlying language model, such as CEK machines @felleisen86:control.
-However, our formalization is already quite general, and includes very little WebAssembly specific aspects.
+The state synchronisation problem is a general issue for out-of-place debugging, and our solution likewise applies more generally.
+The formalisation contains very few WebAssembly specific details, but future work could formalize the approach in a more fundamental way by using a more general underlying language model, such as CEK machines @felleisen86:control.
 
-Similarly our solution to challenge C6 applies to online multiverse debugging in general.
+Similarly our solution to challenge C7 applies to online multiverse debugging in general.
 
 #C7
 
@@ -82,6 +82,12 @@ While the spare snapshotting is designed to make the technique work on constrain
 
 Our novel testing framework _Latch_ uses a similar principle as out-of-place debugging to run large suites of tests on the constrained hardware itself.
 Coupled with our novel managed testing approach, which allows developers to integration test their embedded software through more realistic scenarios, we are able to provide a considerably better way of testing embedded software.
+
+Managed testing enabled us to very easily automate typical manual testing scenarios on the hardware using the debug operations.
+Even simple debug operations of the remote debugger from @chapter:remote sufficed to automate most scenarios we used to perform ourselves.
+The approach did come with some new challenges, chiefly the asynchronous communication with the remote debugger introduced a lot of variability in the testing approach thereby increasing the chance of flaky tests.
+The current prototype mitigates this largely, but flakiness can never be completely discounted in this approach.
+How to deal with this in the context of testing remains an open question.
 
 == Soundness and completeness of debuggers
 
@@ -132,7 +138,7 @@ Third, the soundness and completeness distill the lessons we learned around the 
 We have discussed the implications and limitations of these theorems already at length as they present perhaps the most important lessons of this dissertation.
 They also present an unfinished ambition, and we hope that in future research the community can find a consensus on the correctness of debuggers.
 
-Fourth, the managed testing approach developed to test our debuggers presents a interesting and unique combination of debugging and testing.
+Fourth, the managed testing approach developed to test our debuggers presents an interesting and unique combination of debugging and testing.
 Quite accidentally we learned that it is possible to build an automatic integration testing framework on top of debuggers, and that this gives developers a wide range of tools.
 This lies at the basis of the managed testing approach.
 The debugger controls the software and performs scenarios throughout which the testing framework can verify predefined assertions.
