@@ -358,10 +358,10 @@
 
 #set heading(numbering: none)
 
-#toc()
-
-#pagebreak(to: "odd")
 #include "preamble/declaration.typ"
+
+#pagebreak()
+#toc()
 
 #pagebreak()
 #include "preamble/acknowledgements.typ"
@@ -384,13 +384,6 @@
     #text(style: "normal")[Bertie Wooster], Right Ho, Jeeves
   ]
 
-  // #text(style: "italic")[
-  //   If you can fill the unforgiving minute \
-  //   With sixty seconds' worth of distance run, \
-  //   Yours is the Earth and everything that's in it
-  //   #v(0.5em)
-  //   #text(style: "normal")[Rudyard Kipling], If—
-  // ]
 ]
 
 //#pagebreak()

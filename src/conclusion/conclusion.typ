@@ -118,12 +118,13 @@ Reflecting further on the lessons learned, we see four large lessons that can le
 
 First, by adopting out-of-place debugging and solving the state synchronisation problem we are now able to apply more complex debugging techniques to constrained devices.
 While we have given some indication in this dissertation, we have only scratched the surface of this advantage.
-#note[We thank Robert Hirschfeld for the great discussion on this topic.]One area where we see great potential is that of live programming.
-The stateful out-of-place debugger provides a perfect platform on top of which to build a live programming environment.
-The offloading of most of the execution to the local device where the developer is actually programming, allows for easier integration of custom visualisations and other live programming tools without the constraints of the embedded devices.
+One area where we see great potential is that of _live programming_.
+The stateful out-of-place debugger provides a perfect platform on top of which to build a live programming environment.#note[We thank Robert Hirschfeld for the great discussion on this topic.]
+The offloading of most of the execution to the device where the developer is actually programming, allows for easier integration of custom visualisations and other live programming tools without the constraints of the embedded devices.
 
-Second, the multiverse debugger our work has hopefully shown that multiverse debugging can work extremely well as a live online debugging approach---we would even argue that it works best in this scenario.
-However, we learned that this adds several new dimensions and challenges to the technique.
+Second, the MIO multiverse debugger has hopefully shown that multiverse debugging can work extremely well as a live online debugging approach---we would even argue that it works best in this scenario.
+The tool certainly felt the most intuitive compared to other multiverse debuggers.
+However, we learned that online debugging adds several new dimensions and challenges to the technique.
 
 In the first place we now need to handle the output effects of the program, which remains a difficult problem to solve in new settings.
 The formal framework with sparse snapshotting we developed in this thesis can pave the way here.
@@ -135,8 +136,9 @@ In fact, we have already made a first step in this direction using concolic exec
 This integration has several additional addvantages as it can also help guide developers in their exploration.
 
 Third, the soundness and completeness distill the lessons we learned around the correctness and formalisation of debuggers in two clear theorems.
-We have discussed the implications and limitations of these theorems already at length as they present perhaps the most important lessons of this dissertation.
-They also present an unfinished ambition, and we hope that in future research the community can find a consensus on the correctness of debuggers.
+We have discussed the implications and limitations of these theorems already at length as they are perhaps the most important lessons of this dissertation.
+Far more works needs to happen before the scientific community can agree on a consensus on the correctness of debuggers, but we hope that these theorems can present a small step towards that goal.
+//They also present a small step towards an unrealised ambition; that we hope the scientific community will find a consensus on the correctness of debuggers in the future.
 
 Fourth, the managed testing approach developed to test our debuggers presents an interesting and unique combination of debugging and testing.
 Quite accidentally we learned that it is possible to build an automatic integration testing framework on top of debuggers, and that this gives developers a wide range of tools.
