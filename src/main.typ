@@ -311,7 +311,13 @@
 
     #v(30%)
     #align(center)[
-        #text(style: "italic")[for my darling cabbage] //[for the apple of my eye]  // TODO end dedication with a period?
+        #text(style: "italic")[
+          If you can fill the unforgiving minute \
+          With sixty seconds' worth of distance run, \
+          Yours is the Earth and everything that's in it
+          #v(0.5em)
+          #text(style: "normal")[Rudyard Kipling], If—
+        ]
     ]
 
     #pagebreak() //(to: "odd")
