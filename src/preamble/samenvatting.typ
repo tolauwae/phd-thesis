@@ -3,7 +3,7 @@
 = Vulgariserende samenvatting
 
 Programma's schrijven is moeilijk, en ontwikkelaars maken onvermijdelijk fouten, die we in de informatica bugs noemen.
-Het opsporen van deze bugs, debugging, neemt een groot deel van de ontwikkelaar's tijd in beslag.
+Het opsporen van deze bugs, debugging, neemt een groot deel van de ontwikkelaars tijd in beslag.
 Helaas zijn de hulpmiddelen die hen hierbij zouden moeten helpen, zogenaamde debuggers, in de praktijk vaak nogal verouderd#note["Verouderd" is hier het juiste woord, aangezien breakpoints al in de jaren zestig zijn uitgevonden.].
 Dit geldt vooral voor _microcontrollers_, ofwel embedded apparaten---heel kleine computers, die noodzakelijk beperkt zijn in hun capaciteit, maar daarom vaak worden gebruikt in internet-of-things toepassingen, zoals je slimme thermostaat, fitness tracker, WiFi-lampen, enzovoort.
 
@@ -25,7 +25,7 @@ Deze obstakels kunnen worden onderverdeeld in zeven hoofduitdagingen.
 
 / C7: Hoe kunnen we _multiverse debugging_ toepassen op een concrete uitvoering van een programma met veel I/O interacties.
 
-Op dit moment gebruiken ontwikkelaars van microcontrollers twee inefficiënte debugging-technieken, die niet voldoende zijn om deze uitdagingen te overkomen.
+Op dit moment gebruiken ontwikkelaars van microcontrollers twee inefficiënte debugging-technieken, die niet voldoende zijn om deze uitdagingen te overwinnen.
 
 Ten eerste gebruiken ontwikkelaars _print statement debugging_, waarbij ze print statements toevoegen aan hun code om informatie op bepaalde punten in het programma af te drukken.
 Op deze manier proberen ze na afloop informatie over de uitvoering van het programma af te leiden.
@@ -37,7 +37,7 @@ Bovendien ondersteunen de bijbehorende softwaretools, met name _remote debuggers
 
 In dit proefschrift stellen we verschillende nieuwe debugging-technieken voor die specifiek zijn ontworpen om deze uitdagingen te overwinnen, en hopelijk de weg vrijmaken voor een nog bredere variëteit aan geavanceerde en betere debugging-technieken.
 
-Onze eerste bijdrage is een nieuwe manier van remote debugging voor embedded apparaten, gebaseerd op een virtuele machine in plaats van op hardware-debugers.
+Onze eerste bijdrage is een nieuwe manier van remote debugging voor embedded apparaten, gebaseerd op een virtuele machine in plaats van op hardware-debuggers.
 We hebben een op WebAssembly gebaseerde virtuele machine ontwikkeld, genaamd WARDuino, die op de microcontroller draait.
 Dit stelt ontwikkelaars in staat om hun apparaten te programmeren in abstractere programmeertalen zoals JavaScript, Python en Rust, en om een remote debugger te gebruiken zonder dat er hardware-debuggers nodig zijn.
 
