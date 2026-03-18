@@ -20,10 +20,10 @@
 #let msg = $"msg"$
 #let Cbs = $"Cbs"$
 #let evt = $"evt"$
-#let invoked(payload) = [$"invoked"angle.l payload angle.r$]
-#let invoke(payload) = [$"invoke"angle.l payload angle.r$]
-#let sync(payload) = [$"sync"angle.l payload angle.r$]
-#let invoking(payload) = [$"invoking"angle.l payload angle.r$]
+#let invoked(payload) = [$"invoked"chevron.l payload chevron.r$]
+#let invoke(payload) = [$"invoke"chevron.l payload chevron.r$]
+#let sync(payload) = [$"sync"chevron.l payload chevron.r$]
+#let invoking(payload) = [$"invoking"chevron.l payload chevron.r$]
 #let halted = $"halted"$
 #let running = $"running"$
 
@@ -215,7 +215,7 @@
     )
   ]
 
-#let trigger(payload) = [$"trigger"angle.l #payload angle.r$]
+#let trigger(payload) = [$"trigger"chevron.l #payload chevron.r$]
 
 #let eventsrules = [
     #table(columns: (1fr, 1fr), stroke: none, gutter: 1.0em,

@@ -22,8 +22,8 @@ The rules below show the update system as a standalone semantics on top of the W
 #let inst = $italic("inst")$
 #let idx = $italic("idx")$
 
-#let updatef(i, fidx, code) = $"update"_(f)angle.l #i, #fidx, #code angle.r$
-#let updatel(i, fidx) = $"update"_(l)angle.l #i, #fidx angle.r$
+#let updatef(i, fidx, code) = $"update"_(f)chevron.l #i, #fidx, #code chevron.r$
+#let updatel(i, fidx) = $"update"_(l)chevron.l #i, #fidx chevron.r$
 
 #semantics(
   [

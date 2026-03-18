@@ -119,8 +119,8 @@
 #let pause = $italic("pause")$
 #let step = $italic("step")$
 #let stepback = $italic("stepback")$
-#let mock(j, vs, v) = $italic("mock")angle.l #j , #vs, #v angle.r$
-#let unmock(j, vs) = $italic("unmock")angle.l #j , #vs angle.r$
+#let mock(j, vs, v) = $italic("mock")chevron.l #j , #vs, #v chevron.r$
+#let unmock(j, vs) = $italic("unmock")chevron.l #j , #vs chevron.r$
 #let nop = $italic("nop")$
 
 #let multconfig = [

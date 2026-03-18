@@ -772,8 +772,8 @@ The execution of a WebAssembly program is described by the small step reduction 
 To formalize our debugging system, we extend the operational semantics of WebAssembly with the necessary remote debugging constructs. The goal of these extensions, is to provide constructs that are as lightweight as possible while still being powerful enough to provide the most common remote debugging facilities. We follow the recipe for defining a debugger semantics as outlined by #cite(<torres19:multiverse>, form: "prose");, where the semantics of the debugger are defined in terms of the underlying language’s semantics: in this case the WebAssembly specifications. One advantage of this approach, is that it leads to a very concise description of the debugger semantics. More importantly, with this recipe you get a debugger whose semantics are observationally equivalent to those of the underlying language’s semantics. This means that the debugger does not interfere with the underlying semantics, and therefore, only observes real executions. Or more precisely, any execution in the WARDuino debugger corresponds to an execution of a WebAssembly program, and conversely that any execution of a program is observed by the debugger. The recipe also makes it straightforward to proof this non-interference of the debugger, as we will show in @remote:proofsketch.
 
 #let bp = $"bp"$
-#let breakadd(id) = $"break"^+angle.l #id angle.r$
-#let breakrem(id) = $"break"^-angle.l #id angle.r$
+#let breakadd(id) = $"break"^+chevron.l #id chevron.r$
+#let breakrem(id) = $"break"^-chevron.l #id chevron.r$
 
 #semantics(
     [#strong[Core debugger semantics.] Small step reduction rules ($attach(arrow.r.hook, br: d comma i)$) for the WARDuino remote debugger, as extensions to the WebAssembly semantics as defined in #cite(form: "prose", <haas17:bringing>).],
@@ -894,9 +894,9 @@ In order to improve the usability of the semantics, the over-the-air updates can
   #curryst.prooftree(vertical-spacing: vertical-spacing, curryst.rule(name: [#smallcaps(title)], conclusion, ..premises))]
 #let pause = $"pause"$
 
-#let upload(payload) = $"upload"angle.l #payload angle.r$
-#let updatef(i, fidx, code) = $"update"_(f)angle.l #i, #fidx, #code angle.r$
-#let updatel(i, fidx) = $"update"_(l)angle.l #i, #fidx angle.r$
+#let upload(payload) = $"upload"chevron.l #payload chevron.r$
+#let updatef(i, fidx, code) = $"update"_(f)chevron.l #i, #fidx, #code chevron.r$
+#let updatel(i, fidx) = $"update"_(l)chevron.l #i, #fidx chevron.r$
 
 #semantics(
     [Extension of the debugging rules (@fig:dbg:syntax) with safe over-the-air updates.],

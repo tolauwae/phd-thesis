@@ -128,8 +128,8 @@
 
 #let separator = $space;$
 
-#let serverrule(i, o, t) = $angle.l #i, #o separator #t angle.r$
-#let clientrule(i, o) = $angle.l #i, #o angle.r$
+#let serverrule(i, o, t) = $chevron.l #i, #o separator #t chevron.r$
+#let clientrule(i, o) = $chevron.l #i, #o chevron.r$
 #let globalrule(client, server) = $#client bar.v #server$
 
 #let snap(it) = $"snap" it$
@@ -213,10 +213,10 @@
 
 #let pause = text(style: "italic", "pause")
 #let play = text(style: "italic", "play")
-#let bpadd = $"bp"^+angle.l n angle.r$
-#let bpremove = $"bp"^-angle.l n angle.r$
+#let bpadd = $"bp"^+chevron.l n chevron.r$
+#let bpremove = $"bp"^-chevron.l n chevron.r$
 
-#let conserverrule(i, o, n, e, b, t) = $angle.l #i, #o, #n, #e, #b separator #t angle.r$
+#let conserverrule(i, o, n, e, b, t) = $chevron.l #i, #o, #n, #e, #b separator #t chevron.r$
 
 #let conventionalsyntax = [
     #show table.cell: set text(style: "italic")
@@ -226,7 +226,7 @@
         table(columns: (1fr), align: (left), stroke: none,
             tablehead("New syntactic forms"),
             definition(server, highlight(silver, "(server)"),
-                ($angle.l boxed(operation), boxed(message), highlight(#silver, #[#programcounter, #executionstate, #breakpoints])separator t angle.r$,),
+                ($chevron.l boxed(operation), boxed(message), highlight(#silver, #[#programcounter, #executionstate, #breakpoints])separator t chevron.r$,),
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
 
             definition(executionstate, "(execution state)",
@@ -288,17 +288,17 @@
             #table(columns: (3fr, 1.2fr), stroke: none,
                 tablehead("Server evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $server serverarrow server'$),
 
-                prooftree(rule(rect(height: 2em, stroke: none, $angle.l boxed("step"), boxed(nothing) , highlight(#silver, #neb, inset: #inset, outset: #outset) separator t angle.r serverarrow angle.l boxed(nothing), boxed("ack step"), highlight(#silver, #incremented, inset: #inset, outset: #outset) separator t' angle.r$), highlight(silver, $executionstate = "paused"$), $t arrow.r.long t'$)), highlight(silver, "(Step)"),
+                prooftree(rule(rect(height: 2em, stroke: none, $chevron.l boxed("step"), boxed(nothing) , highlight(#silver, #neb, inset: #inset, outset: #outset) separator t chevron.r serverarrow chevron.l boxed(nothing), boxed("ack step"), highlight(#silver, #incremented, inset: #inset, outset: #outset) separator t' chevron.r$), highlight(silver, $executionstate = "paused"$), $t arrow.r.long t'$)), highlight(silver, "(Step)"),
 
-                prooftree(rule(rect(height: 2em, stroke: none, $angle.l boxed("step"), boxed(nothing) , programcounter, executionstate, breakpoints separator t angle.r serverarrow angle.l boxed(nothing), boxed("ack" nothing), programcounter, executionstate, breakpoints separator t angle.r$), $e eq.not "paused"$)), "(Fallback2)",
+                prooftree(rule(rect(height: 2em, stroke: none, $chevron.l boxed("step"), boxed(nothing) , programcounter, executionstate, breakpoints separator t chevron.r serverarrow chevron.l boxed(nothing), boxed("ack" nothing), programcounter, executionstate, breakpoints separator t chevron.r$), $e eq.not "paused"$)), "(Fallback2)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $angle.l boxed("pause"), boxed(nothing) , programcounter, executionstate, breakpoints separator t angle.r serverarrow angle.l boxed(nothing), boxed(nothing), programcounter, "paused", breakpoints separator t angle.r$)))), "(Pause)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $chevron.l boxed("pause"), boxed(nothing) , programcounter, executionstate, breakpoints separator t chevron.r serverarrow chevron.l boxed(nothing), boxed(nothing), programcounter, "paused", breakpoints separator t chevron.r$)))), "(Pause)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $angle.l boxed("play"), boxed(nothing) , programcounter, executionstate, breakpoints separator t angle.r serverarrow angle.l boxed(nothing), boxed(nothing), programcounter, "play", breakpoints separator t angle.r$)))), "(Play)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $chevron.l boxed("play"), boxed(nothing) , programcounter, executionstate, breakpoints separator t chevron.r serverarrow chevron.l boxed(nothing), boxed(nothing), programcounter, "play", breakpoints separator t chevron.r$)))), "(Play)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $angle.l boxed(bpadd), boxed(nothing) , programcounter', executionstate, breakpoints separator t angle.r serverarrow angle.l boxed(nothing), boxed(nothing), programcounter', executionstate, breakpoints' separator t angle.r$)), $breakpoints' = n, breakpoints$)), "(BreakpointAdd)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $chevron.l boxed(bpadd), boxed(nothing) , programcounter', executionstate, breakpoints separator t chevron.r serverarrow chevron.l boxed(nothing), boxed(nothing), programcounter', executionstate, breakpoints' separator t chevron.r$)), $breakpoints' = n, breakpoints$)), "(BreakpointAdd)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $angle.l boxed(bpremove), boxed(nothing) , programcounter', executionstate, breakpoints separator t angle.r serverarrow angle.l boxed(nothing), boxed(nothing), programcounter', executionstate, breakpoints' separator t angle.r$)), $breakpoints' = breakpoints without n$)), "(BreakpointRemove)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $chevron.l boxed(bpremove), boxed(nothing) , programcounter', executionstate, breakpoints separator t chevron.r serverarrow chevron.l boxed(nothing), boxed(nothing), programcounter', executionstate, breakpoints' separator t chevron.r$)), $breakpoints' = breakpoints without n$)), "(BreakpointRemove)",
 
                 tablehead("Global evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $global dbgarrow global'$),
 
@@ -317,7 +317,7 @@
 #let backwards = $"step"^arrow.l$
 #let interval = $theta$
 
-#let revserverrule(i, o, n, e, b, s, t) = $angle.l #i, #o, #n, #e, #b, #s separator #t angle.r$
+#let revserverrule(i, o, n, e, b, s, t) = $chevron.l #i, #o, #n, #e, #b, #s separator #t chevron.r$
 
 #let reversible = [
     #show table.cell: set text(style: "italic")
@@ -329,7 +329,7 @@
         table(columns: (1fr), align: (left), stroke: none,
             tablehead("New syntactic forms"),
             definition(server, "(server)",
-                ($angle.l boxed(operation), boxed(message), programcounter, executionstate, breakpoints, highlight(#silver, #snapshots, inset: #inset) separator t angle.r$,),
+                ($chevron.l boxed(operation), boxed(message), programcounter, executionstate, breakpoints, highlight(#silver, #snapshots, inset: #inset) separator t chevron.r$,),
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
 
             definition(operation, "(debug commands)",

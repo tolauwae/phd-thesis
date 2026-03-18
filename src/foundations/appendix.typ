@@ -37,7 +37,7 @@ In this appendix we provide the unabbreviated semantic rules for the debuggers f
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
 
             definition(server, highlight(silver, "(server)"),
-                ($angle.l boxed(operation), boxed(message), highlight(#silver, #[#programcounter, #executionstate, #breakpoints])separator t angle.r$,),
+                ($chevron.l boxed(operation), boxed(message), highlight(#silver, #[#programcounter, #executionstate, #breakpoints])separator t chevron.r$,),
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
 
             definition(client, highlight(silver, "(client)"),
@@ -104,19 +104,19 @@ In this appendix we provide the unabbreviated semantic rules for the debuggers f
             #table(columns: (3fr, 1.2fr), stroke: none,
                 tablehead("Server evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $server serverarrow server'$),
 
-                prooftree(rule(rect(height: 2em, stroke: none, $angle.l boxed("step"), boxed(nothing) , highlight(#silver, #neb, inset: #inset, outset: #outset) separator t angle.r serverarrow angle.l boxed(nothing), boxed("ack step"), highlight(#silver, #incremented, inset: #inset, outset: #outset) separator t' angle.r$), highlight(silver, $executionstate = "paused"$), $t arrow.r.long t'$)), highlight(silver, "(Step)"),
+                prooftree(rule(rect(height: 2em, stroke: none, $chevron.l boxed("step"), boxed(nothing) , highlight(#silver, #neb, inset: #inset, outset: #outset) separator t chevron.r serverarrow chevron.l boxed(nothing), boxed("ack step"), highlight(#silver, #incremented, inset: #inset, outset: #outset) separator t' chevron.r$), highlight(silver, $executionstate = "paused"$), $t arrow.r.long t'$)), highlight(silver, "(Step)"),
 
                 prooftree(rule(rect(height: 2em, stroke: none, $conserverrule(boxed("step"), boxed(nothing),programcounter, executionstate, breakpoints,  v) serverarrow conserverrule(boxed(nothing), boxed("ack" nothing),programcounter, executionstate, breakpoints,  v)$))), "(Fallback)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, $angle.l boxed("step"), boxed(nothing) , programcounter, executionstate, breakpoints separator t angle.r serverarrow angle.l boxed(nothing), boxed("ack" nothing), programcounter, executionstate, breakpoints separator t angle.r$), $e eq.not "paused"$)), "(Fallback2)",
+                prooftree(rule(rect(height: 2em, stroke: none, $chevron.l boxed("step"), boxed(nothing) , programcounter, executionstate, breakpoints separator t chevron.r serverarrow chevron.l boxed(nothing), boxed("ack" nothing), programcounter, executionstate, breakpoints separator t chevron.r$), $e eq.not "paused"$)), "(Fallback2)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $angle.l boxed("pause"), boxed(nothing) , programcounter, executionstate, breakpoints separator t angle.r serverarrow angle.l boxed(nothing), boxed(nothing), programcounter, "paused", breakpoints separator t angle.r$)))), "(Pause)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $chevron.l boxed("pause"), boxed(nothing) , programcounter, executionstate, breakpoints separator t chevron.r serverarrow chevron.l boxed(nothing), boxed(nothing), programcounter, "paused", breakpoints separator t chevron.r$)))), "(Pause)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $angle.l boxed("play"), boxed(nothing) , programcounter, executionstate, breakpoints separator t angle.r serverarrow angle.l boxed(nothing), boxed(nothing), programcounter, "play", breakpoints separator t angle.r$)))), "(Play)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $chevron.l boxed("play"), boxed(nothing) , programcounter, executionstate, breakpoints separator t chevron.r serverarrow chevron.l boxed(nothing), boxed(nothing), programcounter, "play", breakpoints separator t chevron.r$)))), "(Play)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $angle.l boxed(bpadd), boxed(nothing) , programcounter', executionstate, breakpoints separator t angle.r serverarrow angle.l boxed(nothing), boxed(nothing), programcounter', executionstate, breakpoints' separator t angle.r$)), $breakpoints' = n, breakpoints$)), "(BreakpointAdd)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $chevron.l boxed(bpadd), boxed(nothing) , programcounter', executionstate, breakpoints separator t chevron.r serverarrow chevron.l boxed(nothing), boxed(nothing), programcounter', executionstate, breakpoints' separator t chevron.r$)), $breakpoints' = n, breakpoints$)), "(BreakpointAdd)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $angle.l boxed(bpremove), boxed(nothing) , programcounter', executionstate, breakpoints separator t angle.r serverarrow angle.l boxed(nothing), boxed(nothing), programcounter', executionstate, breakpoints' separator t angle.r$)), $breakpoints' = breakpoints without n$)), "(BreakpointRemove)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $chevron.l boxed(bpremove), boxed(nothing) , programcounter', executionstate, breakpoints separator t chevron.r serverarrow chevron.l boxed(nothing), boxed(nothing), programcounter', executionstate, breakpoints' separator t chevron.r$)), $breakpoints' = breakpoints without n$)), "(BreakpointRemove)",
 
             tablehead("Client evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $client clientarrow client'$),
 
@@ -177,7 +177,7 @@ In this appendix we provide the unabbreviated semantic rules for the debuggers f
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
 
             definition(server, highlight(silver, "(server)"),
-                ($angle.l boxed(operation), boxed(message), highlight(#silver, programcounter, inset: #inset), executionstate, breakpoints, highlight(#silver, #snapshots, inset: #inset) separator t angle.r$,),
+                ($chevron.l boxed(operation), boxed(message), highlight(#silver, programcounter, inset: #inset), executionstate, breakpoints, highlight(#silver, #snapshots, inset: #inset) separator t chevron.r$,),
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
 
             definition(client, "(client)",
@@ -246,20 +246,20 @@ In this appendix we provide the unabbreviated semantic rules for the debuggers f
             #table(columns: (3fr, 1.2fr), stroke: none,
                 tablehead("Server evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $server serverarrow server'$),
 
-                prooftree(rule(rect(height: 2em, stroke: none, $angle.l boxed("step"), boxed(nothing) , #neb, snapshots separator t angle.r serverarrow angle.l boxed(nothing), boxed("ack step"), #incremented, snapshots separator t' angle.r$), $executionstate = "paused"$, $t arrow.r.long t'$)), "(Step)",
+                prooftree(rule(rect(height: 2em, stroke: none, $chevron.l boxed("step"), boxed(nothing) , #neb, snapshots separator t chevron.r serverarrow chevron.l boxed(nothing), boxed("ack step"), #incremented, snapshots separator t' chevron.r$), $executionstate = "paused"$, $t arrow.r.long t'$)), "(Step)",
 
                 prooftree(rule(rect(height: 2em, stroke: none, $revserverrule(boxed("step"), boxed(nothing),programcounter, executionstate, breakpoints, snapshots, v) serverarrow revserverrule(boxed(nothing), boxed("ack" nothing),programcounter, executionstate, breakpoints, snapshots, v)$))), "(Fallback)",
 
 
-                prooftree(rule(rect(height: 2em, stroke: none, $angle.l boxed("step"), boxed(nothing) , programcounter, executionstate, breakpoints, snapshots separator t angle.r serverarrow angle.l boxed(nothing), boxed("ack" nothing), programcounter, executionstate, breakpoints, snapshots, separator t angle.r$), $e eq.not "paused"$)), "(Fallback2)",
+                prooftree(rule(rect(height: 2em, stroke: none, $chevron.l boxed("step"), boxed(nothing) , programcounter, executionstate, breakpoints, snapshots separator t chevron.r serverarrow chevron.l boxed(nothing), boxed("ack" nothing), programcounter, executionstate, breakpoints, snapshots, separator t chevron.r$), $e eq.not "paused"$)), "(Fallback2)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $angle.l boxed("pause"), boxed(nothing) , programcounter, executionstate, breakpoints, snapshots separator t angle.r serverarrow angle.l boxed(nothing), boxed(nothing), programcounter, "paused", breakpoints, snapshots separator t angle.r$)))), "(Pause)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $chevron.l boxed("pause"), boxed(nothing) , programcounter, executionstate, breakpoints, snapshots separator t chevron.r serverarrow chevron.l boxed(nothing), boxed(nothing), programcounter, "paused", breakpoints, snapshots separator t chevron.r$)))), "(Pause)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $angle.l boxed("play"), boxed(nothing) , programcounter, executionstate, breakpoints, snapshots separator t angle.r serverarrow angle.l boxed(nothing), boxed(nothing), programcounter, "play", breakpoints, snapshots separator t angle.r$)))), "(Play)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $chevron.l boxed("play"), boxed(nothing) , programcounter, executionstate, breakpoints, snapshots separator t chevron.r serverarrow chevron.l boxed(nothing), boxed(nothing), programcounter, "play", breakpoints, snapshots separator t chevron.r$)))), "(Play)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $angle.l boxed(bpadd), boxed(nothing) , programcounter', executionstate, breakpoints, snapshots separator t angle.r serverarrow angle.l boxed(nothing), boxed(nothing), programcounter', executionstate, breakpoints', snapshots separator t angle.r$)), $breakpoints' = n, breakpoints$)), "(BreakpointAdd)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $chevron.l boxed(bpadd), boxed(nothing) , programcounter', executionstate, breakpoints, snapshots separator t chevron.r serverarrow chevron.l boxed(nothing), boxed(nothing), programcounter', executionstate, breakpoints', snapshots separator t chevron.r$)), $breakpoints' = n, breakpoints$)), "(BreakpointAdd)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $angle.l boxed(bpremove), boxed(nothing) , programcounter', executionstate, breakpoints, snapshots separator t angle.r serverarrow angle.l boxed(nothing), boxed(nothing), programcounter', executionstate, breakpoints', snapshots separator t angle.r$)), $breakpoints' = breakpoints without n$)), "(BreakpointRemove)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $chevron.l boxed(bpremove), boxed(nothing) , programcounter', executionstate, breakpoints, snapshots separator t chevron.r serverarrow chevron.l boxed(nothing), boxed(nothing), programcounter', executionstate, breakpoints', snapshots separator t chevron.r$)), $breakpoints' = breakpoints without n$)), "(BreakpointRemove)",
 
                 prooftree(rule(rect(height: 2em, stroke: none, $revserverrule(backwards, nothing, "succ" programcounter, executionstate, breakpoints, snapshots, t) serverarrow revserverrule(nothing, boxed(#[ack #backwards]), programcounter, executionstate, breakpoints, snapshots, t'')$), $snapshots = (0, t')$, $executionstate = "paused"$, $t' attach(arrow.r.long, tr: n) t''$,)), "(BackwardStep0)",
 
@@ -330,7 +330,7 @@ In this appendix we provide the unabbreviated semantic rules for the debuggers f
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
 
             definition(server, "(server)",
-                ($angle.l boxed(operation), boxed(message), programcounter, executionstate, breakpoints, #snapshots separator t angle.r$,),
+                ($chevron.l boxed(operation), boxed(message), programcounter, executionstate, breakpoints, #snapshots separator t chevron.r$,),
                 ("",), division: (1.0em, 1.5em, 4fr, 9fr)),
 
             definition(client, "(client)",
@@ -399,20 +399,20 @@ In this appendix we provide the unabbreviated semantic rules for the debuggers f
             #table(columns: (3fr, 1.2fr), stroke: none,
                 tablehead("Server evaluation"), rect(stroke: lineWidth, inset: (left: 0.4em, right: 0.4em, top: 0.4em, bottom: 0.6em), $server serverarrow server'$),
 
-                prooftree(rule(rect(height: 2em, stroke: none, $angle.l boxed("step"), boxed(nothing) , #neb, snapshots separator t angle.r serverarrow angle.l boxed(nothing), boxed("ack step"), #incremented, snapshots separator t' angle.r$), $executionstate = "paused"$, $t arrow.r.long t'$)), "(Step)",
+                prooftree(rule(rect(height: 2em, stroke: none, $chevron.l boxed("step"), boxed(nothing) , #neb, snapshots separator t chevron.r serverarrow chevron.l boxed(nothing), boxed("ack step"), #incremented, snapshots separator t' chevron.r$), $executionstate = "paused"$, $t arrow.r.long t'$)), "(Step)",
 
                 prooftree(rule(rect(height: 2em, stroke: none, $revserverrule(boxed("step"), boxed(nothing),programcounter, executionstate, breakpoints, snapshots, v) serverarrow revserverrule(boxed(nothing), boxed("ack" nothing),programcounter, executionstate, breakpoints, snapshots, v)$))), "(Fallback)",
 
 
-                prooftree(rule(rect(height: 2em, stroke: none, $angle.l boxed("step"), boxed(nothing) , programcounter, executionstate, breakpoints, snapshots separator t angle.r serverarrow angle.l boxed(nothing), boxed("ack" nothing), programcounter, executionstate, breakpoints, snapshots, separator t angle.r$), $e eq.not "paused"$)), "(Fallback2)",
+                prooftree(rule(rect(height: 2em, stroke: none, $chevron.l boxed("step"), boxed(nothing) , programcounter, executionstate, breakpoints, snapshots separator t chevron.r serverarrow chevron.l boxed(nothing), boxed("ack" nothing), programcounter, executionstate, breakpoints, snapshots, separator t chevron.r$), $e eq.not "paused"$)), "(Fallback2)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $angle.l boxed("pause"), boxed(nothing) , programcounter, executionstate, breakpoints, snapshots separator t angle.r serverarrow angle.l boxed(nothing), boxed(nothing), programcounter, "paused", breakpoints, snapshots separator t angle.r$)))), "(Pause)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $chevron.l boxed("pause"), boxed(nothing) , programcounter, executionstate, breakpoints, snapshots separator t chevron.r serverarrow chevron.l boxed(nothing), boxed(nothing), programcounter, "paused", breakpoints, snapshots separator t chevron.r$)))), "(Pause)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $angle.l boxed("play"), boxed(nothing) , programcounter, executionstate, breakpoints, snapshots separator t angle.r serverarrow angle.l boxed(nothing), boxed(nothing), programcounter, "play", breakpoints, snapshots separator t angle.r$)))), "(Play)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $chevron.l boxed("play"), boxed(nothing) , programcounter, executionstate, breakpoints, snapshots separator t chevron.r serverarrow chevron.l boxed(nothing), boxed(nothing), programcounter, "play", breakpoints, snapshots separator t chevron.r$)))), "(Play)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $angle.l boxed(bpadd), boxed(nothing) , programcounter', executionstate, breakpoints, snapshots separator t angle.r serverarrow angle.l boxed(nothing), boxed(nothing), programcounter', executionstate, breakpoints', snapshots separator t angle.r$)), $breakpoints' = n, breakpoints$)), "(BreakpointAdd)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $chevron.l boxed(bpadd), boxed(nothing) , programcounter', executionstate, breakpoints, snapshots separator t chevron.r serverarrow chevron.l boxed(nothing), boxed(nothing), programcounter', executionstate, breakpoints', snapshots separator t chevron.r$)), $breakpoints' = n, breakpoints$)), "(BreakpointAdd)",
 
-                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $angle.l boxed(bpremove), boxed(nothing) , programcounter', executionstate, breakpoints, snapshots separator t angle.r serverarrow angle.l boxed(nothing), boxed(nothing), programcounter', executionstate, breakpoints', snapshots separator t angle.r$)), $breakpoints' = breakpoints without n$)), "(BreakpointRemove)",
+                prooftree(rule(rect(height: 2em, stroke: none, grid(columns: 2, $chevron.l boxed(bpremove), boxed(nothing) , programcounter', executionstate, breakpoints, snapshots separator t chevron.r serverarrow chevron.l boxed(nothing), boxed(nothing), programcounter', executionstate, breakpoints', snapshots separator t chevron.r$)), $breakpoints' = breakpoints without n$)), "(BreakpointRemove)",
 
                 prooftree(rule(rect(height: 2em, stroke: none, $revserverrule(backwards, nothing, "succ" programcounter, executionstate, breakpoints, snapshots, t) serverarrow revserverrule(nothing, boxed(#[ack #backwards]), programcounter, executionstate, breakpoints, snapshots, t'')$), $snapshots = (0, t')$, $executionstate = "paused"$, $t' attach(arrow.r.long, tr: n) t''$,)), "(BackwardStep0)",
 
