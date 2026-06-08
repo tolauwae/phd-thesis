@@ -331,10 +331,10 @@
         )),
         prooftree(rule(
           $
-          {s; v^*; e^*} dbgarrow {s'; v'^*; e'^*}
+          {s; v^*; Clb[e^*]} dbgarrow {s'; v'^*; Clb[e'^*]}
           $,
           $
-          {s; v^*; Clb[e^*]} dbgarrow {s'; v'^*; Clb[e'^*]}
+          {s; v^*; e^*} dbgarrow {s'; v'^*; e'^*}
           $,
           name: "callback"
         )),
